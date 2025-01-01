@@ -1,0 +1,69 @@
+import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
+
+const client = new ApolloClient({
+  uri: 'http://localhost:4000', // Update this with your Apollo Server URL
+  cache: new InMemoryCache(),
+})
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371 // Radius of the Earth in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180)
+  const dLon = (lon2 - lon1) * (Math.PI / 180)
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+export function findClosestJamRooms() {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+
+        try {
+          console.log("Fetching jam rooms...")
+          const { data } = await client.query({
+            query: gql`
+              query {
+                jamRooms {
+                  id
+                  name
+                  latitude
+                  longitude
+                  radius
+                }
+              }
+            `,
+          })
+          console.log("Fetched data:", data)
+
+          if (!data || !data.jamRooms) {
+            throw new Error("No jam rooms data received")
+          }
+
+          const jamRoomsWithDistance = data.jamRooms.map((room) => ({
+            ...room,
+            distance: calculateDistance(latitude, longitude, room.latitude, room.longitude),
+          }))
+
+          const sortedJamRooms = jamRoomsWithDistance.sort((a, b) => a.distance - b.distance)
+          resolve({
+            userLatitude: latitude,
+            userLongitude: longitude,
+            jamRooms: sortedJamRooms
+          })
+        } catch (error) {
+          console.error("Error in findClosestJamRooms:", error)
+          reject(error)
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error)
+        reject(new Error(`Geolocation error: ${error.message}`))
+      }
+    )
+  })
+}
+
