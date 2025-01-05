@@ -16,6 +16,7 @@ root.render(
       audience={`https://dev-veq6ppuvr633oybb.us.auth0.com/api/v2/`}
       useRefreshTokens={true}
       cacheLocation="localstorage"
+      scope="openid profile email read:current_user update:current_user_metadata"
     >
         <App />
     </Auth0Provider>
