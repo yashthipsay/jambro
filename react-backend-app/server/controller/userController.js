@@ -7,10 +7,10 @@ const createUser = async(req, res) => {
     // Check if user with mobile number exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'Mobile number already registered'
-      });
+        return res.status(400).json({
+            success: false,
+            message: 'Email already registered'
+        });
     }
 
         // Create new user
@@ -34,10 +34,35 @@ const createUser = async(req, res) => {
       }
 };
 
+const getUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // Add features for login i.e. already saved user
 // Change password
 // get user
 // delete user
 module.exports = {
-    createUser
+    createUser,
+    getUserByEmail
   };

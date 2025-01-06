@@ -17,7 +17,7 @@ const createBooking = async (req, res) => {
         }
     
         //2. Check for conflicting bookings
-        const conflictingBookings = await Booking.find({
+        const conflictingBookings = await BookingSchema.find({
           jamRoom: jamRoomId,
           date: date,
           'slots.slotId': { $in: slots.map(slot => slot.slotId) },
@@ -29,7 +29,7 @@ const createBooking = async (req, res) => {
   
   
         // 3. Create the booking
-        const newBooking = new Booking({
+        const newBooking = new BookingSchema({
           user: userId,
           jamRoom: jamRoomId,
           date,

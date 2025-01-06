@@ -18,6 +18,7 @@ const io = new Server(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST'],
+    credentials: true,
   },
 });
 // Middleware
@@ -57,6 +58,6 @@ io.on('connection', (socket) => {
 });
 
 // Start the Express server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

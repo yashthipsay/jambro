@@ -21,7 +21,7 @@ function App() {
             body: JSON.stringify({
               name: user.name || 'NA',
               email: user.email,
-              mobileNumber: user.phone_number || 'NA'
+              mobileNumber: user.phone_number || ''
             }),
           });
 
@@ -66,6 +66,7 @@ function App() {
           <Route path="/" element={<JamRoomFinder />} />
           <Route path="/jam-room/:id" element={<JamRoomDetails />} />
           <Route path="/booking/:id" element={<Booking />} />
+          <Route path='/confirmation/:id' element={<div>Booking Confirmed</div>} />
         </Routes>
       </Router>
     </>

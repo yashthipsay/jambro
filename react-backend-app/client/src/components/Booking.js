@@ -41,6 +41,16 @@ function Booking() {
     );
   }
 
+  const isSlotBooked = (slotId) => {
+    if (!selectedDate) return false;
+    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    return bookings.some(
+      (booking) =>
+        booking.date.split('T')[0] === selectedDateStr &&
+        booking.slots.some((slot) => slot.slotId === slotId)
+    );
+  };
+
 
   const handleSlotChange = (slotId) => {
     setSelectedSlots((prev) =>
@@ -50,13 +60,63 @@ function Booking() {
     );
   };
 
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (selectedSlots.length === 0 || !selectedDate) {
       alert('Please select a date and at least one time slot');
       return;
     }
-    console.log('Selected date:', selectedDate);
-    console.log('Selected slots:', selectedSlots);
+
+    try{
+      console.log(user.email);
+      const response = await fetch('http://localhost:5000/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        
+        body: JSON.stringify({ email: user.email }),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        console.error('Error fetching user:', data.message);
+        return;
+      }
+
+      const userId = data.data._id;
+
+      const bookingResponse = await fetch('http://localhost:5000/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          jamRoomId: selectedRoom.id,
+          date: selectedDate,
+          slots: selectedSlots.map((slotId) => {
+            const slot = selectedRoom.slots.find((s) => s.slotId === slotId);
+            return {
+              slotId: slot.slotId,
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+            };
+          }),
+        }),
+      });
+
+      const bookingData = await bookingResponse.json();
+      if (!bookingData.success) {
+        console.error('Error creating booking:', bookingData.message);
+        return;
+      }
+
+      console.log('Booking successful:', bookingData);
+      navigate(`/confirmation/${bookingData.booking._id}`);
+
+    }catch(error) {
+      console.error('Error proceeding to payment:', error);
+    }
   };
 
   return (
@@ -97,7 +157,7 @@ function Booking() {
                     <Checkbox
                       checked={selectedSlots.includes(slot.slotId)}
                       onChange={() => handleSlotChange(slot.slotId)}
-                      disabled={slot.isBooked}
+                      disabled={isSlotBooked(slot.slotId)}
                     />
                   }
                   label={`${slot.startTime} - ${slot.endTime}`}
