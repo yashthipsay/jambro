@@ -20,50 +20,106 @@ export function findClosestJamRooms() {
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords
+        const { latitude, longitude } = position.coords;
 
         try {
-          console.log("Fetching jam rooms...")
-          const { data } = await client.query({
-            query: gql`
-              query {
-                jamRooms {
-                  id
-                  name
-                  latitude
-                  longitude
-                  radius
-                }
-              }
-            `,
-          })
-          console.log("Fetched data:", data)
+          // Fetch jam rooms from MongoDB API
+          const response = await fetch('http://localhost:5000/api/jamrooms');
+          const data = await response.json();
+          console.log(data);
 
-          if (!data || !data.jamRooms) {
-            throw new Error("No jam rooms data received")
+          if (!data || !data.success) {
+            throw new Error("No jam rooms data received");
           }
 
-          const jamRoomsWithDistance = data.jamRooms.map((room) => ({
-            ...room,
-            distance: calculateDistance(latitude, longitude, room.latitude, room.longitude),
-          }))
+          // Calculate distance for each room
+          const jamRoomsWithDistance = data.data.map((room) => ({
+            id: room._id,
+            name: room.name,
+            location: room.location,
+            slots: room.slots,
+            distance: calculateDistance(
+              latitude, 
+              longitude, 
+              room.location.latitude, 
+              room.location.longitude
+            )
+          }));
+          console.log(latitude, longitude);
 
-          const sortedJamRooms = jamRoomsWithDistance.sort((a, b) => a.distance - b.distance)
+          // Sort by distance
+          const sortedJamRooms = jamRoomsWithDistance.sort(
+            (a, b) => a.distance - b.distance
+          );
+
           resolve({
             userLatitude: latitude,
             userLongitude: longitude,
             jamRooms: sortedJamRooms
-          })
+          });
+          console.log("Closest jam rooms:", sortedJamRooms);
+
         } catch (error) {
-          console.error("Error in findClosestJamRooms:", error)
-          reject(error)
+          console.error("Error fetching jam rooms:", error);
+          reject(error);
         }
       },
       (error) => {
-        console.error("Geolocation error:", error)
-        reject(new Error(`Geolocation error: ${error.message}`))
+        console.error("Geolocation error:", error);
+        reject(new Error(`Geolocation error: ${error.message}`));
       }
-    )
-  })
+    );
+  });
 }
+
+// export function findClosestJamRooms() {
+//   return new Promise((resolve, reject) => {
+//     navigator.geolocation.getCurrentPosition(
+//       async (position) => {
+//         const { latitude, longitude } = position.coords
+
+//         try {
+//           console.log("Fetching jam rooms...")
+//           const { data } = await client.query({
+//             query: gql`
+//               query {
+//                 jamRooms {
+//                   id
+//                   name
+//                   latitude
+//                   longitude
+//                   radius
+//                 }
+//               }
+//             `,
+//           })
+//           console.log("Fetched data:", data)
+
+//           if (!data || !data.jamRooms) {
+//             throw new Error("No jam rooms data received")
+//           }
+
+//           const jamRoomsWithDistance = data.jamRooms.map((room) => ({
+//             ...room,
+//             distance: calculateDistance(latitude, longitude, room.latitude, room.longitude),
+//           }))
+
+//           const sortedJamRooms = jamRoomsWithDistance.sort((a, b) => a.distance - b.distance)
+//           resolve({
+//             userLatitude: latitude,
+//             userLongitude: longitude,
+//             jamRooms: sortedJamRooms
+//           })
+//         } catch (error) {
+//           console.error("Error in findClosestJamRooms:", error)
+//           reject(error)
+//         }
+//       },
+//       (error) => {
+//         console.error("Geolocation error:", error)
+//         reject(new Error(`Geolocation error: ${error.message}`))
+//       }
+//     )
+//   })
+// }
 

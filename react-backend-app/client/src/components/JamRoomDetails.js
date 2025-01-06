@@ -1,11 +1,12 @@
 import React from 'react';
+import {Button, Card, CardContent, Grid2, Typography} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import  RouteMap  from './RouteMap';
 
 function JamRoomDetails() {
   const navigate = useNavigate();
   const selectedRoom = JSON.parse(localStorage.getItem('selectedJamRoom'));
-
+  console.log('Selected room on jam room details:', selectedRoom);
   if (!selectedRoom) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -26,21 +27,49 @@ function JamRoomDetails() {
   };
 
   return (
-    <>
-      {/* <h1 className="text-3xl font-bold mb-4">{selectedRoom.name}</h1>
-      <p>Latitude: {selectedRoom.latitude}</p>
-      <p>Longitude: {selectedRoom.longitude}</p>
-      <p>Radius: {selectedRoom.radius} meters</p>
-      <p>Distance: {selectedRoom.distance.toFixed(2)} km</p>
-      <button
-        className="mt-4 p-2 bg-blue-500 text-white rounded"
-        onClick={() => navigate('/')}
-      >
-        Back to Finder
-      </button> */}
+    <Grid2 container spacing={3} sx={{ padding: 6 }}>
+      <Grid2 xs={12}>
+        <Card>
+          <CardContent>
+            <Typography variant="h4" gutterBottom>
+              {selectedRoom.name}
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              Distance: {selectedRoom.distance.toFixed(2)} km
+            </Typography>
+          </CardContent>
+        </Card>
+      </Grid2>
 
-      <RouteMap userPosition={userPosition} roomPosition={roomPosition} />
-    </>
+      <Grid2 xs={12}>
+        <Card>
+          <CardContent>
+            <RouteMap userPosition={userPosition} roomPosition={roomPosition} />
+          </CardContent>
+        </Card>
+      </Grid2>
+
+      <Grid2 
+        xs={12} 
+        container 
+        justifyContent="space-between" 
+        alignItems="center"
+      >
+        <Button 
+          variant="outlined" 
+          onClick={() => navigate('/')}
+        >
+          Back to Finder
+        </Button>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={() => navigate(`/booking/${selectedRoom.id}`)}
+        >
+          Book Now
+        </Button>
+      </Grid2>
+    </Grid2>
   );
 }
 

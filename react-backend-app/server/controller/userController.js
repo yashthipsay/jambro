@@ -5,7 +5,7 @@ const createUser = async(req, res) => {
         const { name, email, mobileNumber } = req.body;
 
     // Check if user with mobile number exists
-    const existingUser = await User.findOne({ mobileNumber });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -34,6 +34,10 @@ const createUser = async(req, res) => {
       }
 };
 
+// Add features for login i.e. already saved user
+// Change password
+// get user
+// delete user
 module.exports = {
     createUser
   };

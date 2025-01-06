@@ -3,9 +3,11 @@ import { Button, Card, CardContent } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import BackgroundIllustration from './components/BackgroundIllustration';
 import { findClosestJamRooms } from './utils/jamRoomUtils';
+import { useAuth0 } from '@auth0/auth0-react';
 
 function JamRoomFinder() {
   const [loading, setLoading] = useState(false);
+  const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [jamRooms, setJamRooms] = useState([]);
   const [userLatitude, setUserLatitude] = useState(null);
   const [userLongitude, setUserLongitude] = useState(null);
@@ -26,11 +28,16 @@ function JamRoomFinder() {
   };
 
   const handleCardClick = (room) => {
+    if (!isAuthenticated) {
+      loginWithRedirect();
+      return;
+    }
     const selectedRoom = {
       ...room,
       userLatitude,
       userLongitude,
     };
+    console.log('Selected room:', selectedRoom);
     localStorage.setItem('selectedJamRoom', JSON.stringify(selectedRoom));
     navigate(`/jam-room/${room.id}`);
   };
@@ -47,21 +54,32 @@ function JamRoomFinder() {
           {jamRooms.length > 0 && (
             <div className="mt-4">
               <h2 className="text-xl font-semibold mb-2">Closest Jam Rooms:</h2>
-              <ul>
-                {jamRooms.map((room) => (
-                  <li
-                    key={room.id}
-                    className="mb-2 cursor-pointer"
-                    onClick={() => handleCardClick(room)}
-                  >
-                    <Card>
-                      <CardContent>
-                        <strong>{room.name}</strong> - {room.distance.toFixed(2)} km away
-                      </CardContent>
-                    </Card>
-                  </li>
-                ))}
-              </ul>
+              {!isAuthenticated ? (
+                <Button 
+                  onClick={() => loginWithRedirect()}
+                  variant="contained" 
+                  color="primary"
+                  fullWidth
+                >
+                  Sign in to View Jam Rooms
+                </Button>
+              ) : (
+                <ul>
+                  {jamRooms.map((room) => (
+                    <li
+                      key={room.id}
+                      className="mb-2 cursor-pointer"
+                      onClick={() => handleCardClick(room)}
+                    >
+                      <Card>
+                        <CardContent>
+                          <strong>{room.name}</strong> - {room.distance.toFixed(2)} km away
+                        </CardContent>
+                      </Card>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </CardContent>

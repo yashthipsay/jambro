@@ -5,6 +5,8 @@ const neo4jDriver = require('./db/neo4jDriver');  // Import the neo4jDriver modu
 const { startApolloServer } = require('./db/neo4jDriver');   // Import the calldB function
 const connectDB = require('./db/mongoDriver');  // Import the connectDB function
 const userRoutes = require('./routes/userRoutes');
+const jamRoomRoutes = require('./routes/jamRoomRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 const app = express();
 const PORT = 5000;
 
@@ -14,6 +16,8 @@ app.use(bodyParser.json());
 
 // Routes
 app.use('/api/users', userRoutes);
+app.use('/api/jamrooms', jamRoomRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // Function to call the database
 const callDatabase = async () => {
