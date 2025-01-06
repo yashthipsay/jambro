@@ -20,6 +20,7 @@ function App() {
         };
         setUserMetadata(metadata);
         console.log('User metadata:', metadata);
+        console.log('User:', user);
       } catch (error) {
         console.error('Error getting user metadata:', error);
       }

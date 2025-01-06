@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    required: false,
   },
   email: {
     type: String,
@@ -12,8 +12,8 @@ const userSchema = new mongoose.Schema({
   },
   mobileNumber: {
     type: String,
-    required: true,
-    unique: true,
+    required: false,
+    unique: false,
   },
   bookings: [
     {
@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+}, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
 

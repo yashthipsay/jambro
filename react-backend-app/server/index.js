@@ -4,13 +4,16 @@ const cors = require('cors');
 const neo4jDriver = require('./db/neo4jDriver');  // Import the neo4jDriver module
 const { startApolloServer } = require('./db/neo4jDriver');   // Import the calldB function
 const connectDB = require('./db/mongoDriver');  // Import the connectDB function
-
+const userRoutes = require('./routes/userRoutes');
 const app = express();
 const PORT = 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+// Routes
+app.use('/api/users', userRoutes);
 
 // Function to call the database
 const callDatabase = async () => {
