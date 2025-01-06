@@ -1,16 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Button, Card, CardContent, FormGroup, FormControlLabel, Checkbox, Grid2, TextField } from '@mui/material';
+import io from 'socket.io-client';
+import { useAuth0 } from '@auth0/auth0-react';
+
+const socket = io('http://localhost:5000');
 
 function Booking() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth0();
   const selectedRoom = JSON.parse(localStorage.getItem('selectedJamRoom'));
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlots, setSelectedSlots] = useState([]);
+  const [bookings, setBookings] = useState([]);
+
+  useEffect(() => {
+    if (selectedRoom) {
+      socket.emit('getBookings', selectedRoom.id);
+    }
+
+    socket.on('bookings', (data) => {
+      setBookings(data);
+    });
+
+    return () => {
+      socket.off('bookings');
+    };
+  }, [selectedRoom]);
 
   if (!selectedRoom || selectedRoom.id !== id) {
     return (
