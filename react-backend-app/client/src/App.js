@@ -4,6 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import JamRoomFinder from './JamRoomFinder';
 import JamRoomDetails from './components/JamRoomDetails';
 import Booking from './components/Booking';
+import FinalReview from './components/FinalReview';
 
 function App() {
   const { loginWithRedirect, logout, isAuthenticated, isLoading, user, getIdTokenClaims } = useAuth0();
@@ -66,6 +67,7 @@ function App() {
           <Route path="/" element={<JamRoomFinder />} />
           <Route path="/jam-room/:id" element={<JamRoomDetails />} />
           <Route path="/booking/:id" element={<Booking />} />
+          <Route path="/final-review" element={<FinalReview />} />
           <Route path='/confirmation/:id' element={<div>Booking Confirmed</div>} />
         </Routes>
       </Router>

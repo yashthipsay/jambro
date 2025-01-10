@@ -58,11 +58,39 @@ const getUserByEmail = async (req, res) => {
   }
 };
 
+const savePhoneNumber = async (req, res) => {
+  try{
+    const {email, phoneNumber} = req.body;
+    const user = await User.findOne({email});
+
+    if(!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    user.savedNumbers.push(phoneNumber);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  }catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
 // Add features for login i.e. already saved user
 // Change password
 // get user
 // delete user
 module.exports = {
     createUser,
-    getUserByEmail
+    getUserByEmail,
+    savePhoneNumber
   };

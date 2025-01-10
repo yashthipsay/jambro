@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { DatePicker } from '@mui/x-date-pickers';
-import { Button, Card, CardContent, FormGroup, FormControlLabel, Checkbox, Grid2, TextField, Typography } from '@mui/material';
+import { Button, Card, CardContent, FormGroup, FormControlLabel, Checkbox, Grid2, TextField, Typography, Radio, RadioGroup } from '@mui/material';
 import io from 'socket.io-client';
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -17,6 +17,9 @@ function Booking() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [savedNumbers, setSavedNumbers] = useState([]);
+  const [selectedPhoneNumber, setSelectedPhoneNumber] = useState('');
 
   useEffect(() => {
     if (selectedRoom) {
@@ -31,6 +34,24 @@ function Booking() {
       socket.off('bookings');
     };
   }, [selectedRoom]);
+
+  useEffect(() => {
+    if (user) {
+      fetch('http://localhost:5000/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: user.email }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            setSavedNumbers(data.data.savedNumbers);
+          }
+        });
+    }
+  }, [user]);
 
   if (!selectedRoom || selectedRoom.id !== id) {
     return (
@@ -51,7 +72,6 @@ function Booking() {
     );
   };
 
-
   const handleSlotChange = (slotId) => {
     setSelectedSlots((prev) =>
       prev.includes(slotId)
@@ -60,66 +80,69 @@ function Booking() {
     );
   };
 
-  const handleProceedToPayment = async () => {
-    if (selectedSlots.length === 0 || !selectedDate) {
-      alert('Please select a date and at least one time slot');
+  const handleSaveNumber = async () => {
+    if (!phoneNumber) {
+      alert('Please enter a valid phone number');
       return;
     }
 
-    try{
-      console.log(user.email);
-      const response = await fetch('http://localhost:5000/api/users', {
+    try {
+      const response = await fetch('http://localhost:5000/api/users/save-number', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        
-        body: JSON.stringify({ email: user.email }),
+        body: JSON.stringify({ email: user.email, phoneNumber }),
       });
 
       const data = await response.json();
-      if (!data.success) {
-        console.error('Error fetching user:', data.message);
-        return;
+      if (data.success) {
+        setSavedNumbers(data.data.savedNumbers);
+        setPhoneNumber('');
+      } else {
+        alert('Error saving phone number');
       }
-
-      const userId = data.data._id;
-
-      const bookingResponse = await fetch('http://localhost:5000/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          jamRoomId: selectedRoom.id,
-          date: selectedDate,
-          slots: selectedSlots.map((slotId) => {
-            const slot = selectedRoom.slots.find((s) => s.slotId === slotId);
-            return {
-              slotId: slot.slotId,
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-            };
-          }),
-        }),
-      });
-
-      const bookingData = await bookingResponse.json();
-      if (!bookingData.success) {
-        console.error('Error creating booking:', bookingData.message);
-        return;
-      }
-
-      console.log('Booking successful:', bookingData);
-      navigate(`/confirmation/${bookingData.booking._id}`);
-
-    }catch(error) {
-      console.error('Error proceeding to payment:', error);
+    } catch (error) {
+      console.error('Error saving phone number:', error);
     }
   };
 
-  const totalAmount = selectedSlots.length * selectedRoom.feesPerSlot;
+  const handlePhoneNumberChange = (e) => {
+    setPhoneNumber(e.target.value);
+    setSelectedPhoneNumber(e.target.value);
+  };
+
+  const handleSavedNumberChange = (e) => {
+    setSelectedPhoneNumber(e.target.value);
+    setPhoneNumber(e.target.value);
+  };
+
+  const handleProceedToReview = () => {
+    if (selectedSlots.length === 0 || !selectedDate || !phoneNumber) {
+      alert('Please select a date, at least one time slot, and enter a valid phone number');
+      return;
+    }
+
+    const slotsDetails = selectedSlots.map((slotId) => {
+      const slot = selectedRoom.slots.find((s) => s.slotId === slotId);
+      return {
+        slotId: slot.slotId,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      };
+    });
+
+    const totalAmount = selectedSlots.length * selectedRoom.feesPerSlot;
+
+    navigate('/final-review', {
+      state: {
+        jamRoomName: selectedRoom.name,
+        selectedSlots: slotsDetails,
+        totalAmount,
+        phoneNumber: selectedPhoneNumber,
+      },
+    });
+  };
 
   return (
     <Grid2 container spacing={2} className="p-4">
@@ -167,9 +190,40 @@ function Booking() {
               ))}
             </FormGroup>
 
+            {/* Phone Number Input */}
+            <div className="mt-4">
+              <TextField
+                label="Phone Number"
+                value={phoneNumber}
+                onChange={handlePhoneNumberChange}
+                fullWidth
+              />
+              <Button variant="contained" color="primary" onClick={handleSaveNumber} className="mt-2">
+                Save Number
+              </Button>
+            </div>
+
+            {/* Saved Numbers */}
+            <div className="mt-4">
+              <Typography variant="h6">Saved Numbers:</Typography>
+              <RadioGroup
+                value={selectedPhoneNumber}
+                onChange={handleSavedNumberChange}
+              >
+                {savedNumbers.map((number, index) => (
+                  <FormControlLabel
+                    key={index}
+                    value={number}
+                    control={<Radio />}
+                    label={number}
+                  />
+                ))}
+              </RadioGroup>
+            </div>
+
             {/* Total Amount */}
             <Typography variant="h6" className="mt-4">
-              Total Amount: ₹{totalAmount}
+              Total Amount: ₹{selectedSlots.length * selectedRoom.feesPerSlot}
             </Typography>
 
             {/* Action Buttons */}
@@ -183,10 +237,10 @@ function Booking() {
               <Button
                 variant="contained"
                 color="primary"
-                disabled={selectedSlots.length === 0 || !selectedDate}
-                onClick={handleProceedToPayment}
+                disabled={selectedSlots.length === 0 || !selectedDate || !phoneNumber}
+                onClick={handleProceedToReview}
               >
-                Proceed to Payment
+                Proceed to Review
               </Button>
             </div>
           </CardContent>
