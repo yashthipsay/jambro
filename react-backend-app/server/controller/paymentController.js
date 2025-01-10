@@ -3,7 +3,7 @@ const checkout = async (req, res) => {
 
     const {amount} = req.body;
     const options = {
-        amount: amount * 100,
+        amount: Number(amount * 100), 
         currency: "INR",
         receipt: "receipt#1",
     }
