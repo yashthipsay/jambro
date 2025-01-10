@@ -6,7 +6,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 const FinalReview = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { jamRoomName, selectedSlots, totalAmount } = location.state;
+  const { jamRoomName, selectedSlots, totalAmount, phoneNumber } = location.state;
   const { user } = useAuth0();
 
   const checkoutHandler = async (amount) => {
@@ -34,6 +34,7 @@ const FinalReview = () => {
         prefill: {
           name: user.name,
           email: user.email,
+            contact: phoneNumber,
         },
         theme: {
           color: '#F37254'

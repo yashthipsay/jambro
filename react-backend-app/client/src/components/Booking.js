@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { DatePicker } from '@mui/x-date-pickers';
-import { Button, Card, CardContent, FormGroup, FormControlLabel, Checkbox, Grid2, TextField, Typography, Radio, RadioGroup } from '@mui/material';
+import { Button, Card, CardContent, FormGroup, FormControlLabel, Checkbox, Grid2, TextField, Typography, Radio, RadioGroup, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import io from 'socket.io-client';
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -104,6 +105,30 @@ function Booking() {
       }
     } catch (error) {
       console.error('Error saving phone number:', error);
+    }
+  };
+
+  const handleDeleteNumber = async (number) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/users/delete-number', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: user.email, phoneNumber: number }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSavedNumbers(data.data.savedNumbers);
+        if (selectedPhoneNumber === number) {
+          setSelectedPhoneNumber('');
+        }
+      } else {
+        alert('Error deleting phone number');
+      }
+    } catch (error) {
+      console.error('Error deleting phone number:', error);
     }
   };
 
@@ -211,12 +236,16 @@ function Booking() {
                 onChange={handleSavedNumberChange}
               >
                 {savedNumbers.map((number, index) => (
+                  <div key={index} className="flex items-center">
                   <FormControlLabel
-                    key={index}
                     value={number}
                     control={<Radio />}
                     label={number}
                   />
+                  <IconButton onClick={() => handleDeleteNumber(number)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
                 ))}
               </RadioGroup>
             </div>
