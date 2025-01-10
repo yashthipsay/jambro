@@ -28,7 +28,8 @@ const createJamRoom = async (req, res) => {
     const jamRoom = new JamRoom({
       name,
       location,
-      slots: defaultSlots
+      slots: defaultSlots,
+      feesPerSlot
     });
 
     // Save to database
@@ -73,8 +74,49 @@ const getAllJamRooms = async (req, res) => {
     }
   };
 
+  // Update Jam rooms
+  const updateJamRoom = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name, location, slots, feesPerSlot } = req.body;
+  
+      // Validate required fields
+      if (!name && !location && !slots && !feesPerSlot) {
+        return res.status(400).json({
+          success: false,
+          message: 'No fields to update'
+        });
+      }
+  
+      // Find and update the jam room
+      const updatedJamRoom = await JamRoom.findByIdAndUpdate(
+        id,
+        { name, location, slots, feesPerSlot },
+        { new: true, runValidators: true }
+      );
+  
+      if (!updatedJamRoom) {
+        return res.status(404).json({
+          success: false,
+          message: 'Jam room not found'
+        });
+      }
+  
+      res.status(200).json({
+        success: true,
+        data: updatedJamRoom
+      });
+  
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  };
 
 module.exports = {
   createJamRoom,
-  getAllJamRooms
+  getAllJamRooms,
+  updateJamRoom
 };

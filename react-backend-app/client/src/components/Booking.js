@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { DatePicker } from '@mui/x-date-pickers';
-import { Button, Card, CardContent, FormGroup, FormControlLabel, Checkbox, Grid2, TextField } from '@mui/material';
+import { Button, Card, CardContent, FormGroup, FormControlLabel, Checkbox, Grid2, TextField, Typography } from '@mui/material';
 import io from 'socket.io-client';
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -119,6 +119,8 @@ function Booking() {
     }
   };
 
+  const totalAmount = selectedSlots.length * selectedRoom.feesPerSlot;
+
   return (
     <Grid2 container spacing={2} className="p-4">
       <Grid2 item xs={12}>
@@ -160,10 +162,15 @@ function Booking() {
                       disabled={isSlotBooked(slot.slotId)}
                     />
                   }
-                  label={`${slot.startTime} - ${slot.endTime}`}
+                  label={`${slot.startTime} - ${slot.endTime} (₹${selectedRoom.feesPerSlot})`}
                 />
               ))}
             </FormGroup>
+
+            {/* Total Amount */}
+            <Typography variant="h6" className="mt-4">
+              Total Amount: ₹{totalAmount}
+            </Typography>
 
             {/* Action Buttons */}
             <div className="mt-4 flex justify-between">

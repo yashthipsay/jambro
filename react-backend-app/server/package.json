@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-     "dev": "nodemon index.js"
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +21,7 @@
     "graphql": "^16.10.0",
     "mongoose": "^8.9.3",
     "neo4j-driver": "^5.27.0",
+    "razorpay": "^2.9.5",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
   },

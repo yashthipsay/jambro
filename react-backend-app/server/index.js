@@ -9,6 +9,7 @@ const connectDB = require('./db/mongoDriver');  // Import the connectDB function
 const userRoutes = require('./routes/userRoutes');
 const jamRoomRoutes = require('./routes/jamRoomRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 const Booking = require('./models/BookingSchema');
 const User = require('./models/User');
 const app = express();
@@ -29,6 +30,7 @@ app.use(bodyParser.json());
 app.use('/api/users', userRoutes);
 app.use('/api/jamrooms', jamRoomRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Function to call the database
 const callDatabase = async () => {

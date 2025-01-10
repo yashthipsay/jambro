@@ -43,7 +43,8 @@ export function findClosestJamRooms() {
               longitude, 
               room.location.latitude, 
               room.location.longitude
-            )
+            ),
+            feesPerSlot: room.feesPerSlot
           }));
           console.log(latitude, longitude);
 

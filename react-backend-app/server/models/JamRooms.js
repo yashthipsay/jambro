@@ -18,6 +18,10 @@ const jamRoomSchema = new mongoose.Schema({
       bookedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     },
   ],
+  feesPerSlot: {
+    type: Number,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
