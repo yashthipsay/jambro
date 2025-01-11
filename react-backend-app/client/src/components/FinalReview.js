@@ -6,7 +6,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 const FinalReview = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { jamRoomName, selectedSlots, totalAmount, phoneNumber } = location.state;
+  const { jamRoomName, selectedSlots, totalAmount, phoneNumber, selectedRoomId, selectedDate } = location.state;
   const { user } = useAuth0();
 
   const checkoutHandler = async (amount) => {
@@ -30,7 +30,7 @@ const FinalReview = () => {
         name: jamRoomName,
         description: 'Jam Room Booking',
         order_id: data.order.id, // This is the order_id created in the backend
-        callback_url: `http://localhost:3000/confirmation/${data.order.id}`, // Your success URL
+        callback_url: `http://localhost:3000/payment-success`, // Your success URL
         prefill: {
           name: user.name,
           email: user.email,
@@ -50,12 +50,17 @@ const FinalReview = () => {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              email: user.email,
+              jamRoomId: selectedRoomId,
+              date: selectedDate,
+              slots: selectedSlots,
+              totalAmount,
             }),
           });
 
           const verificationData = await verificationResponse.json();
           if (verificationData.success) {
-            navigate(`/confirmation/${response.razorpay_payment_id}`);
+            navigate(`/confirmation/${verificationData.invoiceId}`);
           } else {
             alert('Payment verification failed');
           }

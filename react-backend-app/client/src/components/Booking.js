@@ -165,6 +165,8 @@ function Booking() {
         selectedSlots: slotsDetails,
         totalAmount,
         phoneNumber: selectedPhoneNumber,
+        selectedRoomId: selectedRoom.id,
+        selectedDate: selectedDate.toISOString().split('T')[0],
       },
     });
   };
