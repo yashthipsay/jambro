@@ -39,6 +39,27 @@ const FinalReview = () => {
         theme: {
           color: '#F37254'
         },
+        handler: async (response) => {
+          console.log(response);
+          const verificationResponse = await fetch('http://localhost:5000/api/payments/verify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+
+          const verificationData = await verificationResponse.json();
+          if (verificationData.success) {
+            navigate(`/confirmation/${response.razorpay_payment_id}`);
+          } else {
+            alert('Payment verification failed');
+          }
+        },
       };
 
       const rzp1 = new window.Razorpay(options);
