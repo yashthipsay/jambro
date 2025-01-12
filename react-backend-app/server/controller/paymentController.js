@@ -5,6 +5,8 @@ const User = require('../models/User');
 const JamRoom = require('../models/JamRooms');
 const {jsPDF} = require('jspdf');
 require('dotenv').config();
+const Booking = require('../models/BookingSchema');
+const {createBooking} = require('./bookingController');
 const checkout = async (req, res) => {
 
     const {amount} = req.body;
@@ -46,7 +48,6 @@ const paymentVerification = async (req, res) => {
 
     await invoice.save();
 
- 
 
     res.status(200).json({
       success: true,

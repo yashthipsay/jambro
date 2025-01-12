@@ -8,7 +8,7 @@ const FinalReview = () => {
   const location = useLocation();
   const { jamRoomName, selectedSlots, totalAmount, phoneNumber, selectedRoomId, selectedDate } = location.state;
   const { user } = useAuth0();
-
+  console.log(user.sub);
   const checkoutHandler = async (amount) => {
     try {
       const response = await fetch('http://localhost:5000/api/payments/checkout', {
@@ -60,11 +60,39 @@ const FinalReview = () => {
 
           const verificationData = await verificationResponse.json();
           if (verificationData.success) {
+            // Fetch user by email to get user ID
+            const userResponse = await fetch('http://localhost:5000/api/users', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ email: user.email }),
+            });
+
+            const userData = await userResponse.json();
+            if (userData.success) {
+              const userId = userData.data._id;
+
+              // Store the booking
+              await fetch('http://localhost:5000/api/bookings', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  userId,
+                  jamRoomId: selectedRoomId,
+                  date: selectedDate,
+                  slots: selectedSlots,
+                }),
+              });
+
             navigate(`/confirmation/${verificationData.invoiceId}`);
           } else {
             alert('Payment verification failed');
           }
-        },
+        }
+      }
       };
 
       const rzp1 = new window.Razorpay(options);

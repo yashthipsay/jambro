@@ -4,6 +4,7 @@ const User = require('../models/User');
 
 
 
+
 const createBooking = async (req, res) => {
     try {
         const { userId, jamRoomId, date, slots } = req.body;
