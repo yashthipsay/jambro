@@ -7,6 +7,7 @@ const {jsPDF} = require('jspdf');
 require('dotenv').config();
 const Booking = require('../models/BookingSchema');
 const {createBooking} = require('./bookingController');
+
 const checkout = async (req, res) => {
 
     const {amount} = req.body;
