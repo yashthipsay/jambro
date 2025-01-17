@@ -1,8 +1,8 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import { Card } from "@/app/ui/card";
-import { Button } from "@/app/ui/button";
-import { OlaMaps } from '../OlaMapsWebSDKNew/OlaMapsWebSDKNew';
+import { Card } from "@/app/components/ui/card";
+import { Button } from "@/app/components/ui/button";
+import { OlaMaps } from '../../OlaMapsWebSDKNew/OlaMapsWebSDKNew';
 
 const OlaMap = ({ apiKey, onLocationSelect, onClose }) => {
   const mapContainer = useRef(null);

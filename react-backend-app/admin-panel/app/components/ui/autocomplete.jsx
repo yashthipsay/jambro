@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Input } from "@/app/ui/input";
-import { Card } from "@/app/ui/card";
+import { Input } from "@/app/components/ui/input";
+import { Card } from "@/app/components/ui/card";
 
 const Autocomplete = ({ apiKey, onSelect, initialValue = '' }) => {
   const [inputValue, setInputValue] = useState(initialValue);

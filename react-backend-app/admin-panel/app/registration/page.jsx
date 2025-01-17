@@ -1,15 +1,15 @@
 'use client'
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/ui/card";
-import { Input } from "@/app/ui/input";
-import {Button} from "@/app/ui/button";
-import { Textarea } from "@/app/ui/textarea";
-import { Label } from "@/app/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/ui/tabs";
-import { Alert, AlertDescription } from "@/app/ui/alert";
-import Autocomplete from '@/app/ui/autocomplete';
-import OlaMap from '@/app/ui/olaMap';
+import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
+import { Input } from "@/app/components/ui/input";
+import {Button} from "@/app/components/ui/button";
+import { Textarea } from "@/app/components/ui/textarea";
+import { Label } from "@/app/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
+import { Alert, AlertDescription } from "@/app/components/ui/alert";
+import Autocomplete from '@/app/components/ui/autocomplete';
+import OlaMap from '@/app/components/ui/olaMap';
 import { fetchLocationCoordinates } from '@/utils/locationUtils';
 
 const JamRoomRegistration = () => {
