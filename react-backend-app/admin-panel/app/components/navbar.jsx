@@ -10,12 +10,8 @@ import { useRouter } from 'next/navigation'
 export function Navbar() {
   const { user, error, isLoading } = useUser()
   const router = useRouter()
-  
-  useEffect(() => {
-    if (user) {
-      router.push('/registration')
-    }
-  }, [user, router])
+
+
 
   return (
     <motion.nav

@@ -9,26 +9,28 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 export function Sidebar() {
   const { user, error, isLoading } = useUser()
   const [isRegistered, setIsRegistered] = useState(false)
-  const [isJamRoomRegistered, setIsJamRoomRegistered] = useState(false);
 
   useEffect(() => {
     const checkJamRoomRegistration = async () => {
       if (user) {
-        console.log(user.email);
+        console.log('Checking registration for:', user.email)
         try {
-          const response = await fetch('http://localhost:5000/api/jamrooms/is-registered-by-email', {
+          const response = await fetch('http://localhost:5000/api/jamrooms/is-registered', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ ownerEmail: user.email }),
           });
-
+  
           const data = await response.json();
-          setIsJamRoomRegistered(data.success);
-
+          console.log('Registration check response:', data);
+          setIsRegistered(data.success);
+          console.log('Is Registered:', data.success);
+  
           // If jam room is not registered, redirect to registration page
           if (!data.success) {
+            console.log('Redirecting to registration page');
             window.location.href = '/registration';
           }
         } catch (err) {
@@ -36,7 +38,7 @@ export function Sidebar() {
         }
       }
     };
-
+  
     checkJamRoomRegistration();
   }, [user]);
 

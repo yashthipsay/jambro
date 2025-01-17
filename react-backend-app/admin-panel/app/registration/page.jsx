@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import Autocomplete from '@/app/components/ui/autocomplete';
 import OlaMap from '@/app/components/ui/olaMap';
 import { fetchLocationCoordinates } from '@/utils/locationUtils';
+import { TimeSlotSelector } from '../components/timeSlotSelector';
 
 const JamRoomRegistration = () => {
   const router = useRouter();
@@ -174,9 +175,7 @@ const JamRoomRegistration = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, (errors) => {
-      console.error('Form validation failed:', errors);
-    })} className="max-w-4xl mx-auto p-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto p-4">
       <Card>
         <CardHeader>
           <CardTitle>Jam Room Registration</CardTitle>
@@ -347,33 +346,8 @@ const JamRoomRegistration = () => {
 
                 <div>
                   <Label>Time Slots</Label>
-                  <div className="space-y-2">
-                    {slots.map((slot, index) => (
-                      <div key={slot.slotId} className="grid grid-cols-2 gap-2">
-                        <Input
-                          type="time"
-                          value={slot.startTime}
-                          onChange={(e) => {
-                            const newSlots = [...slots];
-                            newSlots[index].startTime = e.target.value;
-                            setSlots(newSlots);
-                          }}
-                        />
-                        <Input
-                          type="time"
-                          value={slot.endTime}
-                          onChange={(e) => {
-                            const newSlots = [...slots];
-                            newSlots[index].endTime = e.target.value;
-                            setSlots(newSlots);
-                          }}
-                        />
-                      </div>
-                    ))}
-                    <Button type="button" onClick={addSlot} variant="outline">
-                      Add Slot
-                    </Button>
-                  </div>
+                  <TimeSlotSelector     selectedSlots={slots} 
+    setSlots={setSlots} />
                 </div>
 
                 <div>
