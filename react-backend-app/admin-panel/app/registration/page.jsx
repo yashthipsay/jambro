@@ -19,8 +19,9 @@ const JamRoomRegistration = () => {
   const [useAutocomplete, setUseAutocomplete] = useState(true);
   const [upiBorderColor, setUpiBorderColor] = useState('border-yellow-500');
   const [bankValidationData, setBankValidationData] = useState(null);
+  const [isUpiValidated, setIsUpiValidated] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors }, watch, setValue, resetField } = useForm({
     defaultValues: {
       jamRoomDetails: {
         name: "",
@@ -110,15 +111,25 @@ const JamRoomRegistration = () => {
       if (data.success) {
         setUpiBorderColor('border-green-500');
         setBankValidationData(data.validation);
+        setIsUpiValidated(true);
       } else {
         setUpiBorderColor('border-red-500');
         setBankValidationData(null);
+        setIsUpiValidated(false);
       }
     } catch (error) {
       console.error('Error validating UPI address:', error);
       setUpiBorderColor('border-red-500');
       setBankValidationData(null);
+      setIsUpiValidated(false);
     }
+  };
+
+  const revalidateUpiAddress = () => {
+    resetField("upiAddress");
+    setBankValidationData(null);
+    setUpiBorderColor('border-yellow-500');
+    setIsUpiValidated(false);
   };
 
   const onSubmit = async (data) => {
@@ -359,8 +370,12 @@ const JamRoomRegistration = () => {
                       })}
                       className={`border-4 ${upiBorderColor}`}
                     />
-                    <Button type="button" onClick={validateUpiAddress}>
-                      Validate UPI
+                    <Button
+                      type="button"
+                      onClick={isUpiValidated ? revalidateUpiAddress : validateUpiAddress}
+                      className={isUpiValidated ? 'bg-gray-700 text-white' : ''}
+                    >
+                      {isUpiValidated ? 'Revalidate' : 'Validate UPI'}
                     </Button>
                   </div>
                   {errors.upiAddress && (
