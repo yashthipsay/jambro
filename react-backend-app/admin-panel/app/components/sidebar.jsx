@@ -9,22 +9,36 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 export function Sidebar() {
   const { user, error, isLoading } = useUser()
   const [isRegistered, setIsRegistered] = useState(false)
+  const [isJamRoomRegistered, setIsJamRoomRegistered] = useState(false);
 
   useEffect(() => {
-    const checkRegistration = async () => {
+    const checkJamRoomRegistration = async () => {
       if (user) {
+        console.log(user.email);
         try {
-          const response = await fetch(`/api/check-registration?user=${user.sub}`)
-          const data = await response.json()
-          setIsRegistered(data.isRegistered)
+          const response = await fetch('http://localhost:5000/api/jamrooms/is-registered-by-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ownerEmail: user.email }),
+          });
+
+          const data = await response.json();
+          setIsJamRoomRegistered(data.success);
+
+          // If jam room is not registered, redirect to registration page
+          if (!data.success) {
+            window.location.href = '/registration';
+          }
         } catch (err) {
-          console.error('Error checking registration:', err)
+          console.error('Error checking jam room registration:', err);
         }
       }
-    }
+    };
 
-    checkRegistration()
-  }, [user])
+    checkJamRoomRegistration();
+  }, [user]);
 
   const sidebarItems = [
     { icon: Home, label: 'Dashboard' },

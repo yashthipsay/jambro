@@ -1,13 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from './ui/button'
 import { useUser } from '@auth0/nextjs-auth0/client'
+import { useRouter } from 'next/navigation'
 
 export function Navbar() {
   const { user, error, isLoading } = useUser()
+  const router = useRouter()
+  
+  useEffect(() => {
+    if (user) {
+      router.push('/registration')
+    }
+  }, [user, router])
 
   return (
     <motion.nav

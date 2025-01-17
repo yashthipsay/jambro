@@ -1,9 +1,10 @@
 'use client'
 import React, { useState } from 'react';
 import { useForm } from "react-hook-form";
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
-import {Button} from "@/app/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Label } from "@/app/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
@@ -13,6 +14,7 @@ import OlaMap from '@/app/components/ui/olaMap';
 import { fetchLocationCoordinates } from '@/utils/locationUtils';
 
 const JamRoomRegistration = () => {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState("basic");
   const [images, setImages] = useState([]);
   const [slots, setSlots] = useState([]);
@@ -87,8 +89,8 @@ const JamRoomRegistration = () => {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     // In a real application, you would upload these files to your server/storage
-    // and get back URLs. For now, we'll just store the file objects
-    setImages([...images, ...files]);
+    const fileURLs = files.map(file => URL.createObjectURL(file)); 
+    setImages([...images, ...fileURLs]);
   };
 
   const validateUpiAddress = async () => {
@@ -137,17 +139,44 @@ const JamRoomRegistration = () => {
     const formData = {
       ...data,
       images: images,
+      bankDetails: {
+        validationType: "UPI"
+        // add any other required bank details here
+      },
       slots: slots,
       createdAt: new Date(),
       bankValidationData: bankValidationData // Include bank validation data
     };
     
     console.log('Form submitted:', formData);
-    // Here you would typically send this data to your backend
+
+    try {
+      const response = await fetch('http://localhost:5000/api/jamrooms/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Handle successful registration (e.g., redirect to a success page)
+        console.log('Registration successful:', result.data);
+        router.push('/');
+      } else {
+        // Handle registration failure
+        console.error('Registration failed:', result.message);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto p-4">
+    <form onSubmit={handleSubmit(onSubmit, (errors) => {
+      console.error('Form validation failed:', errors);
+    })} className="max-w-4xl mx-auto p-4">
       <Card>
         <CardHeader>
           <CardTitle>Jam Room Registration</CardTitle>
@@ -211,7 +240,7 @@ const JamRoomRegistration = () => {
                     type="email"
                     {...register("ownerDetails.email", {
                       required: true,
-                      validate: validateEmail
+
                     })}
                   />
                   {errors.ownerDetails?.email && (
@@ -225,7 +254,7 @@ const JamRoomRegistration = () => {
                     id="phone"
                     {...register("ownerDetails.phone", {
                       required: true,
-                      validate: validatePhone
+
                     })}
                   />
                   {errors.ownerDetails?.phone && (
@@ -366,7 +395,6 @@ const JamRoomRegistration = () => {
                       id="upiAddress"
                       {...register("upiAddress", {
                         required: true,
-                        validate: validateUPI
                       })}
                       className={`border-4 ${upiBorderColor}`}
                     />
@@ -378,9 +406,7 @@ const JamRoomRegistration = () => {
                       {isUpiValidated ? 'Revalidate' : 'Validate UPI'}
                     </Button>
                   </div>
-                  {errors.upiAddress && (
-                    <AlertDescription>Valid UPI address is required</AlertDescription>
-                  )}
+
                 </div>
 
                 <div className="flex space-x-4">
