@@ -10,6 +10,7 @@ const userRoutes = require('./routes/userRoutes');
 const jamRoomRoutes = require('./routes/jamRoomRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const bnkVerification = require('./routes/bnkVerification');
 const Booking = require('./models/BookingSchema');
 const User = require('./models/User');
 const app = express();
@@ -31,6 +32,23 @@ app.use('/api/users', userRoutes);
 app.use('/api/jamrooms', jamRoomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/bank-verification', bnkVerification);
+app.use('/proxy', async (req, res) => {
+  console.log("start");
+  const { lat, lon, apiKey } = req.query;
+  const url = `https://api.olamaps.io/places/v1/reverse-geocode?latlng=${lat},${lon}&api_key=${apiKey}`;
+  const response = await fetch(url, {
+    headers: {
+      'X-Request-Id': 'a623e8cd-bcd5-4d9a-beb3-ea7df3f5092e',
+      Authorization: `Bearer ${apiKey}`,
+    },
+  });
+
+  const data = await response.json();
+  console.log('Reverse geocoding response:', data);
+  res.set('Access-Control-Allow-Origin', '*');
+  res.json(data);
+});
 
 // Function to call the database
 const callDatabase = async () => {

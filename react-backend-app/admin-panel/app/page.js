@@ -1,11 +1,8 @@
-// /app/page.js
-'use client';
+"use client";
 
-import React from 'react';
-import { Button, Typography } from 'antd';
-import { useUser } from '@auth0/nextjs-auth0/client';
-
-const { Title } = Typography;
+import React from "react";
+import { Button } from "@/app/ui/button";
+import { useUser } from "@auth0/nextjs-auth0/client";
 
 export default function HomePage() {
   const { user, error, isLoading } = useUser();
@@ -14,16 +11,24 @@ export default function HomePage() {
   if (error) return <p>{error.message}</p>;
 
   return (
-    <div style={{ textAlign: 'center', padding: '50px' }}>
-      <Title level={2}>Jam Room Owner Onboarding</Title>
+    <div className="text-center p-12">
+      <h1 className="text-3xl font-bold mb-6">Jam Room Owner Onboarding</h1>
       {user ? (
-        <div>
-          <p>Welcome, {user.name}!</p>
-          <Button type="primary" href="/register">Register Your Jam Room</Button>
-          <Button href="/api/auth/logout" style={{ marginLeft: 10 }}>Logout</Button>
+        <div className="space-y-4">
+          <p className="text-lg">Welcome, {user.name}!</p>
+          <div className="space-x-4">
+            <Button asChild>
+              <a href="/register">Register Your Jam Room</a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href="/api/auth/logout">Logout</a>
+            </Button>
+          </div>
         </div>
       ) : (
-        <Button type="primary" href="/api/auth/login">Login / Signup</Button>
+        <Button asChild>
+          <a href="/api/auth/login">Login / Signup</a>
+        </Button>
       )}
     </div>
   );
