@@ -3,8 +3,6 @@ const bodyParser = require('body-parser');
 const {createServer} = require('http');
 const {Server} = require('socket.io');
 const cors = require('cors');
-const neo4jDriver = require('./db/neo4jDriver');  // Import the neo4jDriver module
-const { startApolloServer } = require('./db/neo4jDriver');   // Import the calldB function
 const connectDB = require('./db/mongoDriver');  // Import the connectDB function
 const userRoutes = require('./routes/userRoutes');
 const jamRoomRoutes = require('./routes/jamRoomRoutes');
@@ -52,7 +50,6 @@ app.use('/proxy', async (req, res) => {
 
 // Function to call the database
 const callDatabase = async () => {
-  await startApolloServer();  // Calling the calldB function from neo4jDriver
   await connectDB(); // Connect to MongoDB
 };
 
