@@ -1,0 +1,71 @@
+version: '3.8'
+
+services: 
+  api: 
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment: 
+      - NODE_ENV=development
+      - MONGODB_URI=${MONGODB_URI}
+      - RAZORPAY_API_KEY=${RAZORPAY_API_KEY}
+      - RAZORPAY_API_SECRET=${RAZORPAY_API_SECRET}
+      - RAZORPAY_SOURCE_ACCOUNT=${RAZORPAY_SOURCE_ACCOUNT}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - app-network
+
+  frontend: 
+    build:
+      context: ../admin-panel
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: ../admin-panel/.env
+    volumes: 
+      - ../admin-panel:/app
+      - /app/node_modules
+    networks:
+      - app-network
+    ports:
+      - "3000:3000"
+    environment: 
+      - NODE_ENV=development
+    depends_on: 
+      - api
+
+
+
+
+
+
+
+
+
+
+
+
+# Use it incase you are using mongodb compass
+  # mongodb:
+  #   image: mongo:latest
+  #   restart: always
+  #   environment: 
+  #     MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #   ports:
+  #     - "27017:27017"
+  #   networks:
+  #     - app-network
+
+# volumes:
+#   mongodb_data:
+
+
+networks:
+  app-network:
+    driver: bridge
