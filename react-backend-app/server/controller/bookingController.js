@@ -62,3 +62,15 @@ module.exports = {
     createBooking,
     getAllBookings
 }
+
+
+// Example schema
+// const payoutSchema = new mongoose.Schema({
+//   fund_account_id: String,
+//   amount: Number,
+//   currency: String,
+//   reference_id: String,
+//   razorpayPayoutId: String,
+//   status: { type: String, default: 'PENDING' },
+//   createdAt: { type: Date, default: Date.now },
+// });
