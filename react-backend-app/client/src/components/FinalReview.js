@@ -59,6 +59,7 @@ const FinalReview = () => {
           });
 
           const verificationData = await verificationResponse.json();
+          console.log('Verification data:', verificationData);
           if (verificationData.success) {
             // Fetch user by email to get user ID
             const userResponse = await fetch('http://localhost:5000/api/users', {

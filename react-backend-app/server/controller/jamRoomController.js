@@ -175,11 +175,38 @@ const isJamRoomRegisteredByEmail = async (req, res) => {
   }
 };
 
+const getJamRoomNameById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const jamRoom = await JamRoom.findById(id).select('jamRoomDetails.name');
+    
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Jam room not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      name: jamRoom.jamRoomDetails.name
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false, 
+      message: error.message
+    });
+  }
+};
+
 
 
 module.exports = {
   createJamRoom,
   getAllJamRooms,
   updateJamRoom,
-  isJamRoomRegisteredByEmail
+  isJamRoomRegisteredByEmail,
+  getJamRoomNameById
 };
