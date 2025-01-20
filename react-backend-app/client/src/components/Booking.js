@@ -54,6 +54,29 @@ function Booking() {
     }
   }, [user]);
 
+  useEffect(() => {
+    socket.on('sessionStatusUpdate', (data) => {
+      setBookings(prevBookings => 
+        prevBookings.map(booking => {
+          if (booking._id === data.bookingId) {
+            const updatedSlots = booking.slots.map(slot => {
+              if (slot.slotId === data.slotId) {
+                return { ...slot, status: data.status };
+              }
+              return slot;
+            });
+            return { ...booking, slots: updatedSlots };
+          }
+          return booking;
+        })
+      );
+    });
+  
+    return () => {
+      socket.off('sessionStatusUpdate');
+    };
+  }, []);
+
   if (!selectedRoom || selectedRoom.id !== id) {
     return (
       <div className="min-h-screen flex items-center justify-center">

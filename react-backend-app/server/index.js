@@ -12,6 +12,7 @@ const bnkVerification = require('./routes/bnkVerification');
 const payoutRoutes = require('./routes/payoutRoutes');
 const Booking = require('./models/BookingSchema');
 const User = require('./models/User');
+const SessionMonitor = require('./services/sessionMonitor');
 const app = express();
 const PORT = 5000;
 const server = createServer(app);
@@ -75,6 +76,10 @@ io.on('connection', (socket) => {
     console.log('user disconnected');
   });
 });
+
+// After your socket.io setup
+const sessionMonitor = new SessionMonitor(io);
+sessionMonitor.start()
 
 // Start the Express server
 server.listen(PORT, () => {
