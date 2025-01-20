@@ -25,12 +25,13 @@ class SessionMonitor {
       }).populate('jamRoom');
 
     for(const booking of bookings) {
+      const bookingDate = moment(booking.date).tz('Asia/Kolkata').startOf('day');
         for(const slot of booking.slots) {
             const [hours, minutes] = slot.startTime.split(':');
             const [endHours, endMinutes] = slot.endTime.split(':');
 
-            const slotStartTime = moment(booking.date).tz('Asia/Kolkata').set({ hour: parseInt(hours), minute: parseInt(minutes) });
-            const slotEndTime = moment(booking.date).tz('Asia/Kolkata').set({ hour: parseInt(endHours), minute: parseInt(endMinutes) });
+            const slotStartTime = bookingDate.clone().set({ hour: parseInt(hours), minute: parseInt(minutes) });
+            const slotEndTime = bookingDate.clone().set({ hour: parseInt(endHours), minute: parseInt(endMinutes) });
 
             console.log(`Booking ID: ${booking._id}, Slot ID: ${slot.slotId}`);
             console.log('Slot Start Time:', slotStartTime.format());

@@ -5,6 +5,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Button, Card, CardContent, FormGroup, FormControlLabel, Checkbox, Grid2, TextField, Typography, Radio, RadioGroup, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import moment from 'moment-timezone';
 import io from 'socket.io-client';
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -189,7 +190,7 @@ function Booking() {
         totalAmount,
         phoneNumber: selectedPhoneNumber,
         selectedRoomId: selectedRoom.id,
-        selectedDate: selectedDate.toISOString().split('T')[0],
+        selectedDate: moment(selectedDate).tz('Asia/Kolkata').format('YYYY-MM-DD'),
       },
     });
   };
