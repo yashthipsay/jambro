@@ -97,6 +97,19 @@ function Booking() {
     );
   };
 
+  const hasSlotTimePassedToday = (slot) => {
+    const currentDate = moment().tz('Asia/Kolkata').format('YYYY-MM-DD');
+    const selectedDateStr = selectedDate ? moment(selectedDate).tz('Asia/Kolkata').format('YYYY-MM-DD') : null;
+    if (currentDate !== selectedDateStr) return false;
+
+    const currentTime = moment().tz('Asia/Kolkata');
+    const slotTime = moment().tz('Asia/Kolkata').set({
+      hour: parseInt(slot.startTime.split(':')[0]),
+      minute: parseInt(slot.startTime.split(':')[1]),
+    });
+    return currentTime.isAfter(slotTime);
+  };
+
   const handleSlotChange = (slotId) => {
     setSelectedSlots((prev) =>
       prev.includes(slotId)
@@ -233,7 +246,7 @@ function Booking() {
                     <Checkbox
                       checked={selectedSlots.includes(slot.slotId)}
                       onChange={() => handleSlotChange(slot.slotId)}
-                      disabled={isSlotBooked(slot.slotId)}
+                      disabled={isSlotBooked(slot.slotId) || hasSlotTimePassedToday(slot)}
                     />
                   }
                   label={`${slot.startTime} - ${slot.endTime} (₹${selectedRoom.feesPerSlot})`}
