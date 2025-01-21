@@ -73,7 +73,7 @@ const FinalReview = () => {
             const userData = await userResponse.json();
             if (userData.success) {
               const userId = userData.data._id;
-
+              console.log("selected date", selectedDate);
               // Store the booking
               await fetch('http://localhost:5000/api/bookings', {
                 method: 'POST',

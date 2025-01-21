@@ -75,6 +75,22 @@ async function createRazorpayPayout(req, res) {
     }
   }
 
+  async function getPayoutsByFundAccountId(req, res) {
+    try {
+      const { fund_account_id } = req.params;
+      const payouts = await Payout.find({ fund_account_id });
+  
+      if (!payouts.length) {
+        return res.status(404).json({ success: false, message: 'No payouts found for this fund account ID' });
+      }
+  
+      res.status(200).json({ success: true, data: payouts });
+    } catch (error) {
+      console.error('Error fetching payouts:', error);
+      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  }
+
   async function createRefund(req, res) {
     try{
 
@@ -99,4 +115,4 @@ async function createRazorpayPayout(req, res) {
     }
   }
 
-module.exports = { createRazorpayPayout, createRefund };
+module.exports = { createRazorpayPayout, createRefund, getPayoutsByFundAccountId };

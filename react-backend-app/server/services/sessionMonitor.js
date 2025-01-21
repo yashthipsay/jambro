@@ -21,56 +21,66 @@ class SessionMonitor {
     console.log('Current Date:', currentDate.format());
 
     const bookings = await BookingSchema.find({
-        'slots.status': { $ne: 'COMPLETED' }
+      status: { $ne: 'COMPLETED' }
       }).populate('jamRoom');
 
     for(const booking of bookings) {
       console.log(`Fund account id: ${booking.jamRoom.bankValidationData.fund_account.id}`);
       const bookingDate = moment(booking.date).tz('Asia/Kolkata').startOf('day');
-        for(const slot of booking.slots) {
-            const [hours, minutes] = slot.startTime.split(':');
-            const [endHours, endMinutes] = slot.endTime.split(':');
+            // Sort slots by start time
+            booking.slots.sort((a, b) => {
+              const aStart = moment(a.startTime, 'HH:mm');
+              const bStart = moment(b.startTime, 'HH:mm');
+              return aStart - bStart;
+            });
 
-            const slotStartTime = bookingDate.clone().set({ hour: parseInt(hours), minute: parseInt(minutes) });
-            const slotEndTime = bookingDate.clone().set({ hour: parseInt(endHours), minute: parseInt(endMinutes) });
+                // Get earliest start time and latest end time
+      const startTimes = booking.slots.map(slot => {
+        const [hours, minutes] = slot.startTime.split(':');
+        return bookingDate.clone().set({ hour: parseInt(hours), minute: parseInt(minutes) });
+      });
 
-            // console.log(`Booking ID: ${booking._id}, Slot ID: ${slot.slotId}`);
-            // console.log('Slot Start Time:', slotStartTime.format());
-            // console.log('Slot End Time:', slotEndTime.format());
-            // console.log('Slot Status:', slot.status);
+      const endTimes = booking.slots.map(slot => {
+        const [hours, minutes] = slot.endTime.split(':');
+        return bookingDate.clone().set({ hour: parseInt(hours), minute: parseInt(minutes) });
+      });
 
-            console.log(currentDate.isBetween(slotStartTime, slotEndTime));
+      const earliestStart = moment.min(startTimes);
+      const latestEnd = moment.max(endTimes);
 
-            if (currentDate.isBetween(slotStartTime, slotEndTime) && slot.status === 'NOT_STARTED') {
-                // Update to ONGOING
-                slot.status = 'ONGOING';
-                await booking.save();
-                this.io.emit('sessionStatusUpdate', { 
-                  bookingId: booking._id, 
-                  slotId: slot.slotId, 
-                  status: 'ONGOING' 
-                });
-                console.log(`Slot ${slot.slotId} status updated to ONGOING`);
-            } else if (currentDate.isAfter(slotEndTime) && slot.status === 'ONGOING') {
-                // Update to COMPLETED and trigger payout
-                slot.status = 'COMPLETED';
-                await booking.save();
-                this.io.emit('sessionStatusUpdate', { 
-                  bookingId: booking._id, 
-                  slotId: slot.slotId, 
-                  status: 'COMPLETED' 
-                });
-                console.log(`Slot ${slot.slotId} status updated to COMPLETED`);
+      if (currentDate.isBetween(earliestStart, latestEnd) && booking.status === 'NOT_STARTED') {
+        // Update to ONGOING
+        booking.status = 'ONGOING';
+        await booking.save();
+        this.io.emit('sessionStatusUpdate', { 
+          bookingId: booking._id,
+          status: 'ONGOING' 
+        });
+        console.log(`Booking ${booking._id} status updated to ONGOING`);
+      } 
+      else if (currentDate.isAfter(latestEnd) && booking.status === 'ONGOING') {
+        // Update to COMPLETED and trigger payout
+        booking.status = 'COMPLETED';
+        await booking.save();
+        this.io.emit('sessionStatusUpdate', { 
+          bookingId: booking._id,
+          status: 'COMPLETED' 
+        });
+        console.log(`Booking ${booking._id} status updated to COMPLETED`);
 
-                // Trigger payout
-                await this.processPayout(booking);
-            }
-        }
+        // Trigger payout
+        await this.processPayout(booking);
+      }
     }
   }
 
   async processPayout(booking) {
       try {
+
+        if (!booking.totalAmount || isNaN(booking.totalAmount)) {
+          throw new Error('Invalid totalAmount in booking');
+        }
+
         // Calculate amount (assuming feesPerSlot is stored in jamRoom)
         const amount = booking.totalAmount // 80% of the total amount
         

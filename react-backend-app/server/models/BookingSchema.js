@@ -19,12 +19,12 @@ const bookingSchema = new mongoose.Schema({
     slotId: { type: Number, required: true },
     startTime: { type: String, required: true },
     endTime: { type: String, required: true },
-    status: {
-      type: String,
-      enum: ['NOT_STARTED', 'ONGOING', 'COMPLETED'],
-      default: 'NOT_STARTED'
-    }
   }],
+  status: {
+    type: String,
+    enum: ['NOT_STARTED', 'ONGOING', 'COMPLETED'],
+    default: 'NOT_STARTED'
+  },
   totalAmount: {
     type: Number,
     required: false

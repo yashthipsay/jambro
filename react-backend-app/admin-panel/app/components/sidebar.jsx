@@ -11,6 +11,7 @@ export function Sidebar() {
   const { user, error, isLoading } = useUser()
   const [isRegistered, setIsRegistered] = useState(false)
   const [jamRoomId, setJamRoomId] = useState(null)
+  const [fundAccountId, setFundAccountId] = useState(null)
 
   useEffect(() => {
     const checkJamRoomRegistration = async () => {
@@ -33,7 +34,9 @@ export function Sidebar() {
           // If jam room is not registered, redirect to registration page
           if (data.success) {
             setJamRoomId(data.data._id);
+            setFundAccountId(data.data.bankValidationData.fund_account.id);
             console.log('Jam Room ID:', data.data._id);
+            console.log('Fund Account ID:', data.data.bankValidationData.fund_account_id);
           } else {
             window.location.href = '/registration';
           }
@@ -49,7 +52,7 @@ export function Sidebar() {
   const sidebarItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
     { icon: Receipt, label: 'Booking History', path: `/bookings/${jamRoomId}` },
-    { icon: Wallet, label: 'Payout History', path: `/payouts/${jamRoomId}` },
+    { icon: Wallet, label: 'Payout History', path: `/payouts/${fundAccountId}` },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

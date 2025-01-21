@@ -37,7 +37,8 @@ const createBooking = async (req, res) => {
       jamRoom: jamRoomId,
       date: bookingDate,
       slots,
-      totalAmount 
+      totalAmount,
+      status: 'NOT_STARTED'
     });
 
     // 4. Save the booking

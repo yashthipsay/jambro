@@ -60,13 +60,7 @@ function Booking() {
       setBookings(prevBookings => 
         prevBookings.map(booking => {
           if (booking._id === data.bookingId) {
-            const updatedSlots = booking.slots.map(slot => {
-              if (slot.slotId === data.slotId) {
-                return { ...slot, status: data.status };
-              }
-              return slot;
-            });
-            return { ...booking, slots: updatedSlots };
+            return { ...booking, status: data.status };
           }
           return booking;
         })
