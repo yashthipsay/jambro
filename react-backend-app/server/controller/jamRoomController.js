@@ -175,6 +175,7 @@ const isJamRoomRegisteredByEmail = async (req, res) => {
   }
 };
 
+// Get jam room name by ID
 const getJamRoomNameById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -201,6 +202,33 @@ const getJamRoomNameById = async (req, res) => {
   }
 };
 
+// Get jam room by email
+const getJamRoomByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    const jamRoom = await JamRoom.findOne({ 'ownerDetails.email': email });
+    
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Jam room not found for this email'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: jamRoom
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false, 
+      message: error.message
+    });
+  }
+};
+
 
 
 module.exports = {
@@ -208,5 +236,6 @@ module.exports = {
   getAllJamRooms,
   updateJamRoom,
   isJamRoomRegisteredByEmail,
-  getJamRoomNameById
+  getJamRoomNameById,
+  getJamRoomByEmail
 };

@@ -85,6 +85,7 @@ const FinalReview = () => {
                   jamRoomId: selectedRoomId,
                   date: selectedDate,
                   slots: selectedSlots,
+                  totalAmount: totalAmount,
                 }),
               });
 

@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from './ui/button'
-import { Home, Calendar, Music, Settings } from 'lucide-react'
+import { Home, Receipt, Wallet, Settings } from 'lucide-react'
 import { useUser } from '@auth0/nextjs-auth0/client'
+import Link from 'next/link'
 
 export function Sidebar() {
   const { user, error, isLoading } = useUser()
   const [isRegistered, setIsRegistered] = useState(false)
+  const [jamRoomId, setJamRoomId] = useState(null)
 
   useEffect(() => {
     const checkJamRoomRegistration = async () => {
@@ -29,8 +31,10 @@ export function Sidebar() {
           console.log('Is Registered:', data.success);
   
           // If jam room is not registered, redirect to registration page
-          if (!data.success) {
-            console.log('Redirecting to registration page');
+          if (data.success) {
+            setJamRoomId(data.data._id);
+            console.log('Jam Room ID:', data.data._id);
+          } else {
             window.location.href = '/registration';
           }
         } catch (err) {
@@ -43,11 +47,11 @@ export function Sidebar() {
   }, [user]);
 
   const sidebarItems = [
-    { icon: Home, label: 'Dashboard' },
-    { icon: Calendar, label: 'Bookings' },
-    { icon: Music, label: 'Jam Sessions' },
-    { icon: Settings, label: 'Settings' },
-  ]
+    { icon: Home, label: 'Dashboard', path: '/' },
+    { icon: Receipt, label: 'Booking History', path: `/bookings/${jamRoomId}` },
+    { icon: Wallet, label: 'Payout History', path: `/payouts/${jamRoomId}` },
+    { icon: Settings, label: 'Settings', path: '/settings' },
+  ];
 
   return (
     <motion.div
@@ -56,16 +60,17 @@ export function Sidebar() {
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 120 }}
     >
-      <div className={`space-y-4 ${(!user || !isRegistered) && 'blur-sm'}`}>
+     <div className={`space-y-4 ${(!user || !isRegistered) && 'blur-sm'}`}>
         {sidebarItems.map((item, index) => (
-          <Button
-            key={index}
-            variant="ghost"
-            className="w-full justify-start text-[#E0FFFF] hover:bg-[#7DF9FF] hover:text-[#191970]"
-          >
-            <item.icon className="mr-2 h-4 w-4" />
-            {item.label}
-          </Button>
+          <Link href={item.path} key={index}>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-[#E0FFFF] hover:bg-[#7DF9FF] hover:text-[#191970]"
+            >
+              <item.icon className="mr-2 h-4 w-4" />
+              {item.label}
+            </Button>
+          </Link>
         ))}
       </div>
       {!user && (

@@ -7,7 +7,7 @@ const moment = require('moment-timezone');
 
 const createBooking = async (req, res) => {
   try {
-    const { userId, jamRoomId, date, slots } = req.body;
+    const { userId, jamRoomId, date, slots, totalAmount } = req.body;
 
     // Convert date to the correct timezone
     const bookingDate = moment(date).tz('Asia/Kolkata').startOf('day').toDate();
@@ -37,6 +37,7 @@ const createBooking = async (req, res) => {
       jamRoom: jamRoomId,
       date: bookingDate,
       slots,
+      totalAmount 
     });
 
     // 4. Save the booking

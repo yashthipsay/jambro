@@ -25,6 +25,7 @@ class SessionMonitor {
       }).populate('jamRoom');
 
     for(const booking of bookings) {
+      console.log(`Fund account id: ${booking.jamRoom.bankValidationData.fund_account.id}`);
       const bookingDate = moment(booking.date).tz('Asia/Kolkata').startOf('day');
         for(const slot of booking.slots) {
             const [hours, minutes] = slot.startTime.split(':');
@@ -33,10 +34,12 @@ class SessionMonitor {
             const slotStartTime = bookingDate.clone().set({ hour: parseInt(hours), minute: parseInt(minutes) });
             const slotEndTime = bookingDate.clone().set({ hour: parseInt(endHours), minute: parseInt(endMinutes) });
 
-            console.log(`Booking ID: ${booking._id}, Slot ID: ${slot.slotId}`);
-            console.log('Slot Start Time:', slotStartTime.format());
-            console.log('Slot End Time:', slotEndTime.format());
-            console.log('Slot Status:', slot.status);
+            // console.log(`Booking ID: ${booking._id}, Slot ID: ${slot.slotId}`);
+            // console.log('Slot Start Time:', slotStartTime.format());
+            // console.log('Slot End Time:', slotEndTime.format());
+            // console.log('Slot Status:', slot.status);
+
+            console.log(currentDate.isBetween(slotStartTime, slotEndTime));
 
             if (currentDate.isBetween(slotStartTime, slotEndTime) && slot.status === 'NOT_STARTED') {
                 // Update to ONGOING
@@ -69,12 +72,12 @@ class SessionMonitor {
   async processPayout(booking) {
       try {
         // Calculate amount (assuming feesPerSlot is stored in jamRoom)
-        const amount = booking.totalAmount * 0.8; // 80% of the total amount
+        const amount = booking.totalAmount // 80% of the total amount
         
         await createRazorpayPayout({
           body: {
             jamroomId: booking.jamRoom._id,
-            fund_account_id: booking.jamRoom.bankValidationData.fund_account_id,
+            fund_account_id: booking.jamRoom.bankValidationData.fund_account.id,
             amount: amount,
             purpose: 'payout',
             paymentId: booking.paymentId

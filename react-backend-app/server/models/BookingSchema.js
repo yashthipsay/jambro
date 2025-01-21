@@ -25,6 +25,10 @@ const bookingSchema = new mongoose.Schema({
       default: 'NOT_STARTED'
     }
   }],
+  totalAmount: {
+    type: Number,
+    required: false
+  }
 }, { timestamps: true }); // Add timestamps for createdAt and updatedAt
 
 const BookingSchema = mongoose.model('Booking', bookingSchema);
