@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const Invoice = require('../models/Invoice');
 const User = require('../models/User');
 const JamRoom = require('../models/JamRooms');
+const moment = require('moment-timezone');
 const {jsPDF} = require('jspdf');
 require('dotenv').config();
 const Booking = require('../models/BookingSchema');
@@ -75,6 +76,9 @@ const getInvoice = async (req, res) => {
     });
   }
 
+  // Convert date to the correct timezone
+  const invoiceDate = moment(invoice.date).tz('Asia/Kolkata').format('YYYY-MM-DD');
+
   // Generate PDF invoice
   const doc = new jsPDF();
   // Header
@@ -90,7 +94,7 @@ const getInvoice = async (req, res) => {
   doc.text(`Jam Room: ${invoice.jamRoomId.name}`, 14, 60);
   
   // Date and Invoice Number
-  doc.text(`Date: ${new Date(invoice.date).toLocaleDateString()}`, 14, 70);
+  doc.text(`Date: ${invoiceDate}`, 14, 70);
   doc.text(`Invoice No: ${invoice._id}`, 14, 80);
 
   // Line break

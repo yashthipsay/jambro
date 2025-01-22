@@ -59,6 +59,7 @@ const FinalReview = () => {
           });
 
           const verificationData = await verificationResponse.json();
+          console.log('Verification data:', verificationData);
           if (verificationData.success) {
             // Fetch user by email to get user ID
             const userResponse = await fetch('http://localhost:5000/api/users', {
@@ -72,7 +73,7 @@ const FinalReview = () => {
             const userData = await userResponse.json();
             if (userData.success) {
               const userId = userData.data._id;
-
+              console.log("selected date", selectedDate);
               // Store the booking
               await fetch('http://localhost:5000/api/bookings', {
                 method: 'POST',
@@ -84,6 +85,7 @@ const FinalReview = () => {
                   jamRoomId: selectedRoomId,
                   date: selectedDate,
                   slots: selectedSlots,
+                  totalAmount: totalAmount,
                 }),
               });
 

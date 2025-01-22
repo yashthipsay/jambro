@@ -19,6 +19,7 @@
     "graphql": "^16.10.0",
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",
+    "moment-timezone": "^0.5.46",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",

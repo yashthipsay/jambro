@@ -175,11 +175,94 @@ const isJamRoomRegisteredByEmail = async (req, res) => {
   }
 };
 
+// Get jam room name by ID
+const getJamRoomNameById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const jamRoom = await JamRoom.findById(id).select('jamRoomDetails.name');
+    
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Jam room not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      name: jamRoom.jamRoomDetails.name
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false, 
+      message: error.message
+    });
+  }
+};
+
+// Get jam room by email
+const getJamRoomByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    const jamRoom = await JamRoom.findOne({ 'ownerDetails.email': email });
+    
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Jam room not found for this email'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: jamRoom
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false, 
+      message: error.message
+    });
+  }
+};
+
+const getJamRoomById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const jamRoom = await JamRoom.findById(id);
+    
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Jam room not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: jamRoom
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false, 
+      message: error.message
+    });
+  }
+}
+
 
 
 module.exports = {
   createJamRoom,
   getAllJamRooms,
   updateJamRoom,
-  isJamRoomRegisteredByEmail
+  isJamRoomRegisteredByEmail,
+  getJamRoomNameById,
+  getJamRoomByEmail,
+  getJamRoomById
 };

@@ -9,8 +9,10 @@ const jamRoomRoutes = require('./routes/jamRoomRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const bnkVerification = require('./routes/bnkVerification');
+const payoutRoutes = require('./routes/payoutRoutes');
 const Booking = require('./models/BookingSchema');
 const User = require('./models/User');
+const SessionMonitor = require('./services/sessionMonitor');
 const app = express();
 const PORT = 5000;
 const server = createServer(app);
@@ -31,6 +33,7 @@ app.use('/api/jamrooms', jamRoomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/bank-verification', bnkVerification);
+app.use('/api/payouts', payoutRoutes);
 app.use('/proxy', async (req, res) => {
   console.log("start");
   const { lat, lon, apiKey } = req.query;
@@ -73,6 +76,10 @@ io.on('connection', (socket) => {
     console.log('user disconnected');
   });
 });
+
+// After your socket.io setup
+const sessionMonitor = new SessionMonitor(io);
+sessionMonitor.start()
 
 // Start the Express server
 server.listen(PORT, () => {
