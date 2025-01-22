@@ -61,9 +61,21 @@ const getAllBookings = async (req, res) => {
     }
   };
 
+  const getBookingsByJamRoomId = async(req, res) => {
+    try {
+      const { jamRoomId } = req.params;
+      const bookings = await BookingSchema.find({ jamRoom: jamRoomId }).populate('user');
+      res.status(200).json({ success: true, bookings });
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      res.status(500).json({ success: false, message: 'Server error' });
+    }
+  }
+
 module.exports = {
     createBooking,
-    getAllBookings
+    getAllBookings,
+    getBookingsByJamRoomId
 }
 
 

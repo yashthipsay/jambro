@@ -229,6 +229,32 @@ const getJamRoomByEmail = async (req, res) => {
   }
 };
 
+const getJamRoomById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const jamRoom = await JamRoom.findById(id);
+    
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Jam room not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: jamRoom
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false, 
+      message: error.message
+    });
+  }
+}
+
 
 
 module.exports = {
@@ -237,5 +263,6 @@ module.exports = {
   updateJamRoom,
   isJamRoomRegisteredByEmail,
   getJamRoomNameById,
-  getJamRoomByEmail
+  getJamRoomByEmail,
+  getJamRoomById
 };
