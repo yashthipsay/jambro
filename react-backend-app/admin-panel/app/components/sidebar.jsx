@@ -58,7 +58,7 @@ export function Sidebar() {
 
   return (
     <motion.div
-      className="fixed left-4 top-24 bottom-4 w-64 bg-[#191970] bg-opacity-80 backdrop-blur-md rounded-lg shadow-lg p-4 border border-[#7DF9FF]"
+      className="fixed left-4 top-24 bottom-4 w-64 bg-black bg-opacity-80 backdrop-blur-md rounded-lg shadow-lg p-4 border border-emerald"
       initial={{ x: -100 }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 120 }}
@@ -68,7 +68,7 @@ export function Sidebar() {
           <Link href={item.path} key={index}>
             <Button
               variant="ghost"
-              className="w-full justify-start text-[#E0FFFF] hover:bg-[#7DF9FF] hover:text-[#191970]"
+              className="w-full justify-start text-cream hover:bg-emerald hover:text-black"
             >
               <item.icon className="mr-2 h-4 w-4" />
               {item.label}
@@ -78,14 +78,14 @@ export function Sidebar() {
       </div>
       {!user && (
         <div className="mt-4">
-          <Button onClick={() => window.location.href = '/api/auth/login'} className="w-full bg-[#7DF9FF] text-[#191970] hover:bg-[#E0FFFF]">
+          <Button onClick={() => window.location.href = '/api/auth/login'} className="w-full bg-emerald text-black hover:bg-blush">
             Log In to Access
           </Button>
         </div>
       )}
       {user && !isRegistered && (
         <div className="mt-4">
-          <Button onClick={() => window.location.href = '/registration'} className="w-full bg-[#C0C0C0] text-[#191970] hover:bg-[#E0FFFF]">
+          <Button onClick={() => window.location.href = '/registration'} className="w-full bg-blush text-black hover:bg-emerald">
             Complete Registration
           </Button>
         </div>

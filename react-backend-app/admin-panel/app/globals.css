@@ -5,16 +5,17 @@
 @tailwind utilities;
 
 :root {
-  --electric-blue: #7DF9FF;
-  --ice-blue: #E0FFFF;
-  --silver: #C0C0C0;
-  --midnight-blue: #191970;
+  /* Base Colors */
+  --black: #000000;
+  --emerald: #50C878;
+  --blush: #F4C2C2;
+  --cream: #FFFDD0;
 }
 
 body {
   font-family: 'Roboto', sans-serif;
-  background-color: var(--midnight-blue);
-  color: var(--ice-blue);
+  background-color: var(--black);
+  color: var(--cream);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -23,26 +24,38 @@ h1, h2, h3, h4, h5, h6 {
 
 @layer base {
   :root {
-    --background: 240 64% 27%;
-    --foreground: 186 100% 97%;
-    --card: 240 64% 27%;
-    --card-foreground: 186 100% 97%;
-    --popover: 240 64% 27%;
-    --popover-foreground: 186 100% 97%;
-    --primary: 186 100% 74%;
-    --primary-foreground: 240 64% 27%;
-    --secondary: 180 100% 97%;
-    --secondary-foreground: 240 64% 27%;
-    --muted: 240 64% 37%;
-    --muted-foreground: 186 100% 87%;
-    --accent: 0 0% 75%;
-    --accent-foreground: 240 64% 27%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 186 100% 97%;
-    --border: 240 64% 37%;
-    --input: 240 64% 37%;
-    --ring: 186 100% 74%;
+    /* Theme Mapping */
+    --background: var(--black);
+    --foreground: var(--cream);
+    
+    /* Card and Popover */
+    --card: var(--black);
+    --card-foreground: var(--cream);
+    --popover: var(--black);
+    --popover-foreground: var(--cream);
+    
+    /* Primary Colors */
+    --primary: var(--emerald);
+    --primary-foreground: var(--black);
+    
+    /* Secondary Colors */
+    --secondary: var(--blush);
+    --secondary-foreground: var(--black);
+    
+    /* Muted and Accent */
+    --muted: var(--black);
+    --muted-foreground: var(--cream);
+    --accent: var(--emerald);
+    --accent-foreground: var(--black);
+    
+    /* Destructive and UI Elements */
+    --destructive: var(--blush);
+    --destructive-foreground: var(--black);
+    --border: var(--emerald);
+    --input: var(--black);
+    --ring: var(--emerald);
+    
+    /* Border Radius */
     --radius: 0.5rem;
   }
 }
-

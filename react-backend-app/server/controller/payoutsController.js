@@ -78,7 +78,32 @@ async function createRazorpayPayout(req, res) {
   async function getPayoutsByFundAccountId(req, res) {
     try {
       const { fund_account_id } = req.params;
-      const payouts = await Payout.find({ fund_account_id });
+      const { minAmount, maxAmount, startDate, endDate, sortBy, sortOrder } = req.query;
+
+      const filter = { fund_account_id };
+
+      if (minAmount) {
+        filter.amount = { ...filter.amount, $gte: Number(minAmount) };
+      }
+  
+      if (maxAmount) {
+        filter.amount = { ...filter.amount, $lte: Number(maxAmount) };
+      }
+  
+      if (startDate) {
+        filter.createdAt = { ...filter.createdAt, $gte: new Date(startDate) };
+      }
+  
+      if (endDate) {
+        filter.createdAt = { ...filter.createdAt, $lte: new Date(endDate) };
+      }
+
+      const sortOptions = {};
+      if (sortBy) {
+        sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+      }
+
+    const payouts = await Payout.find(filter).sort(sortOptions);
   
       if (!payouts.length) {
         return res.status(404).json({ success: false, message: 'No payouts found for this fund account ID' });
