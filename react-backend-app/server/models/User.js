@@ -10,10 +10,6 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  mobileNumber: {
-    type: String,
-    required: false,
-  },
   savedNumbers: [
     {
       type: String,

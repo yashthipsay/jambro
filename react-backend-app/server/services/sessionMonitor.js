@@ -90,7 +90,8 @@ class SessionMonitor {
             fund_account_id: booking.jamRoom.bankValidationData.fund_account.id,
             amount: amount,
             purpose: 'payout',
-            paymentId: booking.paymentId
+            paymentId: booking.paymentId,
+            bookingId: booking._id,
           }
         }, {
           json: () => {},

@@ -13,7 +13,7 @@ const instance = new Razorpay({
 
 async function createRazorpayPayout(req, res) {
     try {
-      const { jamroomId, fund_account_id, amount, purpose } = req.body;
+      const { jamroomId, fund_account_id, amount, purpose, bookingId } = req.body;
 
           // 1. Fetch the jamroom
     const jamroom = await JamRoom.findById(jamroomId);
@@ -28,6 +28,7 @@ async function createRazorpayPayout(req, res) {
           amount,
           currency: 'INR',
           status: 'PENDING',
+          bookingId: bookingId,
         });
         await newPayout.save();
 
@@ -78,7 +79,7 @@ async function createRazorpayPayout(req, res) {
   async function getPayoutsByFundAccountId(req, res) {
     try {
       const { fund_account_id } = req.params;
-      const { minAmount, maxAmount, startDate, endDate, sortBy, sortOrder } = req.query;
+      const { minAmount, maxAmount, startDate, endDate, sortBy, sortOrder, skip = 0, limit = 10 } = req.query;
 
       const filter = { fund_account_id };
 
@@ -103,13 +104,20 @@ async function createRazorpayPayout(req, res) {
         sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
       }
 
-    const payouts = await Payout.find(filter).sort(sortOptions);
+      const payouts = await Payout.find(filter)
+      .sort(sortOptions)
+      .skip(Number(skip))
+      .limit(Number(limit))
+
+      const totalPayouts = await Payout.countDocuments(filter);
   
-      if (!payouts.length) {
-        return res.status(404).json({ success: false, message: 'No payouts found for this fund account ID' });
-      }
+      res.status(200).json({ 
+        success: true, 
+        data: payouts, 
+        total: totalPayouts,
+        hasResults: payouts.length > 0 
+      });
   
-      res.status(200).json({ success: true, data: payouts });
     } catch (error) {
       console.error('Error fetching payouts:', error);
       res.status(500).json({ success: false, message: 'Server error', error: error.message });

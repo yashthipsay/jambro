@@ -23,16 +23,42 @@ const PayoutHistory = () => {
     sortBy: 'createdAt',
     sortOrder: 'desc'
   })
+  const [pagination, setPagination] = useState({
+    skip: 0,
+    limit: 10,
+    total: 0
+  })
+
+  const NoResults = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="flex flex-col items-center justify-center p-8"
+    >
+      <h3 className="text-2xl font-semibold text-gray-500 mb-2">No Results Found</h3>
+      <p className="text-gray-400">
+        Try adjusting your filters to find what you're looking for
+      </p>
+    </motion.div>
+  );
 
   useEffect(() => {
     const fetchPayouts = async () => {
       try {
-        const queryParams = new URLSearchParams(filters).toString()
+        
+        const queryParams = new URLSearchParams({
+          ...filters,
+          skip: pagination.skip,
+          limit: pagination.limit
+        }).toString()
         const response = await fetch(`http://localhost:5000/api/payouts/${fund_account_id}?${queryParams}`)
         const data = await response.json()
 
         if (data.success) {
           setPayouts(data.data)
+          setPagination(prev => ({ ...prev, total: data.total }))
+          setError(null); // Clear any existing errors
         } else {
           setError(data.message)
         }
@@ -44,7 +70,7 @@ const PayoutHistory = () => {
     }
 
     fetchPayouts()
-  }, [fund_account_id, filters])
+  }, [fund_account_id, filters, pagination.skip, pagination.limit])
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target
@@ -55,13 +81,30 @@ const PayoutHistory = () => {
     setFilters(prevFilters => ({ ...prevFilters, sortBy, sortOrder }))
   }
 
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, skip: (newPage - 1) * prev.limit }))
+  }
+
   if (loading) {
-    return <div>Loading...</div>
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>
+    return (
+      <div className="flex items-center justify-center p-8 text-red-500">
+        <span>{error}</span>
+      </div>
+    );
   }
+
+  const totalPages = Math.ceil(pagination.total / pagination.limit)
+  const currentPage = Math.floor(pagination.skip / pagination.limit) + 1
 
   return (
     <div className="p-4">
@@ -122,6 +165,7 @@ const PayoutHistory = () => {
           </Select>
         </div>
       </div>
+      {payouts.length > 0 ? (
       <div className="grid gap-4">
         {payouts.map((payout) => (
           <motion.div
@@ -143,7 +187,29 @@ const PayoutHistory = () => {
           </motion.div>
         ))}
       </div>
+      ) : (
+        <NoResults />
+      )}
+      
+      {payouts.length > 0 && (
+        <div className="flex justify-between items-center mt-4">
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
+    
   )
 }
 
