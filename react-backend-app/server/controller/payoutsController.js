@@ -124,28 +124,107 @@ async function createRazorpayPayout(req, res) {
     }
   }
 
-  async function createRefund(req, res) {
-    try{
-
-        const {paymentId} = req.body;
-
-          
-          const refundResult = await instance.payments.refund(paymentId, {
-            speed: 'normal',
-            notes: {
-              notes_key_1: 'refund'
-            },
-            // No receipt here
-          });
-          console.log('Refund success:', refundResult);
-          return res.status(200).json(refundResult);
-    }catch(error){
-        console.error('Error creating refund payout:', error.message);
-        if (error.response) {
-          console.error('Additional error details:', error.response.data);
+  async function cancelBookingAndCreateRefund(req, res) {
+    try {
+      const { bookingId } = req.body;
+  
+      // 1. Fetch and validate booking
+      const booking = await BookingSchema.findById(bookingId).populate('jamRoom');
+      if (!booking) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Booking not found' 
+        });
+      }
+  
+      // 2. Check if booking is already terminated
+      if (booking.status === 'TERMINATED') {
+        return res.status(400).json({
+          success: false,
+          message: 'Booking is already cancelled'
+        });
+      }
+  
+      // 3. Calculate time difference and refund amount
+      const currentTime = moment().tz('Asia/Kolkata');
+      const bookingDate = moment(booking.date).tz('Asia/Kolkata').startOf('day');
+      
+      // Find earliest slot
+      const earliestSlot = booking.slots.reduce((earliest, slot) => {
+        const slotTime = bookingDate.clone().set({
+          hour: parseInt(slot.startTime.split(':')[0]),
+          minute: parseInt(slot.startTime.split(':')[1])
+        });
+        return earliest ? (slotTime.isBefore(earliest) ? slotTime : earliest) : slotTime;
+      }, null);
+  
+      const timeDifference = earliestSlot.diff(currentTime, 'minutes');
+      let refundPercentage = 100;
+  
+      if (timeDifference < 30) {
+        refundPercentage = 65;
+      } else if (timeDifference < 60) {
+        refundPercentage = 80;
+      }
+  
+      const refundAmount = Math.floor((booking.totalAmount * refundPercentage) / 100);
+  
+      // 4. Find associated payout
+      const payout = await Payout.findOne({ bookingId: booking._id });
+      if (!payout) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'No payout found for this booking' 
+        });
+      }
+  
+      // 5. Process refund through Razorpay
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_API_KEY,
+        key_secret: process.env.RAZORPAY_API_SECRET
+      });
+  
+      const refundResult = await razorpay.payments.refund(payout.razorpayPayoutId, {
+        amount: refundAmount * 100, // Convert to paise
+        speed: 'normal',
+        notes: {
+          notes_key_1: `Booking cancellation refund - ${refundPercentage}%`,
+          notes_key_2: `Booking ID: ${booking._id}`,
+          notes_key_3: `Original amount: ${booking.totalAmount}`,
+          notes_key_4: `Time to booking: ${timeDifference} minutes`
         }
-        res.status(500).json({ error: 'Refund Payout failed', message: error.message });
+      });
+  
+      // 6. Update booking status
+      booking.status = 'TERMINATED';
+      booking.refundDetails = {
+        amount: refundAmount,
+        percentage: refundPercentage,
+        processedAt: new Date(),
+        razorpayRefundId: refundResult.id
+      };
+      await booking.save();
+  
+      // 7. Return success response
+      return res.status(200).json({
+        success: true,
+        data: {
+          booking: booking._id,
+          refundAmount,
+          refundPercentage,
+          refundId: refundResult.id,
+          message: `Refund of ${refundPercentage}% (₹${refundAmount}) processed successfully`
+        }
+      });
+  
+    } catch (error) {
+      console.error('Refund processing error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error processing refund',
+        error: error.message
+      });
     }
   }
 
-module.exports = { createRazorpayPayout, createRefund, getPayoutsByFundAccountId };
+module.exports = { createRazorpayPayout, cancelBookingAndCreateRefund, getPayoutsByFundAccountId };

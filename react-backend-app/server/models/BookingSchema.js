@@ -1,5 +1,12 @@
 const mongoose = require('mongoose');
 
+const refundDetailsSchema = new mongoose.Schema({
+  amount: Number,
+  percentage: Number,
+  processedAt: Date,
+  razorpayRefundId: String
+});
+
 const bookingSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -22,13 +29,14 @@ const bookingSchema = new mongoose.Schema({
   }],
   status: {
     type: String,
-    enum: ['NOT_STARTED', 'ONGOING', 'COMPLETED'],
+    enum: ['NOT_STARTED', 'ONGOING', 'COMPLETED', 'TERMINATED'],
     default: 'NOT_STARTED'
   },
   totalAmount: {
     type: Number,
     required: false
-  }
+  },
+  refundDetails: refundDetailsSchema
 }, { timestamps: true }); // Add timestamps for createdAt and updatedAt
 
 const BookingSchema = mongoose.model('Booking', bookingSchema);

@@ -105,7 +105,8 @@ export default function BookingsPage(){
         const statusColors = {
           'NOT_STARTED': 'bg-yellow-500',
           'ONGOING': 'bg-blue-500',
-          'COMPLETED': 'bg-green-500'
+          'COMPLETED': 'bg-green-500',
+          'TERMINATED': 'bg-red-500'  // Add color for terminated status
         }
 
         return (
@@ -173,7 +174,8 @@ export default function BookingsPage(){
                     <span className={`px-2 py-1 rounded text-sm ${
                       booking.extendedProps.status === 'NOT_STARTED' ? 'bg-yellow-500' :
                       booking.extendedProps.status === 'ONGOING' ? 'bg-blue-500' :
-                      'bg-green-500'
+                      booking.extendedProps.status === 'COMPLETED' ? 'bg-green-500' :
+                      'bg-red-500' 
                     } text-white`}>
                       {booking.extendedProps.status}
                     </span>
@@ -184,6 +186,11 @@ export default function BookingsPage(){
                   <p className="text-sm">
                     Time: {moment(booking.start).format('HH:mm')} - {moment(booking.end).format('HH:mm')}
                   </p>
+                  {booking.extendedProps.status === 'TERMINATED' && booking.refundDetails && (
+                <p className="text-sm mt-2 text-red-500">
+                  Refunded: ₹{booking.refundDetails.amount} ({booking.refundDetails.percentage}%)
+                </p>
+              )}
                 </CardContent>
               </Card>
             ))}

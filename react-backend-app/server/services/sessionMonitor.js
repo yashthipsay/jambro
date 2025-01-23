@@ -21,10 +21,16 @@ class SessionMonitor {
     console.log('Current Date:', currentDate.format());
 
     const bookings = await BookingSchema.find({
-      status: { $ne: 'COMPLETED' }
+      status: { $ne: ['COMPLETED', 'TERMINATED'] }
       }).populate('jamRoom');
 
     for(const booking of bookings) {
+
+            // Skip if booking is terminated
+            if (booking.status === 'TERMINATED') {
+              continue;
+            }
+
       console.log(`Fund account id: ${booking.jamRoom.bankValidationData.fund_account.id}`);
       const bookingDate = moment(booking.date).tz('Asia/Kolkata').startOf('day');
             // Sort slots by start time
@@ -76,6 +82,12 @@ class SessionMonitor {
 
   async processPayout(booking) {
       try {
+
+              // Skip payout if booking is terminated
+      if (booking.status === 'TERMINATED') {
+        console.log(`Skipping payout for terminated booking ${booking._id}`);
+        return;
+      }
 
         if (!booking.totalAmount || isNaN(booking.totalAmount)) {
           throw new Error('Invalid totalAmount in booking');
