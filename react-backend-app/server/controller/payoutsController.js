@@ -5,6 +5,7 @@ const Razorpay = require('razorpay');
 const JamRoom = require('../models/JamRooms');
 const Payout = require('../models/Payouts');
 const Booking = require('../models/BookingSchema');
+const moment = require('moment-timezone');
 
 const instance = new Razorpay({
   key_id: process.env.RAZORPAY_API_KEY,
@@ -129,7 +130,7 @@ async function createRazorpayPayout(req, res) {
       const { bookingId } = req.body;
   
       // 1. Fetch and validate booking
-      const booking = await BookingSchema.findById(bookingId).populate('jamRoom');
+      const booking = await Booking.findById(bookingId).populate('jamRoom');
       if (!booking) {
         return res.status(404).json({ 
           success: false, 
@@ -169,14 +170,6 @@ async function createRazorpayPayout(req, res) {
   
       const refundAmount = Math.floor((booking.totalAmount * refundPercentage) / 100);
   
-      // 4. Find associated payout
-      const payout = await Payout.findOne({ bookingId: booking._id });
-      if (!payout) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'No payout found for this booking' 
-        });
-      }
   
       // 5. Process refund through Razorpay
       const razorpay = new Razorpay({
@@ -184,7 +177,7 @@ async function createRazorpayPayout(req, res) {
         key_secret: process.env.RAZORPAY_API_SECRET
       });
   
-      const refundResult = await razorpay.payments.refund(payout.razorpayPayoutId, {
+      const refundResult = await razorpay.payments.refund(booking.paymentId, {
         amount: refundAmount * 100, // Convert to paise
         speed: 'normal',
         notes: {

@@ -36,7 +36,11 @@ const bookingSchema = new mongoose.Schema({
     type: Number,
     required: false
   },
-  refundDetails: refundDetailsSchema
+  refundDetails: refundDetailsSchema,
+  paymentId: {
+    type: String,
+    required: true,
+  },
 }, { timestamps: true }); // Add timestamps for createdAt and updatedAt
 
 const BookingSchema = mongoose.model('Booking', bookingSchema);

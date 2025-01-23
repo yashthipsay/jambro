@@ -69,7 +69,7 @@ const FinalReview = () => {
               },
               body: JSON.stringify({ email: user.email }),
             });
-
+            console.log('verificationData', verificationData);
             const userData = await userResponse.json();
             if (userData.success) {
               const userId = userData.data._id;
@@ -86,6 +86,7 @@ const FinalReview = () => {
                   date: selectedDate,
                   slots: selectedSlots,
                   totalAmount: totalAmount,
+                  paymentId: response.razorpay_payment_id,
                 }),
               });
 

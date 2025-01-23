@@ -127,32 +127,37 @@ const ProfileSection = ({ title, children, onEdit, isEditing, onSave, onCancel }
 
       return (
         <DashboardLayout>
-          <div className="max-w-4xl mx-auto p-4 space-y-6">
-            <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
+          <div className="p-6 space-y-6 max-w-4xl mx-auto">
+          <motion.div
+    initial={{ opacity: 0, y: -20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+            <h1 className="text-4xl font-audiowide mb-6 gradient-text">Profile Settings</h1>
     
             <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6 bg-black bg-opacity-80 backdrop-blur-md border border-emerald">
+            <TabsList className="grid w-full grid-cols-4 mb-6 glass-card">
               <TabsTrigger 
                 value="basic"
-                className="text-cream data-[state=active]:bg-emerald data-[state=active]:text-black"
+                className="text-white data-[state=active]:bg-violet data-[state=active]:text-white font-syncopate"
               >
                 Basic Info
               </TabsTrigger>
               <TabsTrigger 
                 value="owner"
-                className="text-cream data-[state=active]:bg-emerald data-[state=active]:text-black"
+                className="text-white data-[state=active]:bg-violet data-[state=active]:text-white font-syncopate"
               >
                 Owner Details
               </TabsTrigger>
               <TabsTrigger 
                 value="location"
-                className="text-cream data-[state=active]:bg-emerald data-[state=active]:text-black"
+                className="text-white data-[state=active]:bg-violet data-[state=active]:text-white font-syncopate"
               >
                 Location
               </TabsTrigger>
               <TabsTrigger 
                 value="additional"
-                className="text-cream data-[state=active]:bg-emerald data-[state=active]:text-black"
+                className="text-white data-[state=active]:bg-violet data-[state=active]:text-white font-syncopate"
               >
                 Additional Info
               </TabsTrigger>
@@ -328,6 +333,7 @@ const ProfileSection = ({ title, children, onEdit, isEditing, onSave, onCancel }
               </TabsContent>
             </AnimatePresence>
             </Tabs>
+            </motion.div>
           </div>
         </DashboardLayout>
       )

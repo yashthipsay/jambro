@@ -9,10 +9,10 @@ export default {
 	theme: {
 	  extend: {
 		colors: {
-		  black: '#000000',
-		  emerald: '#50C878',
-		  blush: '#F4C2C2',
-		  cream: '#FFFDD0',
+		  'primary-blue': '#0600AB',
+		  'secondary-blue': '#0033FF',
+		  'violet': '#977DFF',
+		  'pink': '#FFCCF2',
 		  background: 'var(--background)',
 		  foreground: 'var(--foreground)',
 		  card: {
@@ -31,14 +31,30 @@ export default {
 			DEFAULT: 'var(--secondary)',
 			foreground: 'var(--secondary-foreground)'
 		  },
-		  muted: {
-			DEFAULT: 'var(--muted)',
-			foreground: 'var(--muted-foreground)'
-		  },
 		  accent: {
 			DEFAULT: 'var(--accent)',
 			foreground: 'var(--accent-foreground)'
+		  },
+		  muted: {
+			DEFAULT: 'var(--muted)',
+			foreground: 'var(--muted-foreground)'
 		  }
+		},
+		fontFamily: {
+		  audiowide: ['Audiowide', 'cursive'],
+		  syncopate: ['Syncopate', 'sans-serif'],
+		  montserrat: ['Montserrat', 'sans-serif']
+		},
+		backgroundImage: {
+		  'gradient-1': 'var(--gradient-1)',
+		  'gradient-2': 'var(--gradient-2)',
+		  'gradient-3': 'var(--gradient-3)'
+		},
+		boxShadow: {
+		  'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
+		},
+		borderRadius: {
+		  'custom': 'var(--radius)',
 		}
 	  }
 	},
