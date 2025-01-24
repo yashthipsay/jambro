@@ -260,8 +260,8 @@ const handleSectionSave = async (section) => {
                         <Label>Owner Name</Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
-                            {...register('ownerDetails.name')}
-                            defaultValue={jamRoomData.ownerDetails.name}
+                            {...register('ownerDetails.fullname')}
+                            defaultValue={jamRoomData.ownerDetails.fullname}
                           />
                         ) : (
                           <p className="text-lg">{jamRoomData.ownerDetails.fullname}</p>
