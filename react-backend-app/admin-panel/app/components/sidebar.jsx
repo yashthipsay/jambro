@@ -37,7 +37,7 @@ export function Sidebar() {
             setJamRoomId(data.data._id);
             setFundAccountId(data.data.bankValidationData.fund_account.id);
             console.log('Jam Room ID:', data.data._id);
-            console.log('Fund Account ID:', data.data.bankValidationData.fund_account_id);
+            console.log('Fund Account ID:', data.data.bankValidationData.fund_account.id);
           } else {
             window.location.href = '/registration';
           }
@@ -61,7 +61,7 @@ export function Sidebar() {
 
   return (
     <motion.div
-      className="fixed left-4 top-24 bottom-4 w-64 bg-black bg-opacity-80 backdrop-blur-md rounded-lg shadow-lg p-4 border border-emerald"
+      className="fixed left-4 top-24 bottom-4 w-64 sidebar-gradient rounded-lg shadow-lg p-4"
       initial={{ x: -100 }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 120 }}
@@ -71,7 +71,7 @@ export function Sidebar() {
           <Link href={item.path} key={index}>
             <Button
               variant="ghost"
-              className="w-full justify-start text-cream hover:bg-emerald hover:text-black"
+              className="w-full justify-start text-white hover:bg-primary hover:text-white transition-all duration-300"
             >
               <item.icon className="mr-2 h-4 w-4" />
               {item.label}
@@ -81,14 +81,14 @@ export function Sidebar() {
       </div>
       {!user && (
         <div className="mt-4">
-          <Button onClick={() => window.location.href = '/api/auth/login'} className="w-full bg-emerald text-black hover:bg-blush">
+          <Button onClick={() => window.location.href = '/api/auth/login'} className="w-full btn-primary">
             Log In to Access
           </Button>
         </div>
       )}
       {user && !isRegistered && (
         <div className="mt-4">
-          <Button onClick={() => window.location.href = '/registration'} className="w-full bg-blush text-black hover:bg-emerald">
+          <Button onClick={() => window.location.href = '/registration'} className="w-full btn-secondary">
             Complete Registration
           </Button>
         </div>

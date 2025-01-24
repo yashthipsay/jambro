@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Syncopate:wght@400;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Audiowide&family=Syncopate:wght@400;700&family=Montserrat:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,71 +6,67 @@
 
 :root {
   /* Base Colors */
-  --primary-blue: #0600AB;
-  --secondary-blue: #0033FF;
-  --violet: #977DFF;
-  --pink: #FFCCF2;
-  
+  --primary-purple: #8059f7;
+  --secondary-purple: #6434fc;
+  --light-purple: #dcd5ff;
+  --accent-pink: #ffccf2;
+
   /* Gradient Combinations */
-  --gradient-1: linear-gradient(to right, #0600AB, #0033FF);
-  --gradient-2: linear-gradient(to right, #0600AB, #977DFF);
-  --gradient-3: linear-gradient(to right, #977DFF, #FFCCF2);
+  --gradient-1: linear-gradient(135deg, #8059f7, #6434fc);
+  --gradient-2: linear-gradient(135deg, #6434fc, #011450);
+  --gradient-3: linear-gradient(135deg, #8059f7, #ffccf2);
 }
 
 body {
-  font-family: 'Montserrat', sans-serif;
-  background: var(--gradient-1);
+  font-family: "Montserrat", sans-serif;
+  background: var(--gradient-2);
   min-height: 100vh;
   color: white;
 }
 
-h1, h2, h3 {
-  font-family: 'Audiowide', cursive;
+h1,
+h2,
+h3 {
+  font-family: "Audiowide", cursive;
 }
 
-h4, h5, h6 {
-  font-family: 'Syncopate', sans-serif;
+h4,
+h5,
+h6 {
+  font-family: "Syncopate", sans-serif;
 }
 
 @layer base {
   :root {
-    /* Theme Mapping */
-    --background: var(--primary-blue);
+    --background: var(--primary-purple);
     --foreground: white;
-    
-    /* Card and Popover */
-    --card: rgba(151, 125, 255, 0.1);
+
+    --card: rgba(128, 89, 247, 0.1);
     --card-foreground: white;
-    --popover: rgba(151, 125, 255, 0.2);
+    --popover: rgba(128, 89, 247, 0.2);
     --popover-foreground: white;
-    
-    /* Primary Colors */
-    --primary: var(--secondary-blue);
+
+    --primary: var(--secondary-purple);
     --primary-foreground: white;
-    
-    /* Secondary Colors */
-    --secondary: var(--violet);
-    --secondary-foreground: white;
-    
-    /* Accents */
-    --accent: var(--pink);
-    --accent-foreground: var(--primary-blue);
-    
-    /* UI Elements */
-    --muted: rgba(151, 125, 255, 0.3);
+
+    --secondary: var(--light-purple);
+    --secondary-foreground: var(--secondary-purple);
+
+    --accent: var(--accent-pink);
+    --accent-foreground: var(--secondary-purple);
+
+    --muted: rgba(128, 89, 247, 0.3);
     --muted-foreground: rgba(255, 255, 255, 0.7);
-    --border: var(--violet);
-    --ring: var(--violet);
-    
-    /* Border Radius */
+    --border: var(--light-purple);
+    --ring: var(--light-purple);
+
     --radius: 0.75rem;
   }
 
-  /* Custom Classes */
   .glass-card {
-    background: rgba(151, 125, 255, 0.1);
+    background: rgba(128, 89, 247, 0.1);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(151, 125, 255, 0.3);
+    border: 1px solid rgba(128, 89, 247, 0.3);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
     border-radius: var(--radius);
   }
@@ -89,24 +85,26 @@ h4, h5, h6 {
     background: var(--gradient-2);
   }
 
-  /* Button Styles */
   .btn-primary {
-    @apply bg-gradient-1 text-white font-syncopate;
+    @apply bg-gradient-to-r from-primary-purple to-secondary-purple text-white font-syncopate;
     border-radius: var(--radius);
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
   }
 
   .btn-primary:hover {
-    @apply bg-gradient-2;
+    @apply from-secondary-purple to-primary-purple;
+    transform: translateY(-2px);
   }
 
   .btn-secondary {
-    @apply bg-gradient-3 text-white font-syncopate;
+    @apply bg-gradient-to-r from-light-purple to-accent-pink text-secondary-purple font-syncopate;
     border-radius: var(--radius);
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
   }
 
   .btn-secondary:hover {
-    @apply bg-gradient-2;
+    @apply from-accent-pink to-light-purple;
+    transform: translateY(-2px);
   }
 }
+

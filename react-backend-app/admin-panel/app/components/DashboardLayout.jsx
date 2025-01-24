@@ -4,7 +4,7 @@ import { Sidebar } from './sidebar'
 
 export function DashboardLayout({ children }) {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-2">
       <Navbar />
       <div className="flex">
         <Sidebar />

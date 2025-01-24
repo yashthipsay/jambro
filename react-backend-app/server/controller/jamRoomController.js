@@ -1,4 +1,7 @@
 const JamRoom = require('../models/JamRooms');
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
 const createJamRoom = async (req, res) => {
   try {
@@ -233,29 +236,93 @@ const getJamRoomById = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const jamRoom = await JamRoom.findById(id);
-    
-    if (!jamRoom) {
-      return res.status(404).json({
-        success: false,
-        message: 'Jam room not found'
+    if (req.method === 'PUT') {
+      // Handle PUT request
+      const updateData = req.body;
+      
+      // Validate if jam room exists
+      let jamRoom = await JamRoom.findById(id);
+      if (!jamRoom) {
+        return res.status(404).json({
+          success: false,
+          message: 'Jam room not found'
+        });
+      }
+
+      // Update the specific section
+      const sectionKey = Object.keys(updateData)[0];
+      jamRoom[sectionKey] = updateData[sectionKey];
+
+      // Save the updated jam room
+      const updatedJamRoom = await jamRoom.save();
+
+      return res.status(200).json({
+        success: true,
+        data: updatedJamRoom
+      });
+    } else {
+      // Handle GET request
+      const jamRoom = await JamRoom.findById(id);
+      
+      if (!jamRoom) {
+        return res.status(404).json({
+          success: false,
+          message: 'Jam room not found'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: jamRoom
       });
     }
-
-    res.status(200).json({
-      success: true,
-      data: jamRoom
-    });
-
   } catch (error) {
     res.status(500).json({
-      success: false, 
+      success: false,
       message: error.message
     });
   }
-}
+};
 
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage }).array('images');
 
+const uploadJamRoomImages = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const jamRoom = await JamRoom.findById(id);
+
+    if (!jamRoom) {
+      return res.status(404).json({ success: false, message: 'Jam room not found' });
+    }
+
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Error uploading images', error: err.message });
+      }
+
+      const uploadPath = path.join(__dirname, '../uploads/jamrooms');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+
+      const imageUrls = req.files.map(file => {
+        const filePath = path.join(uploadPath, `${Date.now()}-${file.originalname}`);
+        fs.writeFileSync(filePath, file.buffer);
+        return `/uploads/jamrooms/${path.basename(filePath)}`;
+      });
+
+      jamRoom.images.push(...imageUrls);
+      await jamRoom.save();
+
+      res.status(200).json({ success: true, imageUrls });
+    });
+  } catch (error) {
+    console.error('Error uploading images:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
 
 module.exports = {
   createJamRoom,
@@ -264,5 +331,6 @@ module.exports = {
   isJamRoomRegisteredByEmail,
   getJamRoomNameById,
   getJamRoomByEmail,
-  getJamRoomById
+  getJamRoomById,
+  uploadJamRoomImages
 };

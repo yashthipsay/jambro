@@ -109,19 +109,21 @@ const PayoutHistory = () => {
   return (
     <div className="p-4">
       <div className="mb-4">
-        <h1 className="text-2xl font-bold mb-4">Payout History</h1>
+        <h1 className="text-2xl font-bold mb-4 gradient-text">Payout History</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Input
             name="minAmount"
             placeholder="Min Amount"
             value={filters.minAmount}
             onChange={handleFilterChange}
+            className="bg-card text-card-foreground"
           />
           <Input
             name="maxAmount"
             placeholder="Max Amount"
             value={filters.maxAmount}
             onChange={handleFilterChange}
+            className="bg-card text-card-foreground"
           />
           <Input
             name="startDate"
@@ -129,6 +131,7 @@ const PayoutHistory = () => {
             placeholder="Start Date"
             value={filters.startDate}
             onChange={handleFilterChange}
+            className="bg-card text-card-foreground"
           />
           <Input
             name="endDate"
@@ -136,6 +139,7 @@ const PayoutHistory = () => {
             placeholder="End Date"
             value={filters.endDate}
             onChange={handleFilterChange}
+            className="bg-card text-card-foreground"
           />
         </div>
         <div className="flex gap-4 mb-4">
@@ -143,7 +147,7 @@ const PayoutHistory = () => {
             value={filters.sortBy}
             onValueChange={(value) => handleSortChange(value, filters.sortOrder)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="bg-card text-card-foreground">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
@@ -155,7 +159,7 @@ const PayoutHistory = () => {
             value={filters.sortOrder}
             onValueChange={(value) => handleSortChange(filters.sortBy, value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="bg-card text-card-foreground">
               <SelectValue placeholder="Sort Order" />
             </SelectTrigger>
             <SelectContent>
@@ -174,7 +178,7 @@ const PayoutHistory = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Card>
+            <Card className="bg-card text-card-foreground">
               <CardHeader>
                 <h3 className="text-lg font-semibold">Payout ID: {payout._id}</h3>
               </CardHeader>
@@ -203,6 +207,7 @@ const PayoutHistory = () => {
           <Button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
+            className="btn-primary"
           >
             Next
           </Button>

@@ -4,7 +4,7 @@ import { LandingContent } from './components/landing-content'
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#191970] to-[#0C0C3C]">
+    <main className="min-h-screen bg-gradient-2">
       <Navbar />
       <div className="flex">
         <Sidebar />

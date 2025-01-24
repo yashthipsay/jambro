@@ -210,7 +210,7 @@ export default function BookingsPage(){
       return (
         <div className="p-2 sm:p-4">
           <div className="mb-4">
-            <h1 className="text-2xl font-bold mb-4">Bookings</h1>
+            <h1 className="text-2xl font-bold mb-4 gradient-text">Bookings</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Input
                 name="startDate"
@@ -218,6 +218,7 @@ export default function BookingsPage(){
                 placeholder="Start Date"
                 value={filters.startDate}
                 onChange={handleFilterChange}
+                className="bg-card text-card-foreground"
               />
               <Input
                 name="endDate"
@@ -225,6 +226,7 @@ export default function BookingsPage(){
                 placeholder="End Date"
                 value={filters.endDate}
                 onChange={handleFilterChange}
+                className="bg-card text-card-foreground"
               />
             </div>
             <div className="flex gap-4 mb-4">

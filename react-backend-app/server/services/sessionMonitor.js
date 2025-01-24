@@ -17,73 +17,109 @@ class SessionMonitor {
   }
 
   async checkSessions() {
-    const currentDate = moment().tz('Asia/Kolkata'); // Set your desired timezone
+    const currentDate = moment().tz('Asia/Kolkata');
     console.log('Current Date:', currentDate.format());
-
-    const bookings = await BookingSchema.find({
-      status: { $ne: ['COMPLETED', 'TERMINATED'] }
+  
+    try {
+      // 1. Get all active bookings
+      const bookings = await BookingSchema.find({
+        status: { $nin: ['COMPLETED', 'TERMINATED'] }
       }).populate('jamRoom');
-
-    for(const booking of bookings) {
-
-            // Skip if booking is terminated
-            if (booking.status === 'TERMINATED') {
-              continue;
-            }
-
-      console.log(`Fund account id: ${booking.jamRoom.bankValidationData.fund_account.id}`);
-      const bookingDate = moment(booking.date).tz('Asia/Kolkata').startOf('day');
-            // Sort slots by start time
-            booking.slots.sort((a, b) => {
-              const aStart = moment(a.startTime, 'HH:mm');
-              const bStart = moment(b.startTime, 'HH:mm');
-              return aStart - bStart;
+  
+      console.log(`Found ${bookings.length} active bookings to check`);
+  
+      // 2. Debug log all booking IDs first
+      console.log('All booking IDs:', bookings.map(b => b._id));
+  
+      // 3. Process each booking
+      for(const booking of bookings) {
+        try {
+          console.log(`\nProcessing booking ${booking._id} with current status: ${booking.status}`);
+          
+          const bookingDate = moment(booking.date).tz('Asia/Kolkata').startOf('day');
+          
+          // Sort slots by start time
+          const sortedSlots = [...booking.slots].sort((a, b) => {
+            const aStart = moment(a.startTime, 'HH:mm');
+            const bStart = moment(b.startTime, 'HH:mm');
+            return aStart - bStart;
+          });
+  
+          const startTimes = sortedSlots.map(slot => {
+            const [hours, minutes] = slot.startTime.split(':');
+            return bookingDate.clone().set({ 
+              hour: parseInt(hours), 
+              minute: parseInt(minutes) 
             });
-
-                // Get earliest start time and latest end time
-      const startTimes = booking.slots.map(slot => {
-        const [hours, minutes] = slot.startTime.split(':');
-        return bookingDate.clone().set({ hour: parseInt(hours), minute: parseInt(minutes) });
-      });
-
-      const endTimes = booking.slots.map(slot => {
-        const [hours, minutes] = slot.endTime.split(':');
-        return bookingDate.clone().set({ hour: parseInt(hours), minute: parseInt(minutes) });
-      });
-
-      const earliestStart = moment.min(startTimes);
-      const latestEnd = moment.max(endTimes);
-
-      if (currentDate.isBetween(earliestStart, latestEnd) && booking.status === 'NOT_STARTED') {
-        // Update to ONGOING
-        booking.status = 'ONGOING';
-        await booking.save();
-        this.io.emit('sessionStatusUpdate', { 
-          bookingId: booking._id,
-          status: 'ONGOING' 
-        });
-        console.log(`Booking ${booking._id} status updated to ONGOING`);
-      } 
-      else if (currentDate.isAfter(latestEnd) && booking.status === 'ONGOING') {
-        // Update to COMPLETED and trigger payout
-        booking.status = 'COMPLETED';
-        await booking.save();
-        this.io.emit('sessionStatusUpdate', { 
-          bookingId: booking._id,
-          status: 'COMPLETED' 
-        });
-        console.log(`Booking ${booking._id} status updated to COMPLETED`);
-
-        // Trigger payout
-        await this.processPayout(booking);
+          });
+  
+          console.log('Booking date:', bookingDate.format());
+          console.log('Start times:', startTimes.map(t => t.format()));
+  
+          const endTimes = sortedSlots.map(slot => {
+            const [hours, minutes] = slot.endTime.split(':');
+            return bookingDate.clone().set({ 
+              hour: parseInt(hours), 
+              minute: parseInt(minutes) 
+            });
+          });
+  
+          const earliestStart = moment.min(startTimes);
+          const latestEnd = moment.max(endTimes);
+  
+          const bookingDetails = {
+            bookingId: booking._id,
+            currentTime: currentDate.format(),
+            earliestStart: earliestStart.format(),
+            latestEnd: latestEnd.format(),
+            isBetween: currentDate.isBetween(earliestStart, latestEnd, null, '[]'),
+            status: booking.status
+          };
+  
+          console.log('Booking details:', bookingDetails);
+  
+          // Handle status transitions
+          if (currentDate.isBetween(earliestStart, latestEnd, null, '[]') && 
+              booking.status === 'NOT_STARTED') {
+            console.log(`Updating booking ${booking._id} to ONGOING`);
+            booking.status = 'ONGOING';
+            await booking.save();
+            
+            // Verify the save
+            const updatedBooking = await BookingSchema.findById(booking._id);
+            console.log(`Booking status after save: ${updatedBooking.status}`);
+            
+            this.io.emit('sessionStatusUpdate', { 
+              bookingId: booking._id,
+              status: 'ONGOING' 
+            });
+          }
+          else if (currentDate.isAfter(latestEnd)) {
+            console.log(`Updating booking ${booking._id} to COMPLETED`);
+            booking.status = 'COMPLETED';
+            await booking.save();
+            
+            this.io.emit('sessionStatusUpdate', { 
+              bookingId: booking._id,
+              status: 'COMPLETED' 
+            });
+            
+            await this.processPayout(booking);
+          }
+        } catch (error) {
+          console.error(`Error processing booking ${booking._id}:`, error);
+          continue; // Continue with next booking even if one fails
+        }
       }
+    } catch (error) {
+      console.error('Error in checkSessions:', error);
     }
   }
 
   async processPayout(booking) {
       try {
 
-              // Skip payout if booking is terminated
+ // Skip payout if booking is terminated
       if (booking.status === 'TERMINATED') {
         console.log(`Skipping payout for terminated booking ${booking._id}`);
         return;

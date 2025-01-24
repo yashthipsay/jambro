@@ -15,14 +15,14 @@ export function Navbar() {
 
   return (
     <motion.nav
-      className="fixed top-4 left-4 right-4 z-50 flex justify-between items-center p-4 bg-black bg-opacity-80 backdrop-blur-md rounded-lg shadow-lg border border-emerald"
+      className="fixed top-4 left-4 right-4 z-50 flex justify-between items-center p-4 nav-gradient rounded-lg shadow-lg"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 120 }}
     >
       <Link href="/">
         <motion.h1
-          className="text-2xl font-bold text-emerald"
+          className="text-3xl font-bold gradient-text"
           whileHover={{ scale: 1.05 }}
         >
           Gigsaw Admin
@@ -30,13 +30,13 @@ export function Navbar() {
       </Link>
       <div>
         {isLoading ? (
-          <Button variant="outline" className="border-emerald text-emerald">
+          <Button variant="outline" className="btn-secondary">
             Loading...
           </Button>
         ) : user ? (
           <Button
             variant="outline"
-            className="border-emerald text-emerald hover:bg-emerald hover:text-black"
+            className="btn-secondary"
             onClick={() => window.location.href = '/api/auth/logout'}
           >
             Log Out
@@ -44,7 +44,7 @@ export function Navbar() {
         ) : (
           <Button
             variant="outline"
-            className="border-emerald text-emerald hover:bg-emerald hover:text-black"
+            className="btn-secondary"
             onClick={() => window.location.href = '/api/auth/login'}
           >
             Log In
