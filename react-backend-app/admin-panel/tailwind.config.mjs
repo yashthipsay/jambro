@@ -8,6 +8,9 @@ export default {
 	],
 	theme: {
 	  extend: {
+		backgroundImage: {
+			'custom-bg': "url('https://gigsaw.s3.eu-north-1.amazonaws.com/cartoon-style-piano.jpg')",
+		  },
 		colors: {
 		  "primary-purple": "#8059f7",
 		  "secondary-purple": "#6434fc",

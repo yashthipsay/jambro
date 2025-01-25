@@ -47,8 +47,11 @@ export default function BookingsPage(){
             const data = await response.json()
             console.log(data)
             if (data.success) {
+              console.log(data)
+              // Filter out bookings with status TERMINATED
+              const filteredBookings = data.data.filter(booking => booking.status !== 'TERMINATED');
               // Transform bookings into calendar events
-              const events = data.data.map(booking => {
+              const events = filteredBookings.map(booking => {
                 // Get earliest start time and latest end time
                 const bookingDate = moment(booking.date).format('YYYY-MM-DD')
                 const sortedSlots = [...booking.slots].sort((a, b) => {

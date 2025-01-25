@@ -66,17 +66,22 @@ export function Sidebar() {
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 120 }}
     >
-     <div className={`space-y-4 ${(!user || !isRegistered) && 'blur-sm'}`}>
+     <div className={`flex flex-col gap-6 ${(!user || !isRegistered) && 'blur-sm'}`}>
         {sidebarItems.map((item, index) => (
+                  <div key={index} className="relative">
           <Link href={item.path} key={index}>
             <Button
               variant="ghost"
-              className="w-full justify-start text-white hover:bg-primary hover:text-white transition-all duration-300"
+              className="w-full justify-start text-white hover:bg-primary/20 hover:text-white transition-all duration-300 py-4"
             >
-              <item.icon className="mr-2 h-4 w-4" />
+              <item.icon className="mr-3 h-5 w-5" />
               {item.label}
             </Button>
           </Link>
+          {index !== sidebarItems.length - 1 && (
+              <div className="absolute bottom-0 left-2 right-2 h-[1px] bg-gradient-to-r from-transparent via-pink-200/30 to-transparent" />
+            )}
+        </div>
         ))}
       </div>
       {!user && (

@@ -438,7 +438,7 @@ const handleSectionSave = async (section) => {
                       <Label>Time Slots</Label>
                       {editingSection === 'additional' ? (
                         <TimeSlotSelector
-                          selectedSlots={jamRoomData.slots}
+                          selectedSlots={watch('slots') || jamRoomData.slots.map((slot) => slot.slotId)}
                           setSlots={(slots) => setValue('slots', slots)}
                         />
                       ) : (

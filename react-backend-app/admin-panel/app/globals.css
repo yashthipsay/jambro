@@ -19,9 +19,9 @@
 
 body {
   font-family: "Montserrat", sans-serif;
-  background: var(--gradient-2);
+  background: var(--gradient-1); /* darker gradient for better contrast */
   min-height: 100vh;
-  color: white;
+  color: white; /* or a near-white for softer contrast */
 }
 
 h1,
@@ -86,9 +86,9 @@ h6 {
   }
 
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-purple to-secondary-purple text-white font-syncopate;
+    @apply bg-gradient-to-r from-primary-purple to-secondary-purple text-white;
+    @apply hover:from-secondary-purple hover:to-primary-purple;
     border-radius: var(--radius);
-    transition: all 0.3s ease;
   }
 
   .btn-primary:hover {
