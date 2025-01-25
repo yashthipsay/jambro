@@ -1,7 +1,13 @@
 const JamRoom = require('../models/JamRooms');
 const path = require('path');
 const multer = require('multer');
-const fs = require('fs');
+const Aws = require('aws-sdk');
+
+// Configure AWS S3
+const s3 = new Aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
 
 const createJamRoom = async (req, res) => {
   try {
@@ -302,16 +308,18 @@ const uploadJamRoomImages = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error uploading images', error: err.message });
       }
 
-      const uploadPath = path.join(__dirname, '../uploads/jamrooms');
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-      }
+      const imageUrls = await Promise.all(req.files.map(async (file) => {
+        const params = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `${Date.now()}-${file.originalname}`,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+          ACL: 'public-read'
+        };
 
-      const imageUrls = req.files.map(file => {
-        const filePath = path.join(uploadPath, `${Date.now()}-${file.originalname}`);
-        fs.writeFileSync(filePath, file.buffer);
-        return `/uploads/jamrooms/${path.basename(filePath)}`;
-      });
+        const uploadResult = await s3.upload(params).promise();
+        return uploadResult.Location;
+      }));
 
       jamRoom.images.push(...imageUrls);
       await jamRoom.save();
