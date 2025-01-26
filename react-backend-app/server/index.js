@@ -13,6 +13,7 @@ const payoutRoutes = require('./routes/payoutRoutes');
 const Booking = require('./models/BookingSchema');
 const User = require('./models/User');
 const SessionMonitor = require('./services/sessionMonitor');
+const PayoutMonitor = require('./services/PayoutMonitor');
 const app = express();
 const PORT = 5000;
 const server = createServer(app);
@@ -79,7 +80,10 @@ io.on('connection', (socket) => {
 
 // After your socket.io setup
 const sessionMonitor = new SessionMonitor(io);
-sessionMonitor.start()
+sessionMonitor.start();
+
+const payoutMonitor = new PayoutMonitor(io);
+payoutMonitor.start();
 
 // Start the Express server
 server.listen(PORT, () => {

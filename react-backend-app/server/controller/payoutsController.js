@@ -21,17 +21,7 @@ async function createRazorpayPayout(req, res) {
     if (!jamroom) {
       return res.status(404).json({ error: 'JamRoom not found' });
     }
-        // 2. Create a new payout document (status initially 'PENDING')
-        let newPayout = new Payout({
-          jamroom: jamroom._id,
-          reference_id: jamroom._id.toString(), // Use jamroom ID or any field
-          fund_account_id,
-          amount,
-          currency: 'INR',
-          status: 'PENDING',
-          bookingId: bookingId,
-        });
-        await newPayout.save();
+
 
       const idempotencyKey = uuidv4();
   
@@ -65,6 +55,19 @@ async function createRazorpayPayout(req, res) {
           },
         }
       );
+
+      // 2. Create a new payout document (status initially 'PENDING')
+      let newPayout = new Payout({
+        jamroom: jamroom._id,
+        reference_id: jamroom._id.toString(), // Use jamroom ID or any field
+        fund_account_id,
+        amount,
+        currency: 'INR',
+        status: 'PENDING',
+        razorpayPayoutId: response.data.id, // Store Razorpay payout ID
+        bookingId: bookingId,
+      });
+      await newPayout.save();
   
       console.log('Payout response:', response.data);
       return res.json(response.data);
