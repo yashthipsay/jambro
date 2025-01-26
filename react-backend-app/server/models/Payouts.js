@@ -7,6 +7,7 @@ const payoutSchema = new mongoose.Schema({
     currency: String,
     reference_id: String,
     razorpayPayoutId: String,
+    bookingId: String,
     status: { type: String, default: 'PENDING' },
     jamroom: {
         type: mongoose.Schema.Types.ObjectId,

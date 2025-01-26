@@ -7,7 +7,7 @@ const moment = require('moment-timezone');
 
 const createBooking = async (req, res) => {
   try {
-    const { userId, jamRoomId, date, slots, totalAmount } = req.body;
+    const { userId, jamRoomId, date, slots, totalAmount, paymentId } = req.body;
 
     // Convert date to the correct timezone
     const bookingDate = moment(date).tz('Asia/Kolkata').startOf('day').toDate();
@@ -38,6 +38,7 @@ const createBooking = async (req, res) => {
       date: bookingDate,
       slots,
       totalAmount,
+      paymentId,
       status: 'NOT_STARTED'
     });
 
@@ -64,8 +65,40 @@ const getAllBookings = async (req, res) => {
   const getBookingsByJamRoomId = async(req, res) => {
     try {
       const { jamRoomId } = req.params;
-      const bookings = await BookingSchema.find({ jamRoom: jamRoomId }).populate('user');
-      res.status(200).json({ success: true, bookings });
+      const { startDate, endDate, sortBy, sortOrder, skip = 0, limit = 10 } = req.query;
+
+      const filter = { jamRoom: jamRoomId };
+
+      if (startDate) {
+        filter.date = { ...filter.date, $gte: new Date(startDate) };
+      }
+  
+      if (endDate) {
+        filter.date = { ...filter.date, $lte: new Date(endDate) };
+      }
+
+      const sortOptions = {};
+      if (sortBy) {
+        sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+      }
+
+    const bookings = await BookingSchema.find(filter)
+      .sort(sortOptions)
+      .skip(Number(skip))
+      .limit(Number(limit))
+      .populate('user');
+
+      const totalBookings = await BookingSchema.countDocuments(filter);
+
+    // Always return success with data and hasResults flag
+    res.status(200).json({ 
+      success: true, 
+      data: bookings, 
+      total: totalBookings,
+      hasResults: bookings.length > 0 
+    });
+  
+
     } catch (error) {
       console.error('Error fetching bookings:', error);
       res.status(500).json({ success: false, message: 'Server error' });

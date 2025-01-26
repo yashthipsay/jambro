@@ -1,4 +1,13 @@
 const JamRoom = require('../models/JamRooms');
+const path = require('path');
+const multer = require('multer');
+const Aws = require('aws-sdk');
+
+// Configure AWS S3
+const s3 = new Aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
 
 const createJamRoom = async (req, res) => {
   try {
@@ -233,29 +242,95 @@ const getJamRoomById = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const jamRoom = await JamRoom.findById(id);
-    
-    if (!jamRoom) {
-      return res.status(404).json({
-        success: false,
-        message: 'Jam room not found'
+    if (req.method === 'PUT') {
+      // Handle PUT request
+      const updateData = req.body;
+      
+      // Validate if jam room exists
+      let jamRoom = await JamRoom.findById(id);
+      if (!jamRoom) {
+        return res.status(404).json({
+          success: false,
+          message: 'Jam room not found'
+        });
+      }
+
+      // Update the specific section
+      const sectionKey = Object.keys(updateData)[0];
+      jamRoom[sectionKey] = updateData[sectionKey];
+
+      // Save the updated jam room
+      const updatedJamRoom = await jamRoom.save();
+
+      return res.status(200).json({
+        success: true,
+        data: updatedJamRoom
+      });
+    } else {
+      // Handle GET request
+      const jamRoom = await JamRoom.findById(id);
+      
+      if (!jamRoom) {
+        return res.status(404).json({
+          success: false,
+          message: 'Jam room not found'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: jamRoom
       });
     }
-
-    res.status(200).json({
-      success: true,
-      data: jamRoom
-    });
-
   } catch (error) {
     res.status(500).json({
-      success: false, 
+      success: false,
       message: error.message
     });
   }
-}
+};
 
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage }).array('images');
 
+const uploadJamRoomImages = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const jamRoom = await JamRoom.findById(id);
+
+    if (!jamRoom) {
+      return res.status(404).json({ success: false, message: 'Jam room not found' });
+    }
+
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: 'Error uploading images', error: err.message });
+      }
+
+      const imageUrls = await Promise.all(req.files.map(async (file) => {
+        const params = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `${Date.now()}-${file.originalname}`,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+          ACL: 'public-read'
+        };
+
+        const uploadResult = await s3.upload(params).promise();
+        return uploadResult.Location;
+      }));
+
+      jamRoom.images.push(...imageUrls);
+      await jamRoom.save();
+
+      res.status(200).json({ success: true, imageUrls });
+    });
+  } catch (error) {
+    console.error('Error uploading images:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
 
 module.exports = {
   createJamRoom,
@@ -264,5 +339,6 @@ module.exports = {
   isJamRoomRegisteredByEmail,
   getJamRoomNameById,
   getJamRoomByEmail,
-  getJamRoomById
+  getJamRoomById,
+  uploadJamRoomImages
 };

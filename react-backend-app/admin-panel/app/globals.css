@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Rock+Salt&family=Roboto:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Audiowide&family=Syncopate:wght@400;700&family=Montserrat:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,56 +6,105 @@
 
 :root {
   /* Base Colors */
-  --black: #000000;
-  --emerald: #50C878;
-  --blush: #F4C2C2;
-  --cream: #FFFDD0;
+  --primary-purple: #8059f7;
+  --secondary-purple: #6434fc;
+  --light-purple: #dcd5ff;
+  --accent-pink: #ffccf2;
+
+  /* Gradient Combinations */
+  --gradient-1: linear-gradient(135deg, #8059f7, #6434fc);
+  --gradient-2: linear-gradient(135deg, #6434fc, #011450);
+  --gradient-3: linear-gradient(135deg, #8059f7, #ffccf2);
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
-  background-color: var(--black);
-  color: var(--cream);
+  font-family: "Montserrat", sans-serif;
+  background: var(--gradient-1); /* darker gradient for better contrast */
+  min-height: 100vh;
+  color: white; /* or a near-white for softer contrast */
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Rock Salt', cursive;
+h1,
+h2,
+h3 {
+  font-family: "Audiowide", cursive;
+}
+
+h4,
+h5,
+h6 {
+  font-family: "Syncopate", sans-serif;
 }
 
 @layer base {
   :root {
-    /* Theme Mapping */
-    --background: var(--black);
-    --foreground: var(--cream);
-    
-    /* Card and Popover */
-    --card: var(--black);
-    --card-foreground: var(--cream);
-    --popover: var(--black);
-    --popover-foreground: var(--cream);
-    
-    /* Primary Colors */
-    --primary: var(--emerald);
-    --primary-foreground: var(--black);
-    
-    /* Secondary Colors */
-    --secondary: var(--blush);
-    --secondary-foreground: var(--black);
-    
-    /* Muted and Accent */
-    --muted: var(--black);
-    --muted-foreground: var(--cream);
-    --accent: var(--emerald);
-    --accent-foreground: var(--black);
-    
-    /* Destructive and UI Elements */
-    --destructive: var(--blush);
-    --destructive-foreground: var(--black);
-    --border: var(--emerald);
-    --input: var(--black);
-    --ring: var(--emerald);
-    
-    /* Border Radius */
-    --radius: 0.5rem;
+    --background: var(--primary-purple);
+    --foreground: white;
+
+    --card: rgba(128, 89, 247, 0.1);
+    --card-foreground: white;
+    --popover: rgba(128, 89, 247, 0.2);
+    --popover-foreground: white;
+
+    --primary: var(--secondary-purple);
+    --primary-foreground: white;
+
+    --secondary: var(--light-purple);
+    --secondary-foreground: var(--secondary-purple);
+
+    --accent: var(--accent-pink);
+    --accent-foreground: var(--secondary-purple);
+
+    --muted: rgba(128, 89, 247, 0.3);
+    --muted-foreground: rgba(255, 255, 255, 0.7);
+    --border: var(--light-purple);
+    --ring: var(--light-purple);
+
+    --radius: 0.75rem;
+  }
+
+  .glass-card {
+    background: rgba(128, 89, 247, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(128, 89, 247, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius);
+  }
+
+  .gradient-text {
+    background: var(--gradient-3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nav-gradient {
+    background: var(--gradient-1);
+  }
+
+  .sidebar-gradient {
+    background: var(--gradient-2);
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary-purple to-secondary-purple text-white;
+    @apply hover:from-secondary-purple hover:to-primary-purple;
+    border-radius: var(--radius);
+  }
+
+  .btn-primary:hover {
+    @apply from-secondary-purple to-primary-purple;
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    @apply bg-gradient-to-r from-light-purple to-accent-pink text-secondary-purple font-syncopate;
+    border-radius: var(--radius);
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    @apply from-accent-pink to-light-purple;
+    transform: translateY(-2px);
   }
 }
+
