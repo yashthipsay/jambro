@@ -332,6 +332,70 @@ const uploadJamRoomImages = async (req, res) => {
   }
 };
 
+// Add or update addons
+const updateAddons = async (req, res) => {
+  try{
+    const {id} = req.params;
+    const {addons} = req.body;
+
+    const jamRoom = await JamRoom.findById(id);
+    if(!jamRoom){
+      return res.status(404).json({
+        success: false,
+        message: 'Jam room not found'
+      });
+    }
+
+        // Initialize addons array if it doesn't exist
+        if (!jamRoom.addons) {
+          jamRoom.addons = [];
+        }
+    
+    jamRoom.addons = addons;
+    await jamRoom.save();
+
+    res.status(200).json({
+      success: true,
+      data: jamRoom.addons
+    });
+  }catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+}
+
+// Delete an addon
+const deleteAddon = async (req, res) => {
+  try {
+    const { id, addonId } = req.params;
+
+    const jamRoom = await JamRoom.findById(id);
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Jam room not found'
+      });
+    }
+
+    jamRoom.addons = jamRoom.addons.filter(
+      addon => addon._id.toString() !== addonId
+    );
+    await jamRoom.save();
+
+    res.status(200).json({
+      success: true,
+      data: jamRoom.addons
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   createJamRoom,
   getAllJamRooms,
@@ -340,5 +404,7 @@ module.exports = {
   getJamRoomNameById,
   getJamRoomByEmail,
   getJamRoomById,
-  uploadJamRoomImages
+  uploadJamRoomImages,
+  updateAddons,
+  deleteAddon
 };
