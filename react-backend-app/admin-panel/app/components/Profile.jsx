@@ -427,7 +427,7 @@ const handleSectionSave = async (section) => {
                       {editingSection === 'additional' ? (
                         <Input
                           type="number"
-                          {...register('feesPerSlot')}
+                          {...register('additional.feesPerSlot')}
                           defaultValue={jamRoomData.feesPerSlot}
                         />
                       ) : (

@@ -11,21 +11,41 @@ export function Navbar() {
   const { user, error, isLoading } = useUser()
   const router = useRouter()
 
+  const [jamRoomName, setJamRoomName] = useState('')
 
+  useEffect(() => {
+    const fetchJamRoomName = async () => {
+      if (user?.email) {
+        try {
+          const response = await fetch(`http://localhost:5000/api/jamrooms/email/${user.email}`)
+          const data = await response.json()
+          if (data.success && data.data) {
+            setJamRoomName(data.data.jamRoomDetails.name)
+          }
+          console.log(data)
+        } catch (error) {
+          console.error('Error fetching jam room name:', error)
+        }
+      }
+    }
+
+    fetchJamRoomName()
+  }, [user])
 
   return (
     <motion.nav
-      className="fixed top-4 left-4 right-4 z-50 flex justify-between items-center p-4 nav-gradient rounded-lg shadow-lg"
+      className="fixed top-4 left-4 right-4 z-50 flex justify-between items-center p-4 glassmorphism rounded-lg shadow-lg"
+
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 120 }}
     >
       <Link href="/">
-        <motion.h1
-          className="text-3xl font-bold gradient-text"
-          whileHover={{ scale: 1.05 }}
+      <motion.h1
+        className="text-3xl gradient-text"
+        whileHover={{ scale: 1.05 }}
         >
-          Gigsaw Admin
+          Gigsaw Admin - {`${jamRoomName}`}
         </motion.h1>
       </Link>
       <div>

@@ -61,7 +61,7 @@ export function Sidebar() {
 
   return (
     <motion.div
-      className="fixed left-4 top-24 bottom-4 w-64 sidebar-gradient rounded-lg shadow-lg p-4"
+      className="fixed left-4 top-24 bottom-4 w-64 glassmorphism p-4"
       initial={{ x: -100 }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 120 }}
