@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { OlaMaps } from '../../OlaMapsWebSDKNew/OlaMapsWebSDKNew';
-import axios from 'axios';
 
 const OlaMap = ({ apiKey, onLocationSelect, onClose }) => {
   const mapContainer = useRef(null);
@@ -14,7 +13,7 @@ const OlaMap = ({ apiKey, onLocationSelect, onClose }) => {
   const reverseGeocode = async (lat, lon) => {
     try {
       const url = `http://localhost:5000/proxy?lat=${lat}&lon=${lon}&apiKey=${apiKey}`;
-      const response = await axios.get(url);
+      const response = await fetch(url);
       const data = await response.json();
       console.log('Reverse geocoding response:', data);
       const results = data.results || [];

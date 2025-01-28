@@ -10,8 +10,8 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { Label } from "@/app/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
-const Autocomplete = dynamic(() => import('@/app/components/ui/autocomplete'), { ssr: false });
-const OlaMap = dynamic(() => import('@/app/components/ui/olaMap'), { ssr: false });
+import Autocomplete from '@/app/components/ui/autocomplete';
+import OlaMap from '@/app/components/ui/olaMap';
 import { fetchLocationCoordinates } from '@/utils/locationUtils';
 import { TimeSlotSelector } from '../components/timeSlotSelector';
 

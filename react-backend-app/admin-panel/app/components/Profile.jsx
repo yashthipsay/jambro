@@ -15,10 +15,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Alert, AlertDescription } from "./ui/alert"
 import { Edit2, Save, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-const Autocomplete = dynamic(() => import('@/app/components/ui/autocomplete'), { ssr: false });
-const OlaMap = dynamic(() => import('@/app/components/ui/olaMap'), { ssr: false });
+import Autocomplete from '@/app/components/ui/autocomplete';
+import OlaMap from '@/app/components/ui/olaMap';
 import { TimeSlotSelector } from '../components/timeSlotSelector'
 import { DashboardLayout } from '../components/DashboardLayout'
+
 
 const ProfileSection = ({ title, children, onEdit, isEditing, onSave, onCancel }) => (
     <Card className="relative group glass-card">
@@ -184,10 +185,21 @@ const handleSectionSave = async (section) => {
       }
 
       const handleLocationSelect = (selectedLocation) => {
-        setValue("location.address", selectedLocation.description)
-        setValue("location.latitude", selectedLocation.geometry.location.lat)
-        setValue("location.longitude", selectedLocation.geometry.location.lng)
-      }
+        // Update form values with selected location
+        setValue("location.address", selectedLocation.description);
+        setValue("location.latitude", selectedLocation.geometry.location.lat);
+        setValue("location.longitude", selectedLocation.geometry.location.lng);
+        console.log(selectedLocation);    
+        // You might want to fetch the coordinates for the selected location
+        // and update the latitude and longitude fields
+      };
+    
+      const handlePinLocationSelect = (location) => {
+        setValue("location.address", location.address);
+        setValue("location.latitude", location.lat);
+        setValue("location.longitude", location.lon);
+        console.log(location);
+      };
     
       if (loading) {
         return (
@@ -348,7 +360,7 @@ const handleSectionSave = async (section) => {
                       ) : (
                         <OlaMap
                           apiKey="tx0FO1vtsTuqyz45MEUIJiYDTFMJOPG9bWR3Yd4k"
-                          onLocationSelect={handleLocationSelect}
+                          onLocationSelect={handlePinLocationSelect}
                           onClose={() => setUseAutocomplete(true)}
                         />
                       )}
