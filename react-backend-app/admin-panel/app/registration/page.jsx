@@ -1,5 +1,6 @@
 'use client'
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic'; // Import dynamic
 import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -9,8 +10,8 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { Label } from "@/app/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
-import Autocomplete from '@/app/components/ui/autocomplete';
-import OlaMap from '@/app/components/ui/olaMap';
+const Autocomplete = dynamic(() => import('@/app/components/ui/autocomplete'), { ssr: false });
+const OlaMap = dynamic(() => import('@/app/components/ui/olaMap'), { ssr: false });
 import { fetchLocationCoordinates } from '@/utils/locationUtils';
 import { TimeSlotSelector } from '../components/timeSlotSelector';
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useUser } from '@auth0/nextjs-auth0/client'
+import dynamic from 'next/dynamic'
 import { useForm } from 'react-hook-form'
 import { useToast } from '@/hooks/use-toast'
 import { ErrorBoundary } from 'next/dist/client/components/error-boundary'
@@ -14,8 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Alert, AlertDescription } from "./ui/alert"
 import { Edit2, Save, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Autocomplete from './ui/autocomplete'
-import OlaMap from './ui/olaMap'
+const Autocomplete = dynamic(() => import('@/app/components/ui/autocomplete'), { ssr: false });
+const OlaMap = dynamic(() => import('@/app/components/ui/olaMap'), { ssr: false });
 import { TimeSlotSelector } from '../components/timeSlotSelector'
 import { DashboardLayout } from '../components/DashboardLayout'
 
@@ -115,41 +116,67 @@ const handleImageUpload = (e) => {
 
 const handleSectionSave = async (section) => {
   try {
-    const formData = watch()
-    if (section === 'additional' && imageFiles.length > 0) {
-      const uploadFormData = new FormData()
-      formData.images?.forEach(image => {
-        if (!image.startsWith('blob:')) uploadFormData.append('existingImages', image)
-      })
-      imageFiles.forEach(file => uploadFormData.append('images', file))
+    const formData = watch();
+    
+    if (section === 'additional') {
+      // Handle images separately if there are any new uploads
+      if (imageFiles.length > 0) {
+        const uploadFormData = new FormData();
+        formData.images?.forEach(image => {
+          if (!image.startsWith('blob:')) uploadFormData.append('existingImages', image);
+        });
+        imageFiles.forEach(file => uploadFormData.append('images', file));
 
-      const imageUploadResponse = await fetch(
-        `http://localhost:5000/api/jamrooms/${jamRoomData._id}/images`,
-        { method: 'PUT', body: uploadFormData }
-      )
-      const imageData = await imageUploadResponse.json()
-      if (!imageData.success) throw new Error('Failed to upload images')
+        const imageUploadResponse = await fetch(
+          `http://localhost:5000/api/jamrooms/${jamRoomData._id}/images`,
+          { method: 'PUT', body: uploadFormData }
+        );
+        const imageData = await imageUploadResponse.json();
+        if (!imageData.success) throw new Error('Failed to upload images');
+        formData.images = imageData.imageUrls;
+      }
+      console.log(`Formdata for ${section} update:`, formData);
 
-      formData.images = imageData.imageUrls
+      // Handle feesPerSlot and slots update
+      const response = await fetch(`http://localhost:5000/api/jamrooms/id/${jamRoomData._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          feesPerSlot: parseInt(formData.feesPerSlot),
+          slots: formData.slots
+        }),
+      });
+
+      const data = await response.json();
+      console.log(`Data for ${section} update:`, data);
+      if (!data.success) throw new Error(data.message || 'Update failed');
+      
+      setJamRoomData(data.data);
+      console.log('Updated jam room data:', data.data);
+      setEditingSection(null);
+      toast({ title: 'Success', description: 'Changes saved.', variant: 'default' });
+      return;
     }
 
+    // Handle other sections as before
     const response = await fetch(`http://localhost:5000/api/jamrooms/id/${jamRoomData._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ [section]: formData[section] }),
-    })
+    });
 
-    const data = await response.json()
-    if (!data.success) throw new Error(data.message || 'Update failed')
+    const data = await response.json();
+
+    if (!data.success) throw new Error(data.message || 'Update failed');
     
-    setJamRoomData(data.data)
-    setEditingSection(null)
-    toast({ title: 'Success', description: 'Changes saved.', variant: 'default' })
+    setJamRoomData(data.data);
+    setEditingSection(null);
+    toast({ title: 'Success', description: 'Changes saved.', variant: 'default' });
   } catch (error) {
-    console.error('Error updating jam room:', error)
-    toast({ title: 'Error', description: error?.message, variant: 'destructive' })
+    console.error('Error updating jam room:', error);
+    toast({ title: 'Error', description: error?.message, variant: 'destructive' });
   }
-}
+};
 
       const handleSectionCancel = () => {
         reset(jamRoomData)
@@ -427,7 +454,7 @@ const handleSectionSave = async (section) => {
                       {editingSection === 'additional' ? (
                         <Input
                           type="number"
-                          {...register('additional.feesPerSlot')}
+                          {...register('feesPerSlot')}
                           defaultValue={jamRoomData.feesPerSlot}
                         />
                       ) : (
@@ -436,20 +463,77 @@ const handleSectionSave = async (section) => {
                     </div>
                     <div>
                       <Label>Time Slots</Label>
-                      {editingSection === 'additional' ? (
-                        <TimeSlotSelector
-                          selectedSlots={watch('slots') || jamRoomData.slots.map((slot) => slot.slotId)}
-                          setSlots={(slots) => setValue('slots', slots)}
-                        />
-                      ) : (
-                        <div className="grid grid-cols-2 gap-2">
-                          {jamRoomData.slots.map((slot) => (
-                            <div key={slot.slotId} className="p-2 bg-gray-50 rounded">
-                              {slot.startTime} - {slot.endTime}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                        {editingSection === 'additional' ? (
+                               <TimeSlotSelector
+                               selectedSlots={watch('slots') || jamRoomData.slots}
+                               setSlots={(newSlots) => {
+                                 try {
+                                   // Validate newSlots array
+                                   if (!Array.isArray(newSlots)) {
+                                     throw new Error('Selected slots must be an array');
+                                   }
+                       
+                                   // Ensure slots are properly formatted and have required properties
+                                   const formattedSlots = newSlots.map((slot, index) => {
+                                     if (!slot.startTime || !slot.endTime) {
+                                       throw new Error(`Invalid time format for slot ${index + 1}`);
+                                     }
+                       
+                                     // Validate time format (HH:mm)
+                                     const timeRegex = /^([0-1][0-9]|2[0-3]):00$/;
+                                     if (!timeRegex.test(slot.startTime) || !timeRegex.test(slot.endTime)) {
+                                       throw new Error(`Invalid time format for slot ${index + 1}. Expected HH:00 format`);
+                                     }
+                       
+                                     return {
+                                       slotId: slot.slotId,
+                                       startTime: slot.startTime,
+                                       endTime: slot.endTime,
+                                       isBooked: false,
+                                       bookedBy: null
+                                     };
+                                   });
+                       
+                                   // Check for duplicate slot IDs
+                                   const slotIds = new Set();
+                                   formattedSlots.forEach(slot => {
+                                     if (slotIds.has(slot.slotId)) {
+                                       throw new Error(`Duplicate slot ID found: ${slot.slotId}`);
+                                     }
+                                     slotIds.add(slot.slotId);
+                                   });
+                       
+                                   // Sort slots by start time
+                                   formattedSlots.sort((a, b) => {
+                                     return parseInt(a.startTime) - parseInt(b.startTime);
+                                   });
+                       
+                                   setValue('slots', formattedSlots);
+                                   toast({
+                                     title: "Success",
+                                     description: `${formattedSlots.length} slots updated successfully`,
+                                     variant: "default"
+                                   });
+                       
+                                 } catch (error) {
+                                   console.error('Error formatting slots:', error);
+                                   toast({
+                                     title: "Error updating slots",
+                                     description: error.message,
+                                     variant: "destructive"
+                                   });
+                                 }
+                               }}
+                             />
+                        ) : (
+                          <div className="grid grid-cols-2 gap-2">
+                            {jamRoomData.slots.map((slot) => (
+                              <div key={slot.slotId} className="p-2 bg-gray-50 rounded">
+                                {slot.startTime} - {slot.endTime}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                     </div>
                   </div>
                 </ProfileSection>

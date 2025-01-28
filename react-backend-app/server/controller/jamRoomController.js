@@ -255,9 +255,11 @@ const getJamRoomById = async (req, res) => {
         });
       }
 
-      // Update the specific section
-      const sectionKey = Object.keys(updateData)[0];
-      jamRoom[sectionKey] = updateData[sectionKey];
+
+      // Update all fields provided in updateData
+      Object.keys(updateData).forEach(key => {
+        jamRoom[key] = updateData[key];
+      });
 
       // Save the updated jam room
       const updatedJamRoom = await jamRoom.save();
@@ -283,6 +285,7 @@ const getJamRoomById = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log('Error:', error);
     res.status(500).json({
       success: false,
       message: error.message
