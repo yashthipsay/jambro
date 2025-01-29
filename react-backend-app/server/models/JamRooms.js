@@ -5,6 +5,23 @@ const validateContact = (contact) => {
   const phoneRegex = /^\d{10}$/;
   return emailRegex.test(contact) || phoneRegex.test(contact);
 };
+const addonSchema = new mongoose.Schema({
+  instrumentType: {
+   type: Array,
+  },
+  quantity: {
+    type: Number,
+    min: 0
+  },
+  pricePerHour: {
+    type: Number,
+    min: 0
+  },
+  isAvailable: {
+    type: Boolean,
+    default: true
+  }
+})
 
 const jamRoomSchema = new mongoose.Schema({
   jamRoomDetails: {
@@ -52,6 +69,8 @@ const jamRoomSchema = new mongoose.Schema({
   bankValidationData: {
     type: Object, // Data returned after bank account validation
   },
+  // Add one more feature, addons, where the owner can display equipments for rent for a live jamming session. 
+  addons: [addonSchema],
 });
 
 const JamRoom = mongoose.model('JamRoom', jamRoomSchema);

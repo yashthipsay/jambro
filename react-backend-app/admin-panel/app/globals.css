@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Audiowide&family=Syncopate:wght@400;700&family=Montserrat:wght@300;400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -63,6 +64,25 @@ h6 {
     --radius: 0.75rem;
   }
 
+  @layer utilities {
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(125, 249, 255, 0.2);
+      border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background: rgba(125, 249, 255, 0.3);
+    }
+  }
+
   .glass-card {
     background: rgba(128, 89, 247, 0.1);
     backdrop-filter: blur(8px);
@@ -78,11 +98,26 @@ h6 {
   }
 
   .nav-gradient {
-    background: var(--gradient-1);
+    background: var(--gradient-1); /* Keep your original gradient */
+    backdrop-filter: blur(8px);    /* Glass blur */
+    background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent overlay */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius);
+  }
+  
+  .sidebar-gradient {
+    backdrop-filter: blur(5000px);
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius);
   }
 
-  .sidebar-gradient {
-    background: var(--gradient-2);
+  .glassmorphism {
+    background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
+    backdrop-filter: blur(10px); /* Blur effect */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Border */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Subtle shadow */
   }
 
   .btn-primary {
@@ -107,4 +142,5 @@ h6 {
     transform: translateY(-2px);
   }
 }
+
 

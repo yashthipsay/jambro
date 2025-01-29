@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from "@fullcalendar/daygrid"
 import interactionPlugin from "@fullcalendar/interaction"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Card, CardContent } from "./ui/card"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs"
 import { motion, AnimatePresence } from "framer-motion"
 import { Calendar, List } from "lucide-react"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from './ui/select'

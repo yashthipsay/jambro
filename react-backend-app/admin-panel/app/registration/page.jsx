@@ -1,5 +1,6 @@
 'use client'
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic'; // Import dynamic
 import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
