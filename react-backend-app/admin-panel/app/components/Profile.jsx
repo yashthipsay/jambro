@@ -84,7 +84,7 @@ useEffect(() => {
     if (!user?.email) return
     try {
       setLoading(true)
-      const response = await fetch(`http://3.110.42.247:5000/api/jamrooms/email/${user.email}`)
+      const response = await fetch(`http://13.126.198.106:5000/api/jamrooms/email/${user.email}`)
       const data = await response.json()
       if (data.success) {
         setJamRoomData(data.data)
@@ -129,7 +129,7 @@ const handleSectionSave = async (section) => {
         imageFiles.forEach(file => uploadFormData.append('images', file));
 
         const imageUploadResponse = await fetch(
-          `http://3.110.42.247:5000/api/jamrooms/${jamRoomData._id}/images`,
+          `http://13.126.198.106:5000/api/jamrooms/${jamRoomData._id}/images`,
           { method: 'PUT', body: uploadFormData }
         );
         const imageData = await imageUploadResponse.json();
@@ -139,7 +139,7 @@ const handleSectionSave = async (section) => {
       console.log(`Formdata for ${section} update:`, formData);
 
       // Handle feesPerSlot and slots update
-      const response = await fetch(`http://3.110.42.247:5000/api/jamrooms/id/${jamRoomData._id}`, {
+      const response = await fetch(`http://13.126.198.106:5000/api/jamrooms/id/${jamRoomData._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -160,7 +160,7 @@ const handleSectionSave = async (section) => {
     }
 
     // Handle other sections as before
-    const response = await fetch(`http://3.110.42.247:5000/api/jamrooms/id/${jamRoomData._id}`, {
+    const response = await fetch(`http://13.126.198.106:5000/api/jamrooms/id/${jamRoomData._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ [section]: formData[section] }),
