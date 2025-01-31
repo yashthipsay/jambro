@@ -33,7 +33,7 @@ const AddonsCard = ({ jamRoomId }) => {
 
   const fetchAddons = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/jamrooms/email/${user.email}`);
+      const response = await fetch(`http://13.126.198.106:5000/api/jamrooms/email/${user.email}`);
       const data = await response.json();
       if (data.success && data.data) {
         setAddons(data.data.addons || []);
@@ -47,7 +47,7 @@ const AddonsCard = ({ jamRoomId }) => {
   const handleAddAddon = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/jamrooms/${jamRoomId}/addons`,
+        `http://13.126.198.106:5000/api/jamrooms/${jamRoomId}/addons`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -69,7 +69,7 @@ const AddonsCard = ({ jamRoomId }) => {
   const handleDeleteAddon = async (addonId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/jamrooms/${jamRoomId}/addons/${addonId}`,
+        `http://13.126.198.106:5000/api/jamrooms/${jamRoomId}/addons/${addonId}`,
         { method: 'DELETE' }
       );
       const data = await response.json();
@@ -175,7 +175,7 @@ export function LandingContent() {
     const fetchJamRoomData = async () => {
       if (!user?.email) return;
       try {
-        const response = await fetch(`http://localhost:5000/api/jamrooms/email/${user.email}`);
+        const response = await fetch(`http://13.126.198.106:5000/api/jamrooms/email/${user.email}`);
         const data = await response.json();
         if (data.success) {
           setJamRoomId(data.data._id);

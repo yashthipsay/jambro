@@ -102,7 +102,7 @@ const JamRoomRegistration = () => {
     const contact = watch("ownerDetails.phone");
 
     try {
-      const response = await fetch('http://localhost:5000/api/bank-verification/verify', {
+      const response = await fetch('http://13.126.198.106:5000/api/bank-verification/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ const JamRoomRegistration = () => {
     console.log('Form submitted:', formData);
 
     try {
-      const response = await fetch('http://localhost:5000/api/jamrooms/create', {
+      const response = await fetch('http://13.126.198.106:5000/api/jamrooms/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
