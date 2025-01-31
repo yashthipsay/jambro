@@ -19,7 +19,7 @@ export function Sidebar() {
       if (user) {
         console.log('Checking registration for:', user.email)
         try {
-          const response = await fetch('http://13.126.198.106:5000/api/jamrooms/is-registered', {
+          const response = await fetch('http://3.110.42.247:5000/api/jamrooms/is-registered', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

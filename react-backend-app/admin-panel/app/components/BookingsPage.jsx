@@ -46,7 +46,7 @@ export default function BookingsPage(){
               skip: pagination.skip,
               limit: pagination.limit
             }).toString()
-            const response = await fetch(`http://13.126.198.106:5000/api/bookings/jamroom/${jamroom_id}?${queryParams}`)
+            const response = await fetch(`http://3.110.42.247:5000/api/bookings/jamroom/${jamroom_id}?${queryParams}`)
             const data = await response.json()
             console.log(data)
             if (data.success) {
