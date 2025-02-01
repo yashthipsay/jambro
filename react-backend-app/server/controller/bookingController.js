@@ -97,6 +97,7 @@ const getAllBookings = async (req, res) => {
       total: totalBookings,
       hasResults: bookings.length > 0 
     });
+
   
 
     } catch (error) {

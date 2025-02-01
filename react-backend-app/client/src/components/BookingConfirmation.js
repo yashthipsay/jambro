@@ -9,7 +9,7 @@ const BookingConfirmation = () => {
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/payments/invoices/${id}`);
+        const response = await fetch(`http://13.126.198.106:5000/api/payments/invoices/${id}`);
         const data = await response.json();
         if (data.success && !downloaded) {
           const link = document.createElement('a');
