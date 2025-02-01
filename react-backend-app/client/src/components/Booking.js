@@ -9,7 +9,7 @@ import moment from 'moment-timezone';
 import io from 'socket.io-client';
 import { useAuth0 } from '@auth0/auth0-react';
 
-const socket = io('http://localhost:5000');
+const socket = io('http://13.126.198.106:5000');
 
 function Booking() {
   const { id } = useParams();
@@ -39,7 +39,7 @@ function Booking() {
 
   useEffect(() => {
     if (user) {
-      fetch('http://localhost:5000/api/users', {
+      fetch('http://13.126.198.106:5000/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ function Booking() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/save-number', {
+      const response = await fetch('http://13.126.198.106:5000/api/users/save-number', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ function Booking() {
 
   const handleDeleteNumber = async (number) => {
     try {
-      const response = await fetch('http://localhost:5000/api/users/delete-number', {
+      const response = await fetch('http://13.126.198.106:5000/api/users/delete-number', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

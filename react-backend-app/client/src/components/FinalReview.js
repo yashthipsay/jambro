@@ -11,7 +11,7 @@ const FinalReview = () => {
   console.log(user.sub);
   const checkoutHandler = async (amount) => {
     try {
-      const response = await fetch('http://localhost:5000/api/payments/checkout', {
+      const response = await fetch('http://13.126.198.106:5000/api/payments/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ const FinalReview = () => {
         },
         handler: async (response) => {
           console.log(response);
-          const verificationResponse = await fetch('http://localhost:5000/api/payments/verify', {
+          const verificationResponse = await fetch('http://13.126.198.106:5000/api/payments/verify', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ const FinalReview = () => {
           console.log('Verification data:', verificationData);
           if (verificationData.success) {
             // Fetch user by email to get user ID
-            const userResponse = await fetch('http://localhost:5000/api/users', {
+            const userResponse = await fetch('http://13.126.198.106:5000/api/users', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ const FinalReview = () => {
               const userId = userData.data._id;
               console.log("selected date", selectedDate);
               // Store the booking
-              await fetch('http://localhost:5000/api/bookings', {
+              await fetch('http://13.126.198.106:5000/api/bookings', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

@@ -97,6 +97,7 @@ const getAllBookings = async (req, res) => {
       total: totalBookings,
       hasResults: bookings.length > 0 
     });
+
   
 
     } catch (error) {
@@ -105,10 +106,34 @@ const getAllBookings = async (req, res) => {
     }
   }
 
+  const getUserDataFromBooking = async (req, res) => {
+    try {
+      const bookingId = req.params.bookingId;
+      const booking = await BookingSchema.findById(bookingId).populate('user');
+  
+      if (!booking) {
+        return res.status(404).json({ success: false, message: 'Booking not found' });
+      }
+  
+      const user = booking.user;
+      const userInfo = {
+        name: user.name,
+        email: user.email,
+        savedNumber: user.savedNumbers.length > 0 ? user.savedNumbers[0] : null,
+      };
+  
+      res.status(200).json({ success: true, data: userInfo });
+    } catch (error) {
+      console.error('Error fetching user data from booking:', error);
+      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+  };
+
 module.exports = {
     createBooking,
     getAllBookings,
-    getBookingsByJamRoomId
+    getBookingsByJamRoomId,
+    getUserDataFromBooking
 }
 
 

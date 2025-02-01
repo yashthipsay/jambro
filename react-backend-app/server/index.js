@@ -15,7 +15,8 @@ const User = require('./models/User');
 const SessionMonitor = require('./services/sessionMonitor');
 const PayoutMonitor = require('./services/PayoutMonitor');
 const app = express();
-const PORT = 5000;
+require('dotenv').config();
+const PORT = process.env.PORT || 5000;
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
