@@ -13,6 +13,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '.
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import moment from 'moment-timezone'
+import UserInfoModal from './ui/UserInfoModal'
 
 export default function BookingsPage(){
     const pathname = usePathname()
@@ -33,6 +34,8 @@ export default function BookingsPage(){
     })
     const [selectedBookingId, setSelectedBookingId] = useState(null)
     const [activeTab, setActiveTab] = useState('calendar')
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [userInfo, setUserInfo] = useState(null);
     const bookingRefs = useRef({})
 
     useEffect(() => {
@@ -88,6 +91,21 @@ export default function BookingsPage(){
     
         fetchBookings()
       }, [jamroom_id, filters, pagination.skip, pagination.limit])
+
+      const handleBookingClick = async (bookingId) => {
+        try {
+          setSelectedBookingId(bookingId); // Track which booking was clicked
+          const response = await fetch(`http://localhost:5000/api/bookings/user/${bookingId}`);
+          const data = await response.json();
+          console.log(data)
+          if (data.success) {
+            setUserInfo(data.data);
+            setIsModalOpen(true);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      };
 
       const handleFilterChange = (e) => {
         const { name, value } = e.target
@@ -159,6 +177,7 @@ export default function BookingsPage(){
           exit={{ opacity: 0, y: -20 }}
           className="w-full max-w-4xl mx-auto"
         >
+
               {bookings.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {bookings.map((booking) => (
@@ -171,6 +190,7 @@ export default function BookingsPage(){
                   : 'hover:scale-105'
               }`}
           >
+
                 <CardContent className="p-4">
                   <div className="flex justify-between items-center">
                     <h3 className="font-semibold">Booking #{booking.id.slice(-4)}</h3>
@@ -194,6 +214,13 @@ export default function BookingsPage(){
                   Refunded: ₹{booking.refundDetails.amount} ({booking.refundDetails.percentage}%)
                 </p>
               )}
+                <Button 
+    onClick={() => handleBookingClick(booking.id)} 
+    className="mt-4 w-full"
+    variant="outline"
+  >
+    View Details
+  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -298,12 +325,15 @@ export default function BookingsPage(){
                     ) : (
                       <NoResults />
                     )}
+
                     </CardContent>
                   </Card>
+
                 </motion.div>
               </TabsContent>
     
               <TabsContent value="history">
+
                 <BookingHistory />
               </TabsContent>
             </AnimatePresence>
@@ -323,8 +353,19 @@ export default function BookingsPage(){
         >
           Next
         </Button>
+
+        
       </div>
     )}
+    <UserInfoModal 
+      isOpen={isModalOpen} 
+      onClose={() => {
+        setIsModalOpen(false);
+        setSelectedBookingId(null);
+        setUserInfo(null);
+      }} 
+      userInfo={userInfo} 
+    />
   </div>
       )
     }
