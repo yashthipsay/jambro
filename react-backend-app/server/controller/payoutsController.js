@@ -30,7 +30,7 @@ async function createRazorpayPayout(req, res) {
         {
           account_number: '2323230082162607',
           fund_account_id,
-          amount,
+          amount: amount * 100, // Convert to paise
           currency: 'INR',
           mode: 'UPI',
           purpose: purpose,
@@ -61,7 +61,7 @@ async function createRazorpayPayout(req, res) {
         jamroom: jamroom._id,
         reference_id: jamroom._id.toString(), // Use jamroom ID or any field
         fund_account_id,
-        amount,
+        amount: amount,
         currency: 'INR',
         status: 'PENDING',
         razorpayPayoutId: response.data.id, // Store Razorpay payout ID
