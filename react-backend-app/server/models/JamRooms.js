@@ -32,6 +32,22 @@ const jamRoomSchema = new mongoose.Schema({
     fullname: { type: String, required: true },
     email: { type: String, required: true, validate: [validateContact, 'Please enter a valid email'] },
     phone: { type: String, required: true, validate: [validateContact, 'Please enter a valid phone number'] },
+    spotify: {
+      username: String,
+      displayName: String,
+      profileUrl: String,
+      followers: Number,
+      images: [{
+        url: String,
+        height: Number,
+        width: Number
+      }],
+      isVerified: {
+        type: Boolean,
+        default: false
+      },
+      verifiedAt: Date
+    }
   },
   location: {
     address: { type: String, required: true },
