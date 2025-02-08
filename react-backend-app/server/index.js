@@ -17,6 +17,7 @@ const PayoutMonitor = require("./services/PayoutMonitor");
 const app = express();
 const PORT = 5000;
 const server = createServer(app);
+const spotifyRoutes = require("./routes/spotifyRoutes");
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -35,6 +36,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/bank-verification", bnkVerification);
 app.use("/api/payouts", payoutRoutes);
+app.use('/api/spotify', spotifyRoutes);
 app.use("/proxy", async (req, res) => {
   console.log("start");
   const { lat, lon, apiKey } = req.query;
