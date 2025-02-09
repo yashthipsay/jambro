@@ -15,39 +15,62 @@ export function Sidebar() {
   const [fundAccountId, setFundAccountId] = useState(null)
 
   useEffect(() => {
-    const checkJamRoomRegistration = async () => {
-      if (user) {
-        console.log('Checking registration for:', user.email)
+    const checkRegistration = async () => {
+      if (!user?.email) return;
+ 
+      const token = localStorage.getItem('jamroom_token');
+      if (token) {
         try {
-          const response = await fetch('http://3.110.42.247:5000/api/jamrooms/is-registered', {
-            method: 'POST',
+          const response = await fetch('http://localhost:5000/api/auth/verify', {
             headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ ownerEmail: user.email }),
+              'Authorization': `Bearer ${token}`
+            }
           });
-  
+          
           const data = await response.json();
-          console.log('Registration check response:', data);
-          setIsRegistered(data.success);
-          console.log('Is Registered:', data.success);
-  
-          // If jam room is not registered, redirect to registration page
           if (data.success) {
-            setJamRoomId(data.data._id);
-            setFundAccountId(data.data.bankValidationData.fund_account.id);
-            console.log('Jam Room ID:', data.data._id);
-            console.log('Fund Account ID:', data.data.bankValidationData.fund_account.id);
-          } else {
-            window.location.href = '/registration';
+            setIsRegistered(data.isRegistered);
+            setJamRoomId(data.jamRoomId);
+            setFundAccountId(data.fundAccountId);
+            return;
           }
-        } catch (err) {
-          console.error('Error checking jam room registration:', err);
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          localStorage.removeItem('jamroom_token');
         }
       }
+
+      // If no token or invalid token, check registration
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/check-registration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email })
+        });
+        
+        const data = await response.json();
+        console.log('registration data:', data);
+        if (data.success) {
+          setIsRegistered(data.isRegistered);
+          setJamRoomId(data.jamRoomId);
+          if (data.token) {
+            localStorage.setItem('jamroom_token', data.token);
+            // Extract fundAccountId from token payload
+            const payload = JSON.parse(atob(data.token.split('.')[1]));
+            console.log("Payload: ", payload)
+            setFundAccountId(payload.fundAccountId);
+          
+          }
+        } else {
+          // Not registered, redirect to registration
+          window.location.href = '/registration';
+        }
+      } catch (error) {
+        console.error('Registration check failed:', error);
+      }
     };
-  
-    checkJamRoomRegistration();
+
+    checkRegistration();
   }, [user]);
 
   const sidebarItems = [
