@@ -69,10 +69,14 @@ const createJamRoom = async (req, res) => {
     // Save to database
     await jamRoom.save();
 
+        // Generate token after successful registration
+        const token = generateToken({ email: ownerDetails.email }, jamRoom);
+
     // Return success response
     res.status(201).json({
       success: true,
-      data: jamRoom
+      data: jamRoom,
+      token: token
     });
 
   } catch (error) {
@@ -149,40 +153,6 @@ const getAllJamRooms = async (req, res) => {
     }
   };
 
-  // Check if a jam room is already registered by owner's email
-const isJamRoomRegisteredByEmail = async (req, res) => {
-  try {
-    const { ownerEmail } = req.body;
-
-    // Validate required fields
-    if (!ownerEmail) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields'
-      });
-    }
-
-    // Check if the jam room is already registered by owner's email
-    const existingJamRoom = await JamRoom.findOne({ 'ownerDetails.email': ownerEmail });
-    if (existingJamRoom) {
-      return res.status(200).json({
-        success: true,
-        message: 'Jam room is already registered',
-        data: existingJamRoom
-      });
-    } else {
-      return res.status(404).json({
-        success: false,
-        message: 'Jam room is not registered'
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
 
 // Get jam room name by ID
 const getJamRoomNameById = async (req, res) => {
@@ -403,7 +373,6 @@ module.exports = {
   createJamRoom,
   getAllJamRooms,
   updateJamRoom,
-  isJamRoomRegisteredByEmail,
   getJamRoomNameById,
   getJamRoomByEmail,
   getJamRoomById,
