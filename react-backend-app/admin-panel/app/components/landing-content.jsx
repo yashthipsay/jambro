@@ -17,6 +17,18 @@ const INSTRUMENT_TYPES = [
   'Djembe'
 ];
 
+const fetchWithAuth = async (url, options = {}) => {
+  const token = localStorage.getItem('jamroom_token');
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
 const AddonsCard = ({ jamRoomId }) => {
   const [addons, setAddons] = useState([]);
   const { user } = useUser();
@@ -46,20 +58,25 @@ const AddonsCard = ({ jamRoomId }) => {
 
   const handleAddAddon = async () => {
     try {
-      const response = await fetch(
-        `http://3.110.42.247:5000/api/jamrooms/${jamRoomId}/addons`,
+      const response = await fetchWithAuth(
+        `http://localhost:5000/api/jamrooms/${jamRoomId}/addons`,
         {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             addons: [...addons, newAddon]
           })
         }
       );
+
       const data = await response.json();
       if (data.success) {
         setAddons(data.data);
-        setNewAddon({ instrumentType: '', quantity: 1, pricePerHour: 0, isAvailable: true });
+        setNewAddon({
+          instrumentType: '',
+          quantity: 1,
+          pricePerHour: 0,
+          isAvailable: true
+        });
       }
     } catch (error) {
       console.error('Error adding addon:', error);
@@ -172,19 +189,49 @@ export function LandingContent() {
   ]);
 
   useEffect(() => {
-    const fetchJamRoomData = async () => {
+    const checkRegistration = async () => {
       if (!user?.email) return;
+
+      const token = localStorage.getItem('jamroom_token');
+      if (token) {
+        try {
+          const response = await fetch('http://localhost:5000/api/auth/verify', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          const data = await response.json();
+          console.log(data)
+          if (data.success) {
+            setJamRoomId(data.jamRoomId);
+            return;
+          }
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          localStorage.removeItem('jamroom_token');
+        }
+      }
+
+      // If no token or invalid token, check registration
       try {
-        const response = await fetch(`http://3.110.42.247:5000/api/jamrooms/email/${user.email}`);
+        const response = await fetch('http://localhost:5000/api/auth/check-registration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email })
+        });
+        
         const data = await response.json();
-        if (data.success) {
-          setJamRoomId(data.data._id);
+        if (data.success && data.isRegistered) {
+          setJamRoomId(data.jamRoomId);
+          localStorage.setItem('jamroom_token', data.token);
         }
       } catch (error) {
-        console.error('Error fetching jam room:', error);
+        console.error('Registration check failed:', error);
       }
     };
-    fetchJamRoomData();
+
+    checkRegistration();
   }, [user]);
 
   return (
