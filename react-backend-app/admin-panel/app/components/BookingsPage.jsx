@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from "@fullcalendar/daygrid"
 import interactionPlugin from "@fullcalendar/interaction"
@@ -16,8 +16,11 @@ import moment from 'moment-timezone'
 import UserInfoModal from './ui/UserInfoModal'
 
 export default function BookingsPage(){
-    const pathname = usePathname()
+    const pathname = usePathname();
+    const searchParams = useSearchParams()
     const jamroom_id = pathname.split('/').pop()
+    const targetBookingId = searchParams.get('bookingId')
+
     const [bookings, setBookings] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -91,6 +94,16 @@ export default function BookingsPage(){
     
         fetchBookings()
       }, [jamroom_id, filters, pagination.skip, pagination.limit])
+
+      useEffect(() => {
+        if (targetBookingId && bookingRefs.current[targetBookingId]) {
+            bookingRefs.current[targetBookingId].scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            })
+            setSelectedBookingId(targetBookingId)
+        }
+      }, [targetBookingId, bookings])
 
       const handleBookingClick = async (bookingId) => {
         try {

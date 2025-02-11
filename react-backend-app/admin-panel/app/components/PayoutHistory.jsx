@@ -1,4 +1,5 @@
-import { usePathname, useSearchParams } from 'next/navigation'
+'use client'
+import { usePathname, useSearchParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Card, CardHeader, CardContent } from "./ui/card"
 import { motion } from 'framer-motion'
@@ -8,9 +9,11 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '.
 
 
 
+
 const PayoutHistory = () => {
   const pathname = usePathname()
   const fund_account_id = pathname.split('/').pop() // Get last segment of URL
+  const router = useRouter()
 
   const [payouts, setPayouts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -187,7 +190,15 @@ const PayoutHistory = () => {
                 <p className="text-sm">Status: {payout.status}</p>
                 <p className="text-sm">Date: {new Date(payout.createdAt).toLocaleDateString()}</p>
               </CardContent>
+              <Button 
+                onClick={() => router.push(`/bookings/${payout.reference_id}?bookingId=${payout.bookingId}`)} 
+                variant="outline"
+                className="mt-2 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-all duration-200 shadow-md block mx-auto"
+              >
+                View Booking
+              </Button>
             </Card>
+
           </motion.div>
         ))}
       </div>
