@@ -1,146 +1,99 @@
 @import url("https://fonts.googleapis.com/css2?family=Audiowide&family=Syncopate:wght@400;700&family=Montserrat:wght@300;400;500;600;700&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Base Colors */
+  /* Core Colors */
   --primary-purple: #8059f7;
   --secondary-purple: #6434fc;
   --light-purple: #dcd5ff;
   --accent-pink: #ffccf2;
-
-  /* Gradient Combinations */
-  --gradient-1: linear-gradient(135deg, #8059f7, #6434fc);
-  --gradient-2: linear-gradient(135deg, #6434fc, #011450);
-  --gradient-3: linear-gradient(135deg, #8059f7, #ffccf2);
+  
+  /* Gradient Systems */
+  --gradient-primary: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+  --gradient-secondary: linear-gradient(135deg, var(--secondary-purple), #011450);
+  --gradient-accent: linear-gradient(135deg, var(--primary-purple), var(--accent-pink));
+  
+  /* System Colors */
+  --background: #000000;
+  --foreground: #ffffff;
+  --surface-1: rgba(255, 255, 255, 0.05);
+  --surface-2: rgba(255, 255, 255, 0.08);
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
 }
 
+/* Base Styles */
 body {
   font-family: "Montserrat", sans-serif;
-  background: var(--gradient-1); /* darker gradient for better contrast */
+  background-image: url("https://gigsaw.s3.eu-north-1.amazonaws.com/3d-music-related-scene.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
   min-height: 100vh;
-  color: white; /* or a near-white for softer contrast */
 }
 
-h1,
-h2,
-h3 {
+/* Typography */
+h1, h2, h3 {
   font-family: "Audiowide", cursive;
+  letter-spacing: -0.02em;
 }
 
-h4,
-h5,
-h6 {
+h4, h5, h6 {
   font-family: "Syncopate", sans-serif;
+  letter-spacing: 0.02em;
 }
 
-@layer base {
-  :root {
-    --background: var(--primary-purple);
-    --foreground: white;
-
-    --card: rgba(128, 89, 247, 0.1);
-    --card-foreground: white;
-    --popover: rgba(128, 89, 247, 0.2);
-    --popover-foreground: white;
-
-    --primary: var(--secondary-purple);
-    --primary-foreground: white;
-
-    --secondary: var(--light-purple);
-    --secondary-foreground: var(--secondary-purple);
-
-    --accent: var(--accent-pink);
-    --accent-foreground: var(--secondary-purple);
-
-    --muted: rgba(128, 89, 247, 0.3);
-    --muted-foreground: rgba(255, 255, 255, 0.7);
-    --border: var(--light-purple);
-    --ring: var(--light-purple);
-
-    --radius: 0.75rem;
-  }
-
-  @layer utilities {
-    .scrollbar-thin::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    .scrollbar-thin::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    
-    .scrollbar-thin::-webkit-scrollbar-thumb {
-      background: rgba(125, 249, 255, 0.2);
-      border-radius: 3px;
-    }
-    
-    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-      background: rgba(125, 249, 255, 0.3);
-    }
-  }
-
-  .glass-card {
-    background: rgba(128, 89, 247, 0.1);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(128, 89, 247, 0.3);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-    border-radius: var(--radius);
-  }
-
-  .gradient-text {
-    background: var(--gradient-3);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .nav-gradient {
-    background: var(--gradient-1); /* Keep your original gradient */
-    backdrop-filter: blur(8px);    /* Glass blur */
-    background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent overlay */
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius);
-  }
-  
-  .sidebar-gradient {
-    backdrop-filter: blur(5000px);
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius);
-  }
-
-  .glassmorphism {
-    background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
-    backdrop-filter: blur(10px); /* Blur effect */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Border */
-    border-radius: 12px; /* Rounded corners */
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-  }
-
-  .btn-primary {
-    @apply bg-gradient-to-r from-primary-purple to-secondary-purple text-white;
-    @apply hover:from-secondary-purple hover:to-primary-purple;
-    border-radius: var(--radius);
-  }
-
-  .btn-primary:hover {
-    @apply from-secondary-purple to-primary-purple;
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    @apply bg-gradient-to-r from-light-purple to-accent-pink text-secondary-purple font-syncopate;
-    border-radius: var(--radius);
-    transition: all 0.3s ease;
-  }
-
-  .btn-secondary:hover {
-    @apply from-accent-pink to-light-purple;
-    transform: translateY(-2px);
-  }
+/* Custom Components */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
 
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.scrollable-content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-purple) rgba(255, 255, 255, 0.1);
+}
+
+.scrollable-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: var(--primary-purple);
+  border-radius: 3px;
+}

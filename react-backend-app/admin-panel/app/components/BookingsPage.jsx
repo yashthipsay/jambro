@@ -251,8 +251,8 @@ export default function BookingsPage(){
       const currentPage = Math.floor(pagination.skip / pagination.limit) + 1
     
       return (
-        <div className="p-2 sm:p-4">
-          <div className="mb-4">
+        <div className="flex-1 p-8 pl-72 overflow-y-auto h-[calc(100vh-4rem)]">
+          <div className="max-w-7xl mx-auto space-y-4">
             <h1 className="text-2xl font-bold mb-4 gradient-text">Bookings</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Input
@@ -318,7 +318,7 @@ export default function BookingsPage(){
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                 >
-                  <Card>
+                  <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
                     <CardContent className="p-2 sm:p-4">
                     {bookings.length > 0 ? (
                       <FullCalendar
@@ -352,17 +352,18 @@ export default function BookingsPage(){
             </AnimatePresence>
           </Tabs>
           {bookings.length > 0 && (
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-between items-center mt-6">
         <Button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
         >
           Previous
         </Button>
-        <span>Page {currentPage} of {totalPages}</span>
+        <span className="text-white">Page {currentPage} of {totalPages}</span>
         <Button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
+          className="px-6 py-2"
         >
           Next
         </Button>

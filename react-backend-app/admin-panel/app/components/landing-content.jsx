@@ -2,12 +2,13 @@
 
 import { motion } from 'framer-motion'
 import { Button } from './ui/button'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Card } from './ui/card'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { ScrollArea } from '@radix-ui/react-scroll-area'
+import { useDashboard } from '../context/DashboardContext'
 
 const INSTRUMENT_TYPES = [
   'Electric Guitar',
@@ -104,9 +105,9 @@ const AddonsCard = ({ jamRoomId }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">Equipment for Rent</h2>
+      <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
+        <div className="p-6 ">
+          <h2 className="text-2xl font-bold text-[#7DF9FF]">Equipment for Rent</h2>
           <div className="space-y-4">
             <div className="flex gap-4">
               <select
@@ -135,7 +136,7 @@ const AddonsCard = ({ jamRoomId }) => {
                 value={newAddon.pricePerHour}
                 onChange={(e) => setNewAddon({ ...newAddon, pricePerHour: parseInt(e.target.value) })}
                 min="0"
-                className="w-24 bg-black/20 border-[#7DF9FF]/30 text-white"
+                className="w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
               />
 
               <Button
@@ -146,13 +147,13 @@ const AddonsCard = ({ jamRoomId }) => {
               </Button>
             </div>
             <ScrollArea className="max-h-[120px] overflow-y-auto">
-  <div className="pr-4 space-y-2">
+  <div className="space-y-3">
     {addons.map((addon) => (
       <div
         key={addon._id}
-        className="flex justify-between items-center p-2 border-b border-[#7DF9FF]/20 hover:bg-black/20 transition-colors"
+        className="flex justify-between items-center p-3 border-b border-[#7DF9FF]/20 hover:bg-black/20 transition-colors"
       >
-        <div className="text-[#7DF9FF]">
+        <div className="text-[#7DF9FF] font-medium">
           <span className="font-semibold">{addon.instrumentType}</span>
           <span className="mx-2">|</span>
           <span>Qty: {addon.quantity}</span>
@@ -180,59 +181,81 @@ const AddonsCard = ({ jamRoomId }) => {
 
 export function LandingContent() {
   const { user } = useUser();
-  const [netTotal, setNetTotal] = useState(0);
-  const [jamRoomId, setJamRoomId] = useState(null);
-  const [addons, setAddons] = useState([
-    { id: 1, name: 'Active Bookings', count: 0 },
+  const {jamRoomId} = useDashboard()
+  const [payouts, setPayouts] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [stats, setStats] = useState([
+    { id: 1, name: 'Booked ahead', count: 0 },
     { id: 2, name: 'Pending Payouts', count: 0 },
     { id: 3, name: 'Completed Sessions', count: 0 }
   ]);
 
+  // Fetch bookings and payouts
   useEffect(() => {
-    const checkRegistration = async () => {
-      if (!user?.email) return;
-
-      const token = localStorage.getItem('jamroom_token');
-      if (token) {
-        try {
-          const response = await fetch('http://localhost:5000/api/auth/verify', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          const data = await response.json();
-          console.log(data)
-          if (data.success) {
-            setJamRoomId(data.jamRoomId);
-            return;
-          }
-        } catch (error) {
-          console.error('Token verification failed:', error);
-          localStorage.removeItem('jamroom_token');
-        }
-      }
-
-      // If no token or invalid token, check registration
+    async function fetchData() {
+      let fundAccountId;
       try {
-        const response = await fetch('http://localhost:5000/api/auth/check-registration', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: user.email })
-        });
+        const tokenStr = localStorage.getItem('jamroom_token');
+        fundAccountId = JSON.parse(atob(tokenStr.split('.')[1])).fundAccountId;
         
-        const data = await response.json();
-        if (data.success && data.isRegistered) {
-          setJamRoomId(data.jamRoomId);
-          localStorage.setItem('jamroom_token', data.token);
+        // Fetch payouts
+        const payoutsResponse = await fetchWithAuth(`http://localhost:5000/api/payouts/${fundAccountId}`);
+        const payoutsData = await payoutsResponse.json();
+
+        // Fetch bookings
+        const bookingsResponse = await fetchWithAuth(`http://localhost:5000/api/bookings/jamroom/${jamRoomId}`);
+        const bookingsData = await bookingsResponse.json();
+
+        if (payoutsData.success && bookingsData.success) {
+          setPayouts(payoutsData.data);
+          setBookings(bookingsData.data);
+
+          // Calculate stats
+          const pendingPayouts = payoutsData.data.filter(payout => 
+            ['PENDING', 'processing', 'queued'].includes(payout.status)
+          ).length;
+
+          const bookedAhead = bookingsData.data.filter(booking => 
+            booking.status === 'NOT_STARTED'
+          ).length;
+
+          const completedSessions = bookingsData.data.filter(booking => 
+            booking.status === 'COMPLETED'
+          ).length;
+
+          setStats([
+            { id: 1, name: 'Booked ahead', count: bookedAhead },
+            { id: 2, name: 'Pending Payouts', count: pendingPayouts },
+            { id: 3, name: 'Completed Sessions', count: completedSessions }
+          ]);
         }
       } catch (error) {
-        console.error('Registration check failed:', error);
+        console.error('Error fetching data:', error);
       }
-    };
+    }
+    
+    if (jamRoomId) {
+      fetchData();
+    }
+  }, [jamRoomId]);
 
-    checkRegistration();
-  }, [user]);
+  // Compute today's earnings with useMemo based on fetched payouts
+  const netTotal = useMemo(() => {
+    const now = new Date();
+    const startOfToday = Math.floor(new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()/1000);
+    const endOfToday = Math.floor(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,59,59,999).getTime()/1000);
+    const todaysPayouts = payouts.filter(item => item.created_at >= startOfToday && item.created_at <= endOfToday);
+    const total = payouts.reduce((sum, item) => {
+      if (item.status === 'processed') {
+        console.log(item.amount)
+        // Deduct fees and tax if provided, then sum
+        return sum + (item.amount - (item.fees || 0) - (item.tax || 0));
+      }
+      return sum;
+    }, 0);
+
+    return total
+  }, [payouts]);
 
   return (
     <div className="flex-1 p-8 pl-72 pt-24">
@@ -264,10 +287,10 @@ export function LandingContent() {
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">Quick Stats</h2>
                 <div className="grid grid-cols-3 gap-4">
-                  {addons.map(addon => (
-                    <div key={addon.id} className="text-center">
-                      <div className="text-3xl font-bold text-[#7DF9FF]">{addon.count}</div>
-                      <div className="text-sm text-[#7DF9FF]/80">{addon.name}</div>
+                  {stats.map(stat => (
+                    <div key={stat.id} className="text-center">
+                      <div className="text-3xl font-bold text-[#7DF9FF]">{stat.count}</div>
+                      <div className="text-sm text-[#7DF9FF]/80">{stat.name}</div>
                     </div>
                   ))}
                 </div>

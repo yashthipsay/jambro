@@ -110,23 +110,26 @@ const PayoutHistory = () => {
   const currentPage = Math.floor(pagination.skip / pagination.limit) + 1
 
   return (
-    <div className="p-4">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold mb-4 gradient-text">Payout History</h1>
+    <div className="flex-1 p-6 mt-16 ml-64 overflow-y-auto h-[calc(100vh-4rem)]">
+      <div className="max-w-7xl mx-auto space-y-6">
+
+      <div className="sticky top-0 z-10 bg-black/60 backdrop-blur-sm pb-4">
+        <h1 className="text-3xl font-audiowide gradient-text mb-6">Payout History</h1>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Input
             name="minAmount"
             placeholder="Min Amount"
             value={filters.minAmount}
             onChange={handleFilterChange}
-            className="bg-card text-card-foreground"
+            className="glassmorphism"
           />
           <Input
             name="maxAmount"
             placeholder="Max Amount"
             value={filters.maxAmount}
             onChange={handleFilterChange}
-            className="bg-card text-card-foreground"
+            className="glassmorphism"
           />
           <Input
             name="startDate"
@@ -134,7 +137,7 @@ const PayoutHistory = () => {
             placeholder="Start Date"
             value={filters.startDate}
             onChange={handleFilterChange}
-            className="bg-card text-card-foreground"
+            className="glassmorphism"
           />
           <Input
             name="endDate"
@@ -142,7 +145,7 @@ const PayoutHistory = () => {
             placeholder="End Date"
             value={filters.endDate}
             onChange={handleFilterChange}
-            className="bg-card text-card-foreground"
+            className="glassmorphism"
           />
         </div>
         <div className="flex gap-4 mb-4">
@@ -150,7 +153,7 @@ const PayoutHistory = () => {
             value={filters.sortBy}
             onValueChange={(value) => handleSortChange(value, filters.sortOrder)}
           >
-            <SelectTrigger className="bg-card text-card-foreground">
+            <SelectTrigger className="glass-card text-white">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>
@@ -162,7 +165,7 @@ const PayoutHistory = () => {
             value={filters.sortOrder}
             onValueChange={(value) => handleSortChange(filters.sortBy, value)}
           >
-            <SelectTrigger className="bg-card text-card-foreground">
+            <SelectTrigger className="glass-card text-white">
               <SelectValue placeholder="Sort Order" />
             </SelectTrigger>
             <SelectContent>
@@ -181,9 +184,9 @@ const PayoutHistory = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Card className="bg-card text-card-foreground">
+            <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
               <CardHeader>
-                <h3 className="text-lg font-semibold">Payout ID: {payout._id}</h3>
+                <h3 className="text-lg font-semibold text-white">Payout ID: {payout._id}</h3>
               </CardHeader>
               <CardContent>
                 <p className="text-sm">Amount: ₹{payout.amount}</p>
@@ -193,7 +196,7 @@ const PayoutHistory = () => {
               <Button 
                 onClick={() => router.push(`/bookings/${payout.reference_id}?bookingId=${payout.bookingId}`)} 
                 variant="outline"
-                className="mt-2 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-all duration-200 shadow-md block mx-auto"
+                className="mt-2 bg-primary text-white py-2 px-4 rounded hover:bg-primary/80 transition-all duration-200 shadow-md block mx-auto"
               >
                 View Booking
               </Button>
@@ -207,10 +210,11 @@ const PayoutHistory = () => {
       )}
       
       {payouts.length > 0 && (
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex justify-between items-center mt-6">
           <Button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
+                      className="bg-primary text-white hover:bg-primary/80"
           >
             Previous
           </Button>
@@ -225,6 +229,7 @@ const PayoutHistory = () => {
         </div>
       )}
     </div>
+  </div>
     
   )
 }
