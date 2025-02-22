@@ -22,7 +22,7 @@ import { DashboardLayout } from '../components/DashboardLayout'
 
 
 const ProfileSection = ({ title, children, onEdit, isEditing, onSave, onCancel }) => (
-    <Card className="relative group glass-card">
+    <Card className="relative group glass-card bg-gradient-to-b from-white/10 to-purple-500/10">
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle className="gradient-text">{title}</CardTitle>
@@ -203,18 +203,16 @@ const handleSectionSave = async (section) => {
     
       if (loading) {
         return (
-          <DashboardLayout>
             <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald"></div>
             </div>
-          </DashboardLayout>
         );
       }
 
       return (
         <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <DashboardLayout>
-          <div className="p-6 space-y-6 max-w-4xl mx-auto">
+      <div className="flex-1 p-6 mt-16 ml-64 overflow-auto">
+      <div className="max-w-4xl mx-auto space-y-6">
           <motion.div
     initial={{ opacity: 0, y: -20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -553,8 +551,8 @@ const handleSectionSave = async (section) => {
             </AnimatePresence>
             </Tabs>
             </motion.div>
+            </div>
           </div>
-        </DashboardLayout>
           </ErrorBoundary>            
       )
   }

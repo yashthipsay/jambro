@@ -1,5 +1,6 @@
 const SpotifyWebApi = require('spotify-web-api-node');
 const JamRoom = require('../models/JamRooms');
+require('dotenv').config();
 
 const spotifyApi = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
