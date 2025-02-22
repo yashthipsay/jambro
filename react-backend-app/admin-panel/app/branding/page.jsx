@@ -95,7 +95,6 @@ export default function BrandingPage() {
   }, [spotifyProfile])
 
   return (
-    <DashboardLayout>
       <div className="min-h-screen bg-gradient-to-b from-black to-gray-900">
         <div className="max-w-4xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -211,6 +210,5 @@ export default function BrandingPage() {
           </motion.div>
         </div>
       </div>
-    </DashboardLayout>
   )
 }
