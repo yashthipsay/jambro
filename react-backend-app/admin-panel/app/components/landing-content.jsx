@@ -195,6 +195,7 @@ export function LandingContent() {
     async function fetchData() {
       let fundAccountId;
       try {
+<<<<<<< HEAD
         const tokenStr = localStorage.getItem('jamroom_token');
         fundAccountId = JSON.parse(atob(tokenStr.split('.')[1])).fundAccountId;
         
@@ -228,6 +229,12 @@ export function LandingContent() {
             { id: 2, name: 'Pending Payouts', count: pendingPayouts },
             { id: 3, name: 'Completed Sessions', count: completedSessions }
           ]);
+=======
+        const response = await fetch(`http://13.126.198.106:5000/api/jamrooms/email/${user.email}`);
+        const data = await response.json();
+        if (data.success) {
+          setJamRoomId(data.data._id);
+>>>>>>> aba3e6c0 (changing ip address for api endpoint)
         }
       } catch (error) {
         console.error('Error fetching data:', error);
