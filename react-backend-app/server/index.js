@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const { createServer } = require("http");
+const helmet = require("helmet");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const connectDB = require("./db/mongoDriver"); // Import the connectDB function
@@ -30,6 +31,7 @@ const io = new Server(server, {
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(helmet());
 
 // Routes
 app.use("/api/users", userRoutes);
