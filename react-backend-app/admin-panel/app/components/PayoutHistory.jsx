@@ -55,7 +55,7 @@ const PayoutHistory = () => {
           skip: pagination.skip,
           limit: pagination.limit
         }).toString()
-        const response = await fetch(`http://13.126.198.106:5000/api/payouts/${fund_account_id}?${queryParams}`)
+        const response = await fetch(`http://3.110.42.247:5000/api/payouts/${fund_account_id}?${queryParams}`)
         const data = await response.json()
 
         if (data.success) {
