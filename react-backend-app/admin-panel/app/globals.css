@@ -67,11 +67,13 @@ h4, h5, h6 {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
+  border-radius: 0.5rem; /* Consistent with rounded-lg */
+  overflow: hidden; /* Ensures content doesn't break radius */
 }
 
 .glass-card:hover {
@@ -96,4 +98,83 @@ h4, h5, h6 {
 .scrollable-content::-webkit-scrollbar-thumb {
   background: var(--primary-purple);
   border-radius: 3px;
+}
+
+/* Text readability improvements */
+.glass-card h1, 
+.glass-card h2, 
+.glass-card h3, 
+.glass-card h4, 
+.glass-card h5, 
+.glass-card h6 {
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+}
+
+.glass-card p,
+.glass-card span,
+.glass-card div:not(.bg-*) {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Special styling for accent text that uses the cyan color (#7DF9FF) */
+.text-\[\#7DF9FF\] {
+  color: #7DF9FF;
+  text-shadow: 0 0 10px rgba(125, 249, 255, 0.3); /* Add glow for cyan text */
+  font-weight: 500; /* Make slightly bolder */
+}
+
+/* Improve contrast for muted text */
+.text-\[\#7DF9FF\]\/60,
+.text-\[\#7DF9FF\]\/80 {
+  color: rgba(180, 252, 255, 0.85); /* Higher opacity for better visibility */
+}
+
+/* Ensure labels are clearly visible */
+.glass-card label {
+  color: white;
+  font-weight: 500; /* Make labels bolder */
+  margin-bottom: 0.25rem; /* Add spacing below labels */
+}
+
+/* Make form inputs more visible */
+.glass-card input,
+.glass-card select,
+.glass-card textarea {
+  background-color: rgba(0, 0, 0, 0.3) !important; /* Darker background */
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important; /* Make text white */
+}
+
+.card, .button, .input, .select, .tabs {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.fc .fc-toolbar-title {
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.fc .fc-button {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-color: rgba(125, 249, 255, 0.3);
+  color: white;
+}
+
+.fc .fc-button:hover {
+  background-color: rgba(125, 249, 255, 0.2);
+}
+
+.fc .fc-daygrid-day {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.fc .fc-col-header-cell {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.fc .fc-daygrid-day-number {
+  color: white;
 }

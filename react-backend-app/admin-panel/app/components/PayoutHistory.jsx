@@ -55,7 +55,7 @@ const PayoutHistory = () => {
           skip: pagination.skip,
           limit: pagination.limit
         }).toString()
-        const response = await fetch(`http://3.110.42.247:5000/api/payouts/${fund_account_id}?${queryParams}`)
+        const response = await fetch(`http://localhost:5000/api/payouts/${fund_account_id}?${queryParams}`)
         const data = await response.json()
 
         if (data.success) {
@@ -122,14 +122,14 @@ const PayoutHistory = () => {
             placeholder="Min Amount"
             value={filters.minAmount}
             onChange={handleFilterChange}
-            className="glassmorphism"
+            className="glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
           />
           <Input
             name="maxAmount"
             placeholder="Max Amount"
             value={filters.maxAmount}
             onChange={handleFilterChange}
-            className="glassmorphism"
+            className="glassmorphism glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
           />
           <Input
             name="startDate"
@@ -137,7 +137,7 @@ const PayoutHistory = () => {
             placeholder="Start Date"
             value={filters.startDate}
             onChange={handleFilterChange}
-            className="glassmorphism"
+            className="glassmorphism glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
           />
           <Input
             name="endDate"
@@ -145,7 +145,7 @@ const PayoutHistory = () => {
             placeholder="End Date"
             value={filters.endDate}
             onChange={handleFilterChange}
-            className="glassmorphism"
+            className="glassmorphism glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
           />
         </div>
         <div className="flex gap-4 mb-4">
@@ -153,24 +153,24 @@ const PayoutHistory = () => {
             value={filters.sortBy}
             onValueChange={(value) => handleSortChange(value, filters.sortOrder)}
           >
-            <SelectTrigger className="glass-card text-white">
-              <SelectValue placeholder="Sort By" />
+            <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
+              <SelectValue placeholder="Sort By" className="text-white"/>
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="createdAt">Date</SelectItem>
-              <SelectItem value="amount">Amount</SelectItem>
+            <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
+              <SelectItem value="createdAt" className="text-white hover:bg-[#7DF9FF]/20">Date</SelectItem>
+              <SelectItem value="amount" className="text-white hover:bg-[#7DF9FF]/20">Amount</SelectItem>
             </SelectContent>
           </Select>
           <Select
             value={filters.sortOrder}
             onValueChange={(value) => handleSortChange(filters.sortBy, value)}
           >
-            <SelectTrigger className="glass-card text-white">
-              <SelectValue placeholder="Sort Order" />
+            <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
+              <SelectValue placeholder="Sort Order" className="text-white"/>
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="asc">Ascending</SelectItem>
-              <SelectItem value="desc">Descending</SelectItem>
+            <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
+              <SelectItem value="asc" className="text-white hover:bg-[#7DF9FF]/20">Ascending</SelectItem>
+              <SelectItem value="desc" className="text-white hover:bg-[#7DF9FF]/20">Descending</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -186,17 +186,17 @@ const PayoutHistory = () => {
           >
             <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
               <CardHeader>
-                <h3 className="text-lg font-semibold text-white">Payout ID: {payout._id}</h3>
+                <h3 className="text-lg font-semibold text-[#7DF9FF] text-shadow">Payout ID: {payout._id}</h3>
               </CardHeader>
               <CardContent>
-                <p className="text-sm">Amount: ₹{payout.amount}</p>
-                <p className="text-sm">Status: {payout.status}</p>
-                <p className="text-sm">Date: {new Date(payout.createdAt).toLocaleDateString()}</p>
+                <p className="text-white">Amount: ₹{payout.amount}</p>
+                <p className="text-white">Status: {payout.status}</p>
+                <p className="text-white">Date: {new Date(payout.createdAt).toLocaleDateString()}</p>
               </CardContent>
               <Button 
                 onClick={() => router.push(`/bookings/${payout.reference_id}?bookingId=${payout.bookingId}`)} 
                 variant="outline"
-                className="mt-2 bg-primary text-white py-2 px-4 rounded hover:bg-primary/80 transition-all duration-200 shadow-md block mx-auto"
+                className="mt-2 mb-4 mx-4 bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white border-[#7DF9FF]/30"
               >
                 View Booking
               </Button>
@@ -214,15 +214,15 @@ const PayoutHistory = () => {
           <Button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-                      className="bg-primary text-white hover:bg-primary/80"
+                      className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
           >
             Previous
           </Button>
-          <span>Page {currentPage} of {totalPages}</span>
+          <span className="text-[#7DF9FF] font-medium">Page {currentPage} of {totalPages}</span>
           <Button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="btn-primary"
+            className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
           >
             Next
           </Button>

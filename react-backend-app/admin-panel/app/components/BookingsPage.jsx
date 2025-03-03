@@ -49,7 +49,7 @@ export default function BookingsPage(){
               skip: pagination.skip,
               limit: pagination.limit
             }).toString()
-            const response = await fetch(`http://3.110.42.247:5000/api/bookings/jamroom/${jamroom_id}?${queryParams}`)
+            const response = await fetch(`http://localhost:5000/api/bookings/jamroom/${jamroom_id}?${queryParams}`)
             const data = await response.json()
             console.log(data)
             if (data.success) {
@@ -204,9 +204,9 @@ export default function BookingsPage(){
               }`}
           >
 
-                <CardContent className="p-4">
+                <CardContent className="glass-card p-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-semibold">Booking #{booking.id.slice(-4)}</h3>
+                    <h3 className="font-semibold text-[#7DF9FF]">Booking #{booking.id.slice(-4)}</h3>
                     <span className={`px-2 py-1 rounded text-sm ${
                       booking.extendedProps.status === 'NOT_STARTED' ? 'bg-yellow-500' :
                       booking.extendedProps.status === 'ONGOING' ? 'bg-blue-500' :
@@ -216,20 +216,20 @@ export default function BookingsPage(){
                       {booking.extendedProps.status}
                     </span>
                   </div>
-                  <p className="text-sm mt-2">
+                  <p className="text-sm mt-2 text-white">
                     Date: {moment(booking.start).format('MMMM D, YYYY')}
                   </p>
-                  <p className="text-sm">
+                  <p className="text-sm text-white">
                     Time: {moment(booking.start).format('HH:mm')} - {moment(booking.end).format('HH:mm')}
                   </p>
                   {booking.extendedProps.status === 'TERMINATED' && booking.refundDetails && (
-                <p className="text-sm mt-2 text-red-500">
+                <p className="text-sm mt-2 text-red-400 font-medium">
                   Refunded: ₹{booking.refundDetails.amount} ({booking.refundDetails.percentage}%)
                 </p>
               )}
                 <Button 
     onClick={() => handleBookingClick(booking.id)} 
-    className="mt-4 w-full"
+    className="mt-4 w-full bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white border-[#7DF9FF]/30"
     variant="outline"
   >
     View Details
@@ -251,9 +251,9 @@ export default function BookingsPage(){
       const currentPage = Math.floor(pagination.skip / pagination.limit) + 1
     
       return (
-        <div className="flex-1 p-8 pl-72 overflow-y-auto h-[calc(100vh-4rem)]">
+        <div className="flex-1 p-6 mt-16 pl-72 overflow-y-auto h-[calc(100vh-4rem)]">
           <div className="max-w-7xl mx-auto space-y-4">
-            <h1 className="text-2xl font-bold mb-4 gradient-text">Bookings</h1>
+            <h1 className="text-2xl font-bold mb-4 text-[#7DF9FF] text-shadow">Bookings</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Input
                 name="startDate"
@@ -261,7 +261,7 @@ export default function BookingsPage(){
                 placeholder="Start Date"
                 value={filters.startDate}
                 onChange={handleFilterChange}
-                className="bg-card text-card-foreground"
+                className="bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
               />
               <Input
                 name="endDate"
@@ -269,7 +269,7 @@ export default function BookingsPage(){
                 placeholder="End Date"
                 value={filters.endDate}
                 onChange={handleFilterChange}
-                className="bg-card text-card-foreground"
+                className="bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
               />
             </div>
             <div className="flex gap-4 mb-4">
@@ -277,35 +277,35 @@ export default function BookingsPage(){
                 value={filters.sortBy}
                 onValueChange={(value) => handleSortChange(value, filters.sortOrder)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort By" />
+                <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
+                  <SelectValue placeholder="Sort By" className="text-white"/>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date">Date</SelectItem>
-                  <SelectItem value="totalAmount">Amount</SelectItem>
+                <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
+                  <SelectItem value="date" className="text-white hover:bg-[#7DF9FF]/20">Date</SelectItem>
+                  <SelectItem value="totalAmount" className="text-white hover:bg-[#7DF9FF]/20">Amount</SelectItem>
                 </SelectContent>
               </Select>
               <Select
                 value={filters.sortOrder}
                 onValueChange={(value) => handleSortChange(filters.sortBy, value)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort Order" />
+                <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
+                  <SelectValue placeholder="Sort Order" className="text-white"/>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">Ascending</SelectItem>
-                  <SelectItem value="desc">Descending</SelectItem>
+                <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
+                  <SelectItem value="asc" className="text-white hover:bg-[#7DF9FF]/20">Ascending</SelectItem>
+                  <SelectItem value="desc" className="text-white hover:bg-[#7DF9FF]/20">Descending</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-4">
-        <TabsTrigger value="calendar" className="flex items-center gap-2">
+      <TabsList className="grid w-full grid-cols-2 mb-4 bg-black/30 text-white">
+        <TabsTrigger value="calendar" className="flex items-center gap-2 text-white data-[state=active]:bg-[#7DF9FF]/30 data-[state=active]:text-white">
           <Calendar className="w-4 h-4" />
           Calendar View
         </TabsTrigger>
-        <TabsTrigger value="history" className="flex items-center gap-2">
+        <TabsTrigger value="history" className="flex items-center gap-2 text-white data-[state=active]:bg-[#7DF9FF]/30 data-[state=active]:text-white">
           <List className="w-4 h-4" />
           Booking History
         </TabsTrigger>
@@ -356,14 +356,15 @@ export default function BookingsPage(){
         <Button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
+           className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
         >
           Previous
         </Button>
-        <span className="text-white">Page {currentPage} of {totalPages}</span>
+        <span className="text-[#7DF9FF] font-medium">Page {currentPage} of {totalPages}</span>
         <Button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-6 py-2"
+          className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30 px-6 py-2"
         >
           Next
         </Button>

@@ -17,7 +17,7 @@ export function Navbar() {
     const fetchJamRoomName = async () => {
       if (user?.email) {
         try {
-          const response = await fetch(`http://3.110.42.247:5000/api/jamrooms/email/${user.email}`)
+          const response = await fetch(`http://localhost:5000/api/jamrooms/email/${user.email}`)
           const data = await response.json()
           if (data.success && data.data) {
             setJamRoomName(data.data.jamRoomDetails.name)

@@ -129,8 +129,12 @@ class SessionMonitor {
           throw new Error('Invalid totalAmount in booking');
         }
 
-        // Calculate amount (assuming feesPerSlot is stored in jamRoom)
-        const amount = booking.totalAmount // 80% of the total amount
+        // deduct 10% of the total amount, for actual production
+        // const amount = booking.totalAmount * 0.9;
+
+        // for testing
+        const amount = booking.totalAmount;
+
         
         await createRazorpayPayout({
           body: {
