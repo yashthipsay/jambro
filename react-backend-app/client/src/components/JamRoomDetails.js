@@ -32,8 +32,8 @@ function JamRoomDetails() {
   }
 
   const roomPosition = {
-    lat: selectedRoom.latitude,
-    lng: selectedRoom.longitude,
+    lat: selectedRoom.location.latitude,
+    lng: selectedRoom.location.longitude,
   }
 
   return (
