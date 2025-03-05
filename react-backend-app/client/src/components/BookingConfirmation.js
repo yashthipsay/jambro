@@ -17,11 +17,14 @@ const BookingConfirmation = () => {
     const fetchInvoiceData = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch(`http://localhost:5000/api/payments/invoice-data/${id}`)
-        const data = await response.json()
-        
-        if (data.success) {
-          setInvoiceData(data.invoice)
+        const response = await fetch(`http://localhost:5000/api/payments/invoices/${id}`);
+        const data = await response.json();
+        if (data.success && !downloaded) {
+          const link = document.createElement('a');
+          link.href = `data:application/pdf;base64,${data.pdfBuffer}`;
+          link.download = 'invoice.pdf';
+          link.click();
+          setDownloaded(true);
         } else {
           setError("Failed to fetch invoice")
         }

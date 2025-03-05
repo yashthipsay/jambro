@@ -28,6 +28,11 @@ const validateResults = (req, res, next) => {
     
     ]
 
+// Validate purchase
+const validatePurchase = [
+    
+]
+
 // Validate getting user subscriptions
 const validateGetUserSubscriptions = [
     param('userId').isMongoId().withMessage('Valid user ID is required'),
