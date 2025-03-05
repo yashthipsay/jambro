@@ -37,3 +37,9 @@ const skuPaymentSchema = new mongoose.Schema({
     // razorpayPaymentId
     // createdAt
 });
+
+module.exports = {
+    subscriptionSchema,
+    skuSchema,
+    skuPaymentSchema
+};

@@ -12,6 +12,11 @@ function adminDeleteSubscriptionPlan(req, res){
     // Delete a subscription
 }
 
+function adminGetAllSubscriptionPlans(req, res) {
+    // Retrieve all subscription plans with details
+    // Optional filters/pagination
+  }
+
 // User subscription functions
 function purchaseSubscription(req, res) {
     // Handle user purchasing a subscription
