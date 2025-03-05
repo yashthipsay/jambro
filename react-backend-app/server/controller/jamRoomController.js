@@ -339,6 +339,36 @@ const updateAddons = async (req, res) => {
   }
 }
 
+const getAddon = async(req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const jamRoom = await JamRoom.findById(id);
+    
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Jam room not found'
+      });
+    }
+    
+    // Handle case when addons array doesn't exist
+    const addons = jamRoom.addons || [];
+    
+    res.status(200).json({
+      success: true,
+      data: addons
+    });
+    
+  } catch (error) {
+    console.error('Error fetching addons:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+}
+
 // Delete an addon
 const deleteAddon = async (req, res) => {
   try {
@@ -378,5 +408,6 @@ module.exports = {
   getJamRoomById,
   uploadJamRoomImages,
   updateAddons,
-  deleteAddon
+  deleteAddon,
+  getAddon
 };

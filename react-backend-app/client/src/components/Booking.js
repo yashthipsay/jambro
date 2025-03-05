@@ -19,8 +19,13 @@ import {
   Divider,
   FormGroup,
   CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  ListItemSecondaryAction,
 } from "@mui/material"
-import { Calendar, Clock, ChevronLeft, Phone, Plus, Trash2, Music, Check } from "lucide-react"
+import { Calendar, Clock, ChevronLeft, Phone, Plus, Trash2, Music, Check, Guitar } from "lucide-react"
 import moment from "moment-timezone"
 import io from "socket.io-client"
 import { useAuth0 } from "@auth0/auth0-react"
@@ -40,6 +45,33 @@ function Booking() {
   const [selectedPhoneNumber, setSelectedPhoneNumber] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [addons, setAddons] = useState([])
+  const [selectedAddons, setSelectedAddons] = useState([])
+
+
+  useEffect(() => {
+    if (selectedRoom) {
+      socket.emit("getBookings", selectedRoom.id)
+      
+      // Fetch addons for this jamroom
+      fetch(`http://localhost:5000/api/jamrooms/${selectedRoom.id}/addons`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            setAddons(data.data);
+          }
+        })
+        .catch(err => console.error("Error fetching addons:", err));
+    }
+
+    socket.on("bookings", (data) => {
+      setBookings(data)
+    })
+
+    return () => {
+      socket.off("bookings")
+    }
+  }, [selectedRoom])
 
   useEffect(() => {
     if (selectedRoom) {
@@ -90,6 +122,32 @@ function Booking() {
     }
   }, [])
 
+  const handleAddonToggle = (addonId) => {
+    setSelectedAddons(prev => {
+      if (prev.includes(addonId)) {
+        return prev.filter(id => id !== addonId);
+      } else {
+        return [...prev, addonId];
+      }
+    });
+  };
+
+  const calculateAddonsCost = () => {
+    // Calculate based on number of selected slots (hours)
+    const hoursBooked = selectedSlots.length;
+    
+    return selectedAddons.reduce((total, addonId) => {
+      const addon = addons.find(a => a._id === addonId);
+      return total + (addon ? addon.pricePerHour * hoursBooked : 0);
+    }, 0);
+  };
+
+  const calculateTotalCost = () => {
+    const slotsCost = selectedSlots.length * (selectedRoom.feesPerSlot || 500);
+    const addonsCost = calculateAddonsCost();
+    return slotsCost + addonsCost;
+  };
+
   if (!selectedRoom || selectedRoom.id !== id) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
@@ -112,11 +170,15 @@ function Booking() {
 
   const isSlotBooked = (slotId) => {
     if (!selectedDate) return false
-    const selectedDateStr = selectedDate.toISOString().split("T")[0]
-    return bookings.some(
-      (booking) =>
-        booking.date.split("T")[0] === selectedDateStr && booking.slots.some((slot) => slot.slotId === slotId),
-    )
+
+    // Format the selected date in YYYY-MM-DD format without timezone conversion
+    const selectedDateStr = moment(selectedDate).format("YYYY-MM-DD")
+
+    return bookings.some((booking) => {
+      // Format the booking date in YYYY-MM-DD format for consistent comparison
+      const bookingDateStr = moment(booking.date).format("YYYY-MM-DD")
+      return bookingDateStr === selectedDateStr && booking.slots.some((slot) => slot.slotId === slotId)
+    })
   }
 
   const hasSlotTimePassedToday = (slot) => {
@@ -219,6 +281,15 @@ function Booking() {
       }
     })
 
+    const selectedAddonsDetails = selectedAddons.map(addonId => {
+      const addon = addons.find(a => a._id === addonId);
+      return {
+        addonId: addon._id,
+        instrumentType: addon.instrumentType,
+        pricePerHour: addon.pricePerHour
+      };
+    });
+
     const totalAmount = selectedSlots.length * selectedRoom.feesPerSlot
 
     setTimeout(() => {
@@ -231,6 +302,8 @@ function Booking() {
           phoneNumber: selectedPhoneNumber,
           selectedRoomId: selectedRoom.id,
           selectedDate: moment(selectedDate).tz("Asia/Kolkata").format("YYYY-MM-DD"),
+          selectedAddons: selectedAddonsDetails,
+          addonsCost: calculateAddonsCost()
         },
       })
     }, 500)
@@ -339,6 +412,54 @@ function Booking() {
           </CardContent>
         </Card>
 
+        {/* New Addons Section */}
+        <Card className="mb-4 rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <Typography variant="subtitle2" className="text-gray-600 mb-3">
+              Available Add-ons
+            </Typography>
+            
+            {addons.length === 0 ? (
+              <div className="text-center py-4 bg-gray-50 rounded-lg">
+                <Guitar className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                <Typography variant="body2" className="text-gray-500">
+                  No add-on instruments available for this jam room
+                </Typography>
+              </div>
+            ) : (
+              <List>
+                {addons.map((addon) => (
+                  addon.isAvailable && (
+                    <ListItem 
+                      key={addon._id} 
+                      className={`
+                        border rounded-lg mb-2 transition-all
+                        ${selectedAddons.includes(addon._id) ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'}
+                      `}
+                    >
+                      <ListItemIcon>
+                        <Guitar className="text-gray-600" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={addon.instrumentType.join(', ')}
+                        secondary={`₹${addon.pricePerHour}/hour · ${addon.quantity} available`}
+                      />
+                      <ListItemSecondaryAction>
+                        <Checkbox
+                          edge="end"
+                          onChange={() => handleAddonToggle(addon._id)}
+                          checked={selectedAddons.includes(addon._id)}
+                          color="primary"
+                        />
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  )
+                ))}
+              </List>
+            )}
+          </CardContent>
+        </Card>
+
         <Card className="mb-4 rounded-xl shadow-sm">
           <CardContent className="p-4">
             <Typography variant="subtitle2" className="text-gray-600 mb-3">
@@ -397,16 +518,39 @@ function Booking() {
 
         <Card className="mb-6 rounded-xl shadow-sm">
           <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-2">
+              <Typography variant="body2" className="text-gray-600">
+                Jam Room Fee
+              </Typography>
+              <Typography variant="body2">
+                ₹{selectedSlots.length * (selectedRoom.feesPerSlot || 500)}
+              </Typography>
+            </div>
+            
+            {selectedAddons.length > 0 && (
+              <div className="flex justify-between items-center mb-2">
+                <Typography variant="body2" className="text-gray-600">
+                  Add-on Instruments
+                </Typography>
+                <Typography variant="body2">
+                  ₹{calculateAddonsCost()}
+                </Typography>
+              </div>
+            )}
+            
+            <Divider className="my-2" />
+            
             <div className="flex justify-between items-center">
               <Typography variant="subtitle1" className="font-semibold">
                 Total Amount
               </Typography>
               <Typography variant="h6" className="font-bold text-indigo-700">
-                ₹{selectedSlots.length * (selectedRoom.feesPerSlot || 500)}
+                ₹{calculateTotalCost()}
               </Typography>
             </div>
             <Typography variant="caption" className="text-gray-500">
               {selectedSlots.length} slot{selectedSlots.length !== 1 ? "s" : ""} × ₹{selectedRoom.feesPerSlot || 500}
+              {selectedAddons.length > 0 && ` + ${selectedAddons.length} add-on${selectedAddons.length !== 1 ? "s" : ""}`}
             </Typography>
           </CardContent>
         </Card>
