@@ -8,6 +8,7 @@ const connectDB = require("./db/mongoDriver"); // Import the connectDB function
 const userRoutes = require("./routes/userRoutes");
 const jamRoomRoutes = require("./routes/jamRoomRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const bnkVerification = require("./routes/bnkVerification");
 const payoutRoutes = require("./routes/payoutRoutes");
@@ -38,6 +39,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/jamrooms", jamRoomRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/bank-verification", bnkVerification);
 app.use("/api/payouts", payoutRoutes);
 app.use('/api/spotify', spotifyRoutes);
