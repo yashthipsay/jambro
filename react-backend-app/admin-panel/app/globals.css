@@ -47,6 +47,33 @@ body {
   min-height: 100vh;
 }
 
+/* Registration page specific styles */
+body.registration-page {
+  background-color: #000;
+  background-image: url("https://gigsaw.s3.eu-north-1.amazonaws.com/3d-music-related-scene.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  overflow-y: auto !important;
+  height: auto !important;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+}
+
+body.registration-page .glassmorphism {
+  display: none !important;
+}
+
+/* Fix for any parent elements that might prevent scrolling */
+body.registration-page #__next,
+body.registration-page main {
+  height: auto !important;
+  min-height: 100vh;
+  overflow-y: visible !important;
+}
+
 /* Typography */
 h1, h2, h3 {
   font-family: "Audiowide", cursive;

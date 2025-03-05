@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Button, Card, CardContent, Typography, CircularProgress, Divider } from "@mui/material"
+import { Button, Card, CardContent, CardMedia, Typography, CircularProgress, Divider } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
-import { MapPin, Music, Star, Clock } from "lucide-react"
-import { findClosestJamRooms } from "./utils/jamRoomUtils" // Import the function
+import { LocationOn, MusicNote, Star, AccessTime } from "@mui/icons-material"
+import { findClosestJamRooms } from "./utils/jamRoomUtils"
 
 function JamRoomFinder() {
   const [loading, setLoading] = useState(false)
@@ -14,7 +14,16 @@ function JamRoomFinder() {
   const [userLatitude, setUserLatitude] = useState(null)
   const [userLongitude, setUserLongitude] = useState(null)
   const navigate = useNavigate()
-
+  
+  // Light theme color palette with purple accents
+  const primaryColor = '#6434fc'    // Deep purple for primary actions
+  const secondaryColor = '#a085eb'  // Light purple for accents (as specified)
+  const accentColor = '#8059f7'     // Medium purple for highlights (as specified)
+  const backgroundColor = '#f8f6ff' // Very light lavender background
+  const cardBackground = '#ffffff'  // White card background
+  const textColor = '#352c63'       // Dark purple text for readability
+  const lightTextColor = '#dcd5ff'  // Light lavender for text on dark backgrounds
+  
   const handleFindJamRooms = async () => {
     setLoading(true)
     try {
@@ -45,50 +54,94 @@ function JamRoomFinder() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4" style={{ 
+      backgroundColor,
+      backgroundImage: `radial-gradient(circle at 50% 0%, #e9e4ff 0%, ${backgroundColor} 70%)` 
+    }}>
       <div className="max-w-md mx-auto">
+        {/* Header */}
         <div className="text-center mb-8 mt-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 mb-4">
-            <Music className="w-8 h-8 text-indigo-600" />
-          </div>
-          <Typography variant="h5" className="font-bold mb-2">
+          <MusicNote sx={{ fontSize: 48, color: primaryColor, mb: 2, filter: 'drop-shadow(0 0 8px rgba(100, 52, 252, 0.2))' }} />
+          <Typography variant="h5" sx={{ 
+            fontWeight: 'bold', 
+            mb: 1, 
+            color: textColor,
+            textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+          }}>
             Find Your Perfect Jam Room
           </Typography>
-          <Typography variant="body2" className="text-gray-600">
+          <Typography variant="body2" sx={{ color: textColor, opacity: 0.8 }}>
             Discover nearby jam rooms and book your session in minutes
           </Typography>
         </div>
 
-        <Card className="mb-6 rounded-xl shadow-sm">
+        {/* Find Button */}
+        <Card className="mb-6 rounded-xl shadow-sm" sx={{ 
+          backgroundColor: cardBackground,
+          boxShadow: '0 4px 16px rgba(100, 52, 252, 0.15)',
+          border: '1px solid rgba(160, 133, 235, 0.2)'
+        }}>
           <CardContent className="p-5 text-center">
             <Button
               variant="contained"
-              color="primary"
               fullWidth
               size="large"
               onClick={handleFindJamRooms}
               disabled={loading}
-              className="py-3 rounded-lg"
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <MapPin className="w-5 h-5" />}
+              sx={{
+                backgroundColor: primaryColor,
+                color: '#ffffff',
+                py: 1.5,
+                borderRadius: 2,
+                boxShadow: '0 4px 12px rgba(100, 52, 252, 0.3)',
+                '&:hover': { 
+                  backgroundColor: accentColor,
+                  boxShadow: '0 6px 16px rgba(100, 52, 252, 0.4)',
+                },
+              }}
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <LocationOn fontSize="small" />}
             >
               {loading ? "Searching..." : "Find Nearby Jam Rooms"}
             </Button>
           </CardContent>
         </Card>
 
+        {/* Jam Room Listing */}
         {jamRooms.length > 0 && (
           <div className="space-y-4">
-            <Typography variant="h6" className="font-semibold">
+            <Typography variant="h6" sx={{ 
+              fontWeight: 600, 
+              mb: 2, 
+              color: textColor,
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+            }}>
               Nearby Jam Rooms
             </Typography>
 
             {!isAuthenticated ? (
-              <Card className="rounded-xl shadow-sm overflow-hidden">
+              <Card className="rounded-xl shadow-sm" sx={{ 
+                backgroundColor: cardBackground,
+                boxShadow: '0 4px 16px rgba(100, 52, 252, 0.15)',
+                border: '1px solid rgba(160, 133, 235, 0.2)'
+              }}>
                 <CardContent className="p-5 text-center">
-                  <Typography variant="body2" className="mb-4 text-gray-600">
+                  <Typography variant="body2" sx={{ mb: 2, color: textColor }}>
                     Sign in to view and book jam rooms
                   </Typography>
-                  <Button onClick={() => loginWithRedirect()} variant="contained" color="primary" fullWidth>
+                  <Button
+                    onClick={() => loginWithRedirect()}
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      backgroundColor: primaryColor,
+                      color: '#ffffff',
+                      boxShadow: '0 4px 12px rgba(100, 52, 252, 0.3)',
+                      '&:hover': { 
+                        backgroundColor: accentColor,
+                        boxShadow: '0 6px 16px rgba(100, 52, 252, 0.4)',
+                      },
+                    }}
+                  >
                     Sign In
                   </Button>
                 </CardContent>
@@ -98,39 +151,58 @@ function JamRoomFinder() {
                 {jamRooms.map((room) => (
                   <Card
                     key={room.id}
-                    className="rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                    className="rounded-xl overflow-hidden cursor-pointer transition-all duration-300"
                     onClick={() => handleCardClick(room)}
+                    sx={{ 
+                      backgroundColor: cardBackground,
+                      boxShadow: '0 4px 16px rgba(100, 52, 252, 0.15)',
+                      border: '1px solid rgba(160, 133, 235, 0.2)',
+                      '&:hover': { 
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 8px 24px rgba(100, 52, 252, 0.25)',
+                      },
+                    }}
                   >
-                    <CardContent className="p-0">
-                      <div className="p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <Typography variant="h6" className="font-semibold">
-                            {room.name}
-                          </Typography>
-                          <div className="flex items-center bg-indigo-100 px-2 py-1 rounded text-indigo-700">
-                            <Star className="w-3 h-3 mr-1 fill-current" />
-                            <Typography variant="caption" className="font-medium">
-                              4.8
-                            </Typography>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center text-gray-600 mb-3">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          <Typography variant="body2">{room.distance.toFixed(2)} km away</Typography>
-                        </div>
-
-                        <Divider className="my-3" />
-
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center text-gray-600">
-                            <Clock className="w-4 h-4 mr-1" />
-                            <Typography variant="body2">{room.slots?.length || 6} slots available</Typography>
-                          </div>
-                          <Typography variant="subtitle2" className="font-semibold text-indigo-700">
-                            ₹{room.feesPerSlot || "500"}/slot
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: textColor }}>
+                          {room.name}
+                        </Typography>
+                        <div className="flex items-center" style={{ 
+                          background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
+                          padding: '4px 8px', 
+                          borderRadius: 4,
+                          boxShadow: '0 2px 8px rgba(100, 52, 252, 0.2)'
+                        }}>
+                          <Star sx={{ fontSize: 16, color: '#ffffff', mr: 0.5 }} />
+                          <Typography variant="caption" sx={{ fontWeight: 'medium', color: '#ffffff' }}>
+                            4.8
                           </Typography>
                         </div>
+                      </div>
+
+                      <div className="flex items-center mb-3" style={{ color: textColor }}>
+                        <LocationOn sx={{ fontSize: 16, color: secondaryColor, mr: 0.5 }} />
+                        <Typography variant="body2">{room.distance.toFixed(2)} km away</Typography>
+                      </div>
+
+                      <Divider sx={{ my: 1.5, backgroundColor: 'rgba(160, 133, 235, 0.2)' }} />
+
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center" style={{ color: textColor }}>
+                          <AccessTime sx={{ fontSize: 16, color: secondaryColor, mr: 0.5 }} />
+                          <Typography variant="body2">{room.slots?.length || 6} slots available</Typography>
+                        </div>
+                        <Typography variant="subtitle2" sx={{ 
+                          fontWeight: 600, 
+                          color: '#ffffff',
+                          background: `linear-gradient(135deg, ${accentColor}, ${primaryColor})`,
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          boxShadow: '0 2px 8px rgba(100, 52, 252, 0.2)'
+                        }}>
+                          ₹{room.feesPerSlot || "500"}/slot
+                        </Typography>
                       </div>
                     </CardContent>
                   </Card>
@@ -145,4 +217,3 @@ function JamRoomFinder() {
 }
 
 export default JamRoomFinder
-

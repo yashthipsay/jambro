@@ -2,27 +2,24 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import { CheckCircle, Download, AlertCircle } from "lucide-react"
-import { Button } from "@mui/material"
+import { CheckCircle, Download, AlertCircle, Calendar, Clock, MapPin, CreditCard } from "lucide-react"
+import { Button, Divider, Paper, Typography, Box } from "@mui/material"
 
 const BookingConfirmation = () => {
   const { id } = useParams()
-  const [downloaded, setDownloaded] = useState(false)
+  const [invoiceData, setInvoiceData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const fetchInvoice = async () => {
+    const fetchInvoiceData = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch(`http://localhost:5000/api/payments/invoices/${id}`)
+        const response = await fetch(`http://localhost:5000/api/payments/invoice-data/${id}`)
         const data = await response.json()
-        if (data.success && !downloaded) {
-          const link = document.createElement("a")
-          link.href = `data:application/pdf;base64,${data.pdfBuffer}`
-          link.download = "invoice.pdf"
-          link.click()
-          setDownloaded(true)
+        
+        if (data.success) {
+          setInvoiceData(data.invoice)
         } else {
           setError("Failed to fetch invoice")
         }
@@ -34,12 +31,31 @@ const BookingConfirmation = () => {
       }
     }
 
-    fetchInvoice()
-  }, [id, downloaded])
+    fetchInvoiceData()
+  }, [id])
+
+  const handleDownloadPdf = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/payments/invoices/${id}`)
+      const data = await response.json()
+      
+      if (data.success) {
+        const link = document.createElement("a")
+        link.href = `data:application/pdf;base64,${data.pdfBuffer}`
+        link.download = `invoice-${id}.pdf`
+        link.click()
+      } else {
+        setError("Failed to download invoice")
+      }
+    } catch (error) {
+      console.error("Error downloading invoice:", error)
+      setError("Error downloading invoice. Please try again.")
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-indigo-100 p-4 flex flex-col items-center justify-center">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 space-y-6">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-8">
             <div className="w-12 h-12 border-4 border-t-indigo-600 border-indigo-200 rounded-full animate-spin"></div>
@@ -56,7 +72,7 @@ const BookingConfirmation = () => {
           </div>
         ) : (
           <>
-            <div className="flex flex-col items-center text-center">
+            <div className="flex flex-col items-center text-center mb-6">
               <CheckCircle className="w-20 h-20 text-green-500 mb-4" />
               <h1 className="text-2xl font-bold text-gray-800">Booking Confirmed!</h1>
               <div className="mt-2 px-4 py-2 bg-gray-100 rounded-lg">
@@ -65,19 +81,110 @@ const BookingConfirmation = () => {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">Invoice</p>
-                <div className="flex items-center">
-                  <Download className="w-4 h-4 mr-1 text-indigo-600" />
-                  <span className="text-sm text-indigo-600">{downloaded ? "Downloaded" : "Downloading..."}</span>
+            {/* Invoice Display */}
+            {invoiceData && (
+              <Paper elevation={0} variant="outlined" className="p-6 mt-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <Typography variant="h5" className="font-bold text-gray-800">INVOICE</Typography>
+                    <Typography variant="body2" className="text-gray-600 mt-1">#{invoiceData.invoiceNumber}</Typography>
+                  </div>
+                  <div className="text-right">
+                    <Typography variant="body2" className="text-gray-600">Date:</Typography>
+                    <Typography variant="body1">{new Date(invoiceData.createdAt).toLocaleDateString()}</Typography>
+                  </div>
                 </div>
-              </div>
+                
+                <Divider className="my-4" />
+                
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Typography variant="subtitle2" className="text-gray-600">Customer</Typography>
+                    <Typography variant="body1">{invoiceData.customerName}</Typography>
+                    <Typography variant="body2" className="text-gray-600">{invoiceData.customerEmail}</Typography>
+                    <Typography variant="body2" className="text-gray-600">{invoiceData.customerPhone}</Typography>
+                  </div>
+                  <div>
+                    <Typography variant="subtitle2" className="text-gray-600">Jam Room</Typography>
+                    <Typography variant="body1">{invoiceData.jamRoomName}</Typography>
+                    <div className="flex items-center mt-1">
+                      <MapPin className="w-4 h-4 text-gray-500 mr-1" />
+                      <Typography variant="body2" className="text-gray-600">{invoiceData.jamRoomLocation}</Typography>
+                    </div>
+                  </div>
+                </div>
+                
+                <Box className="bg-gray-50 rounded-lg p-4 my-4">
+                  <div className="flex items-center mb-2">
+                    <Calendar className="w-4 h-4 text-gray-600 mr-2" />
+                    <Typography variant="body1">
+                      {new Date(invoiceData.bookingDate).toLocaleDateString()}
+                    </Typography>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 text-gray-600 mr-2" />
+                    <Typography variant="body1">
+                      {invoiceData.slots?.map(slot => `${slot.startTime} - ${slot.endTime}`).join(', ')}
+                    </Typography>
+                  </div>
+                </Box>
+                
+                <div className="mt-4">
+                  <Typography variant="subtitle1" className="font-semibold">Booking Details</Typography>
+                  
+                  <div className="mt-2 space-y-1">
+                    <div className="flex justify-between">
+                      <Typography variant="body2">Jam Room Fee</Typography>
+                      <Typography variant="body2">₹{invoiceData.jamRoomFee}</Typography>
+                    </div>
+                    
+                    {invoiceData.addons && invoiceData.addons.length > 0 && (
+                      <div className="flex justify-between">
+                        <Typography variant="body2">Add-ons</Typography>
+                        <Typography variant="body2">₹{invoiceData.addonsFee}</Typography>
+                      </div>
+                    )}
+                    
+                    {invoiceData.taxAmount > 0 && (
+                      <div className="flex justify-between">
+                        <Typography variant="body2">Tax</Typography>
+                        <Typography variant="body2">₹{invoiceData.taxAmount}</Typography>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <Divider className="my-4" />
+                
+                <div className="flex justify-between items-center">
+                  <Typography variant="subtitle1" className="font-semibold">Total Amount</Typography>
+                  <Typography variant="h6" className="font-bold text-indigo-700">₹{invoiceData.totalAmount}</Typography>
+                </div>
+                
+                <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 flex items-center">
+                  <CreditCard className="w-5 h-5 text-green-500 mr-2" />
+                  <div>
+                    <Typography variant="body2" className="text-green-700">Paid with {invoiceData.paymentMethod}</Typography>
+                    <Typography variant="caption" className="text-green-600">Transaction ID: {invoiceData.paymentId}</Typography>
+                  </div>
+                </div>
+              </Paper>
+            )}
+            
+            <div className="flex justify-between mt-6">
+              <Button variant="outlined" color="primary" onClick={() => window.location.href = "/"}>
+                Back to Home
+              </Button>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                startIcon={<Download />}
+                onClick={handleDownloadPdf}
+              >
+                Download PDF
+              </Button>
             </div>
-
-            <Button variant="outlined" color="primary" fullWidth onClick={() => (window.location.href = "/")}>
-              Back to Home
-            </Button>
           </>
         )}
       </div>
@@ -86,4 +193,3 @@ const BookingConfirmation = () => {
 }
 
 export default BookingConfirmation
-

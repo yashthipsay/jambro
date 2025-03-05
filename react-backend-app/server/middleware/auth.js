@@ -22,7 +22,7 @@ const verifyToken = (req, res, next) => {
   
     try {
       const token = bearerHeader.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, 'fdca379c0528c79e0e4b3e44bc4bc7045b3c0b01c74e629a3f132eb2e9446a8c');
       req.user = decoded; // Attach decoded user to request
       next();
     } catch (error) {
