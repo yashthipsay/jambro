@@ -17,6 +17,7 @@
     "ajv-keywords": "^5.0.0",
     "date-fns": "^4.1.0",
     "graphql": "^16.10.0",
+    "html2canvas": "^1.4.1",
     "leaflet": "^1.9.4",
     "leaflet-routing-machine": "^3.2.12",
     "lucide-react": "^0.477.0",

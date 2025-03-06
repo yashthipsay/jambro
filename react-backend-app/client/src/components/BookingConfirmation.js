@@ -1,15 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams } from "react-router-dom"
 import { CheckCircle, Download, AlertCircle, Calendar, Clock, MapPin, CreditCard } from "lucide-react"
 import { Button, Divider, Paper, Typography, Box } from "@mui/material"
+import html2canvas from "html2canvas"
 
 const BookingConfirmation = () => {
   const { id } = useParams()
   const [invoiceData, setInvoiceData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const invoiceRef = useRef(null)
 
   useEffect(() => {
     const fetchInvoiceData = async () => {
@@ -34,22 +36,32 @@ const BookingConfirmation = () => {
     fetchInvoiceData()
   }, [id])
 
-  const handleDownloadPdf = async () => {
+  // New screenshot download function
+  const handleDownloadScreenshot = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/payments/invoices/${id}`)
-      const data = await response.json()
+      // Show a "preparing download" message or spinner here if needed
       
-      if (data.success) {
+      if (invoiceRef.current) {
+        // Create a canvas from the invoice element
+        const canvas = await html2canvas(invoiceRef.current, { 
+          scale: 2, // Higher scale for better quality
+          backgroundColor: "#ffffff",
+          logging: false,
+          useCORS: true // Enable if you have images from external sources
+        })
+        
+        // Convert the canvas to a data URL
+        const imageData = canvas.toDataURL("image/png")
+        
+        // Create a download link and trigger it
         const link = document.createElement("a")
-        link.href = `data:application/pdf;base64,${data.pdfBuffer}`
-        link.download = `invoice-${id}.pdf`
+        link.href = imageData
+        link.download = `invoice-${id}.png`
         link.click()
-      } else {
-        setError("Failed to download invoice")
       }
     } catch (error) {
-      console.error("Error downloading invoice:", error)
-      setError("Error downloading invoice. Please try again.")
+      console.error("Error downloading screenshot:", error)
+      setError("Failed to download invoice screenshot. Please try again.")
     }
   }
 
@@ -81,9 +93,31 @@ const BookingConfirmation = () => {
               </div>
             </div>
 
-            {/* Invoice Display */}
+            {/* Invoice Display - add ref to capture */}
             {invoiceData && (
-              <Paper elevation={0} variant="outlined" className="p-6 mt-6">
+              <Paper 
+                elevation={0} 
+                variant="outlined" 
+                className="p-6 mt-6" 
+                ref={invoiceRef} // Add this reference
+              >
+                {/* Add a nice header with logo */}
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center">
+                    <img 
+                      src="/gigsaw_ss.png" 
+                      alt="GigSaw Logo" 
+                      className="h-8 mr-2" 
+                    />
+                    <Typography variant="h6" className="font-bold">
+                      GigSaw
+                    </Typography>
+                  </div>
+                  <div className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
+                    Confirmed
+                  </div>
+                </div>
+                
                 <div className="flex justify-between items-start">
                   <div>
                     <Typography variant="h5" className="font-bold text-gray-800">INVOICE</Typography>
@@ -169,6 +203,13 @@ const BookingConfirmation = () => {
                     <Typography variant="caption" className="text-green-600">Transaction ID: {invoiceData.paymentId}</Typography>
                   </div>
                 </div>
+                
+                {/* Footer with QR code placeholder */}
+                <div className="mt-6 pt-4 border-t text-center">
+                  <Typography variant="caption" className="text-gray-500">
+                    Thank you for booking with GigSaw! For support, contact support@gigsaw.com
+                  </Typography>
+                </div>
               </Paper>
             )}
             
@@ -180,9 +221,9 @@ const BookingConfirmation = () => {
                 variant="contained" 
                 color="primary" 
                 startIcon={<Download />}
-                onClick={handleDownloadPdf}
+                onClick={handleDownloadScreenshot} // Change to the new handler
               >
-                Download PDF
+                Download Receipt
               </Button>
             </div>
           </>
