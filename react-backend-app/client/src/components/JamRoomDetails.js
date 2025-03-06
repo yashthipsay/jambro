@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Button, Card, CardContent, Typography, Divider, Collapse, IconButton, Modal } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { MapPin, Music, ArrowLeft, Calendar, Instagram, ChevronDown, ChevronUp, Info, Clock, X } from "lucide-react"
-
+import ShareButton from "./buttons/ShareButton"
 
 function JamRoomDetails() {
   const navigate = useNavigate()
@@ -277,6 +277,21 @@ function JamRoomDetails() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="flex gap-2 mb-6">
+                <ShareButton 
+          title={`Check out ${selectedRoom.name}`}
+          text={`I found this amazing jam room: ${selectedRoom.name}. It's only ${selectedRoom.distance.toFixed(2)} km away!`}
+          url={window.location.href}
+          image={selectedRoom.images && selectedRoom.images.length > 0 ? selectedRoom.images[0] : ''}
+          variant="outlined"
+          color="primary"
+          fullWidth
+          className="rounded-lg py-2"
+        >
+          Share
+        </ShareButton>
+        </div>
 
         <Button
           variant="contained"
