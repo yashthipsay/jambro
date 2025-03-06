@@ -1,38 +1,38 @@
-const { request } = require('express');
-const User = require('../models/User');
+const { request } = require("express");
+const User = require("../models/User");
 
-const createUser = async(req, res) => {
-    try{
-        const { name, email, mobileNumber } = req.body;
+const createUser = async (req, res) => {
+  try {
+    const { name, email, mobileNumber } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-        return res.status(400).json({
-            success: false,
-            message: 'Email already registered'
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered",
+      });
     }
 
-        // Create new user
-        const user = new User({
-            name,
-            email,
-            mobileNumber
-          });
+    // Create new user
+    const user = new User({
+      name,
+      email,
+      mobileNumber,
+    });
 
-          await user.save();
+    await user.save();
 
-          res.status(201).json({
-            success: true,
-            data: user
-          });
-    }catch (error) {
-        res.status(500).json({
-          success: false,
-          message: error.message
-        });
-      }
+    res.status(201).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 const getUserByEmail = async (req, res) => {
@@ -43,7 +43,7 @@ const getUserByEmail = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
@@ -60,14 +60,14 @@ const getUserByEmail = async (req, res) => {
 };
 
 const savePhoneNumber = async (req, res) => {
-  try{
-    const {email, phoneNumber} = req.body;
-    const user = await User.findOne({email});
+  try {
+    const { email, phoneNumber } = req.body;
+    const user = await User.findOne({ email });
 
-    if(!user) {
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
@@ -78,23 +78,23 @@ const savePhoneNumber = async (req, res) => {
       success: true,
       data: user,
     });
-  }catch (error) {
+  } catch (error) {
     res.status(500).json({
       success: false,
       message: error.message,
     });
   }
-}
+};
 
 const deletePhoneNumber = async (req, res) => {
-  try{
-    const {email, phoneNumber} = req.body;
-    const user = await User.findOne({email});
+  try {
+    const { email, phoneNumber } = req.body;
+    const user = await User.findOne({ email });
 
-    if(!user) {
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
     user.savedNumbers = user.savedNumbers.filter((num) => num !== phoneNumber);
@@ -110,15 +110,15 @@ const deletePhoneNumber = async (req, res) => {
       message: error.message,
     });
   }
-}
+};
 
 // Add features for login i.e. already saved user
 // Change password
 // get user
 // delete user
 module.exports = {
-    createUser,
-    getUserByEmail,
-    savePhoneNumber,
-    deletePhoneNumber
-  };
+  createUser,
+  getUserByEmail,
+  savePhoneNumber,
+  deletePhoneNumber,
+};

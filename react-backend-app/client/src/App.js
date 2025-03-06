@@ -38,6 +38,7 @@ import {
   Shield,
   Menu as MenuIcon
  } from "lucide-react"
+import PastBookings from "./components/PastBookings"
 
 function App() {
   const { loginWithRedirect, logout, isAuthenticated, isLoading, user, getIdTokenClaims } = useAuth0()
@@ -291,6 +292,7 @@ function App() {
           <Route path="/booking/:id" element={<Booking />} />
           <Route path="/final-review" element={<FinalReview />} />
           <Route path="/confirmation/:id" element={<BookingConfirmation />} />
+          <Route path="/bookings" element={<PastBookings />} />
         </Routes>
     </>
   )

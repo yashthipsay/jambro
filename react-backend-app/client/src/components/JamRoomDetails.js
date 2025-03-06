@@ -10,6 +10,8 @@ function JamRoomDetails() {
   const [expanded, setExpanded] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
+  
+
     // Add handleModalToggle function
     const handleModalToggle = () => setModalOpen(!modalOpen)
 
