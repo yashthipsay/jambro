@@ -1,11 +1,146 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button, Card, CardContent, CardMedia, Typography, CircularProgress, Divider } from "@mui/material"
+import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import { useNavigate } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import { LocationOn, MusicNote, Star, AccessTime } from "@mui/icons-material"
 import { findClosestJamRooms } from "./utils/jamRoomUtils"
+
+function JamRoomCard({ room, onClick, colors }) {
+  const [currentImage, setCurrentImage] = useState(0);
+  const { primaryColor, accentColor, secondaryColor, textColor } = colors;
+
+    // Add auto-slide functionality
+    useEffect(() => {
+      if (!room.images || room.images.length <= 1) return;
+      
+      const timer = setInterval(() => {
+        setCurrentImage((prev) => (prev + 1) % room.images.length);
+      }, 3000); // Change image every 3 seconds
+      
+      return () => clearInterval(timer);
+    }, [room.images]);
+
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setCurrentImage((prev) => (prev + 1) % room.images.length);
+  };
+
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setCurrentImage((prev) => (prev - 1 + room.images.length) % room.images.length);
+  };
+
+  return (
+    <Card
+      className="rounded-xl overflow-hidden cursor-pointer transition-all duration-300"
+      onClick={onClick}
+      sx={{ 
+        backgroundColor: 'transparent',
+        boxShadow: '0 4px 16px rgba(100, 52, 252, 0.15)',
+        border: '1px solid rgba(160, 133, 235, 0.2)',
+        '&:hover': { 
+          transform: 'translateY(-4px)',
+          boxShadow: '0 8px 24px rgba(100, 52, 252, 0.25)',
+        },
+      }}
+    >
+      <div className="relative">
+        {/* Image Carousel */}
+        <div className="relative h-48 w-full">
+          {room.images && room.images.length > 0 ? (
+            <>
+              <div className="absolute inset-0 bg-black/30" />
+              <img 
+                src={room.images[currentImage]}
+                alt={`${room.name} - ${currentImage + 1}`}
+                className="h-full w-full object-cover"
+              />
+              {room.images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 p-1 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                  >
+                    <ChevronLeft fontSize="small" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                  >
+                    <ChevronRight fontSize="small" />
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                    {room.images.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`h-1.5 w-1.5 rounded-full transition-all ${
+                          index === currentImage ? 'bg-white w-3' : 'bg-white/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
+              <MusicNote sx={{ fontSize: 48, color: 'rgba(100, 52, 252, 0.3)' }} />
+            </div>
+          )}
+        </div>
+
+        {/* Content Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4">
+          <div className="flex justify-between items-start">
+            <Typography variant="h6" sx={{ fontWeight: 600, color: 'white' }}>
+              {room.name}
+            </Typography>
+            <div className="flex items-center" style={{ 
+              background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
+              padding: '4px 8px', 
+              borderRadius: 4,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.25)'
+            }}>
+              <Star sx={{ fontSize: 16, color: '#ffffff', mr: 0.5 }} />
+              <Typography variant="caption" sx={{ fontWeight: 'medium', color: '#ffffff' }}>
+                4.8
+              </Typography>
+            </div>
+          </div>
+
+          <div className="flex items-center mt-2">
+            <LocationOn sx={{ fontSize: 16, color: 'white', mr: 0.5, opacity: 0.8 }} />
+            <Typography variant="body2" sx={{ color: 'white', opacity: 0.8 }}>
+              {room.distance.toFixed(2)} km away
+            </Typography>
+          </div>
+
+          <div className="flex justify-between items-center mt-2">
+            <div className="flex items-center">
+              <AccessTime sx={{ fontSize: 16, color: 'white', mr: 0.5, opacity: 0.8 }} />
+              <Typography variant="body2" sx={{ color: 'white', opacity: 0.8 }}>
+                {room.slots?.length || 6} slots
+              </Typography>
+            </div>
+            <Typography variant="subtitle2" sx={{ 
+              fontWeight: 600, 
+              color: '#ffffff',
+              background: `linear-gradient(135deg, ${accentColor}, ${primaryColor})`,
+              padding: '4px 8px',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.25)'
+            }}>
+              ₹{room.feesPerSlot || "500"}/slot
+            </Typography>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 function JamRoomFinder() {
   const [loading, setLoading] = useState(false)
@@ -157,64 +292,13 @@ function JamRoomFinder() {
             ) : (
               <div className="space-y-3">
                 {jamRooms.map((room) => (
-                  <Card
-                    key={room.id}
-                    className="rounded-xl overflow-hidden cursor-pointer transition-all duration-300"
-                    onClick={() => handleCardClick(room)}
-                    sx={{ 
-                      backgroundColor: cardBackground,
-                      boxShadow: '0 4px 16px rgba(100, 52, 252, 0.15)',
-                      border: '1px solid rgba(160, 133, 235, 0.2)',
-                      '&:hover': { 
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 8px 24px rgba(100, 52, 252, 0.25)',
-                      },
-                    }}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: textColor }}>
-                          {room.name}
-                        </Typography>
-                        <div className="flex items-center" style={{ 
-                          background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})`,
-                          padding: '4px 8px', 
-                          borderRadius: 4,
-                          boxShadow: '0 2px 8px rgba(100, 52, 252, 0.2)'
-                        }}>
-                          <Star sx={{ fontSize: 16, color: '#ffffff', mr: 0.5 }} />
-                          <Typography variant="caption" sx={{ fontWeight: 'medium', color: '#ffffff' }}>
-                            4.8
-                          </Typography>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center mb-3" style={{ color: textColor }}>
-                        <LocationOn sx={{ fontSize: 16, color: secondaryColor, mr: 0.5 }} />
-                        <Typography variant="body2">{room.distance.toFixed(2)} km away</Typography>
-                      </div>
-
-                      <Divider sx={{ my: 1.5, backgroundColor: 'rgba(160, 133, 235, 0.2)' }} />
-
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center" style={{ color: textColor }}>
-                          <AccessTime sx={{ fontSize: 16, color: secondaryColor, mr: 0.5 }} />
-                          <Typography variant="body2">{room.slots?.length || 6} slots available</Typography>
-                        </div>
-                        <Typography variant="subtitle2" sx={{ 
-                          fontWeight: 600, 
-                          color: '#ffffff',
-                          background: `linear-gradient(135deg, ${accentColor}, ${primaryColor})`,
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          boxShadow: '0 2px 8px rgba(100, 52, 252, 0.2)'
-                        }}>
-                          ₹{room.feesPerSlot || "500"}/slot
-                        </Typography>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      <JamRoomCard
+                      key={room.id}
+                      room={room}
+                      onClick={() => handleCardClick(room)}
+                      colors={{ primaryColor, secondaryColor, accentColor, textColor }}
+                    />
+                  ))}
               </div>
             )}
           </div>
