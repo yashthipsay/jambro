@@ -44,9 +44,17 @@ function JamRoomFinder() {
       return
     }
     const selectedRoom = {
-      ...room,
+      id: room.id,
+      name: room.name,
+      description: room.description,
+      location: room.location,
+      slots: room.slots,
+      distance: room.distance,
+      feesPerSlot: room.feesPerSlot,
       userLatitude,
       userLongitude,
+      ownerDetails: room.ownerDetails, // Add this
+      images: room.images
     }
     console.log("Selected room:", selectedRoom)
     localStorage.setItem("selectedJamRoom", JSON.stringify(selectedRoom))

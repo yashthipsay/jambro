@@ -36,6 +36,7 @@ export function findClosestJamRooms() {
           const jamRoomsWithDistance = data.data.map((room) => ({
             id: room._id,
             name: room.jamRoomDetails.name,
+            description: room.jamRoomDetails.description,
             location: room.location,
             slots: room.slots,
             distance: calculateDistance(
@@ -44,7 +45,9 @@ export function findClosestJamRooms() {
               room.location.latitude, 
               room.location.longitude
             ),
-            feesPerSlot: room.feesPerSlot
+            feesPerSlot: room.feesPerSlot,
+            ownerDetails: room.ownerDetails, // Add this
+            images: room.images
           }));
           console.log(latitude, longitude);
 
