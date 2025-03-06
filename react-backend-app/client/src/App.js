@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom"
 import { useAuth0 } from "@auth0/auth0-react"
 import JamRoomFinder from "./JamRoomFinder"
 import JamRoomDetails from "./components/JamRoomDetails"
@@ -18,13 +19,53 @@ import {
   MenuItem,
   IconButton,
   CircularProgress,
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemIcon, 
+  ListItemText, 
+  Divider,
+  Box
 } from "@mui/material"
-import { LogOut, User } from "lucide-react"
+import {   
+  History, 
+  Info, 
+  Gavel, 
+  LogOut, 
+  User,
+  Mail,
+  Phone,
+  Shield,
+  Menu as MenuIcon
+ } from "lucide-react"
 
 function App() {
   const { loginWithRedirect, logout, isAuthenticated, isLoading, user, getIdTokenClaims } = useAuth0()
   const [anchorEl, setAnchorEl] = useState(null)
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const open = Boolean(anchorEl)
+  const navigate = useNavigate()
+
+  const menuItems = [
+    { text: 'Past Bookings', icon: <History />, path: '/bookings' },
+    { text: 'About Us', icon: <Info />, path: '/about' },
+    { text: 'Contact', icon: <Mail />, path: '/contact' },
+    { text: 'Support', icon: <Phone />, path: '/support' },
+  ];
+
+  const footerItems = [
+    { text: 'Terms & Conditions', icon: <Gavel />, path: '/terms' },
+    { text: 'Privacy Policy', icon: <Shield />, path: '/privacy' },
+  ];
+
+  const toggleDrawer = (open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setDrawerOpen(open);
+  };
+
+  
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget)
@@ -56,7 +97,7 @@ function App() {
           }
         } catch (error) {
           console.error("Error registering user:", error)
-        }
+        } 
       }
     }
 
@@ -66,6 +107,91 @@ function App() {
   const handleLogin = () => {
     loginWithRedirect()
   }
+
+  const drawerContent = () => (
+    <Box
+      sx={{ width: 280 }}
+      role="presentation"
+      onClick={toggleDrawer(false)}
+      onKeyDown={toggleDrawer(false)}
+    >
+      {isAuthenticated && (
+        <Box className="p-4 bg-gradient-to-r from-indigo-500 to-purple-600">
+          <div className="flex items-center space-x-4">
+            <Avatar
+              src={user?.picture}
+              alt={user?.name}
+              className="w-12 h-12 border-2 border-white"
+            />
+            <div className="flex flex-col">
+              <Typography variant="subtitle1" className="text-white font-semibold">
+                {user?.name}
+              </Typography>
+              <Typography variant="caption" className="text-white/80">
+                {user?.email}
+              </Typography>
+            </div>
+          </div>
+        </Box>
+      )}
+
+      <List>
+        {menuItems.map((item) => (
+          <ListItem 
+            button 
+            key={item.text}
+            onClick={() => navigate(item.path)}
+            className="hover:bg-gray-100"
+          >
+            <ListItemIcon className="text-gray-600">
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText primary={item.text} />
+          </ListItem>
+        ))}
+      </List>
+
+      <Divider className="mt-auto" />
+      
+      <List>
+        {footerItems.map((item) => (
+          <ListItem 
+            button 
+            key={item.text} 
+            onClick={() => navigate(item.path)}
+            className="hover:bg-gray-100"
+          >
+            <ListItemIcon className="text-gray-600">
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText 
+              primary={item.text} 
+              primaryTypographyProps={{ 
+                variant: 'body2',
+                className: 'text-gray-600'
+              }}
+            />
+          </ListItem>
+        ))}
+
+        {isAuthenticated && (
+          <ListItem 
+            button 
+            onClick={() => logout({ returnTo: window.location.origin })}
+            className="hover:bg-red-50"
+          >
+            <ListItemIcon className="text-red-600">
+              <LogOut />
+            </ListItemIcon>
+            <ListItemText 
+              primary="Logout" 
+              className="text-red-600"
+            />
+          </ListItem>
+        )}
+      </List>
+    </Box>
+  );
 
   if (isLoading) {
     return (
@@ -79,9 +205,24 @@ function App() {
     <>
       <AppBar position="static" color="default" elevation={1} className="bg-white">
         <Toolbar className="justify-between">
-          <Typography variant="h6" className="font-bold text-indigo-600">
-            JamRoom
-          </Typography>
+        <div className="flex items-center gap-4">
+        {isAuthenticated && (
+    <IconButton
+      edge="start"
+      color="inherit"
+      aria-label="menu"
+      onClick={toggleDrawer(true)}
+    >
+      <MenuIcon className="h-6 w-6" />
+    </IconButton>
+        )}
+    <img 
+      src="/gigsaw_ss.png" 
+      alt="JamRoom Logo" 
+      className="h-8 object-contain cursor-pointer rounded-lg transition-transform hover:scale-105"
+      onClick={() => window.location.href = '/'}
+    />
+    </div>
 
           {isAuthenticated && user ? (
             <div>
@@ -134,8 +275,16 @@ function App() {
           )}
         </Toolbar>
       </AppBar>
-
-      <Router>
+      {isAuthenticated && (
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={toggleDrawer(false)}
+      >
+        {drawerContent()}
+      </Drawer>
+      )}
+      
         <Routes>
           <Route path="/" element={<JamRoomFinder />} />
           <Route path="/jam-room/:id" element={<JamRoomDetails />} />
@@ -143,7 +292,6 @@ function App() {
           <Route path="/final-review" element={<FinalReview />} />
           <Route path="/confirmation/:id" element={<BookingConfirmation />} />
         </Routes>
-      </Router>
     </>
   )
 }
