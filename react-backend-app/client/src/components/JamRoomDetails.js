@@ -1,12 +1,17 @@
 import { useState } from "react"
-import { Button, Card, CardContent, Typography, Divider, Collapse, IconButton } from "@mui/material"
+import { Button, Card, CardContent, Typography, Divider, Collapse, IconButton, Modal } from "@mui/material"
 import { useNavigate } from "react-router-dom"
-import { MapPin, Music, ArrowLeft, Calendar, Instagram, ChevronDown, ChevronUp, Info, Clock } from "lucide-react"
+import { MapPin, Music, ArrowLeft, Calendar, Instagram, ChevronDown, ChevronUp, Info, Clock, X } from "lucide-react"
+
 
 function JamRoomDetails() {
   const navigate = useNavigate()
   const selectedRoom = JSON.parse(localStorage.getItem("selectedJamRoom"))
   const [expanded, setExpanded] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+
+    // Add handleModalToggle function
+    const handleModalToggle = () => setModalOpen(!modalOpen)
 
   if (!selectedRoom) {
     return (
@@ -69,19 +74,75 @@ function JamRoomDetails() {
 
             {/* Image Carousel */}
             {selectedRoom.images && selectedRoom.images.length > 0 && (
-              <div className="relative w-full h-52 mb-4 rounded-lg overflow-hidden">
-                <img 
-                  src={selectedRoom.images[0]} 
-                  alt={selectedRoom.name}
-                  className="w-full h-full object-cover"
-                />
-                {selectedRoom.images.length > 1 && (
-                  <div className="absolute bottom-2 right-2 bg-black/50 text-white rounded-full px-2 py-1 text-xs">
-                    +{selectedRoom.images.length - 1} more
-                  </div>
-                )}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="col-span-2">
+            <img 
+              src={selectedRoom.images[0]} 
+              alt={`${selectedRoom.name} - Main`}
+              className="w-full h-48 object-cover rounded-lg cursor-pointer"
+              onClick={handleModalToggle}
+            />
+          </div>
+          
+          {selectedRoom.images.slice(1, 3).map((image, index) => (
+            <div key={index} className="relative h-24">
+              <img 
+                src={image}
+                alt={`${selectedRoom.name} - ${index + 2}`}
+                className="w-full h-full object-cover rounded-lg cursor-pointer"
+                onClick={handleModalToggle}
+              />
+            </div>
+          ))}
+          
+          {selectedRoom.images.length > 3 && (
+            <div 
+              className="relative h-24 cursor-pointer" 
+              onClick={handleModalToggle}
+            >
+              <img 
+                src={selectedRoom.images[3]}
+                alt={`${selectedRoom.name} - 4`}
+                className="w-full h-full object-cover rounded-lg filter brightness-50"
+              />
+              <div className="absolute inset-0 flex items-center justify-center text-white font-medium">
+                +{selectedRoom.images.length - 3} more
               </div>
-            )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Add Image Gallery Modal */}
+      <Modal
+        open={modalOpen}
+        onClose={handleModalToggle}
+        className="flex items-center justify-center"
+      >
+        <div className="bg-white w-full max-w-3xl mx-4 rounded-xl overflow-hidden relative">
+          <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+            <Typography variant="h6">All Photos</Typography>
+            <IconButton onClick={handleModalToggle} size="small">
+              <X className="w-5 h-5" />
+            </IconButton>
+          </div>
+          
+          <div className="p-4 max-h-[80vh] overflow-y-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {selectedRoom.images?.map((image, index) => (
+                <div key={index} className="aspect-square">
+                  <img 
+                    src={image}
+                    alt={`${selectedRoom.name} - ${index + 1}`}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
 
             <Divider className="my-4" />
 
