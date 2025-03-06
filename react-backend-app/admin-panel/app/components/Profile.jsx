@@ -25,7 +25,7 @@ const ProfileSection = ({ title, children, onEdit, isEditing, onSave, onCancel }
     <Card className="relative group glass-card bg-gradient-to-b from-white/10 to-purple-500/10">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="gradient-text">{title}</CardTitle>
+          <CardTitle className="text-[#7DF9FF] font-audiowide">{title}</CardTitle>
           {!isEditing && (
             <motion.button
               initial={{ opacity: 0 }}
@@ -33,7 +33,7 @@ const ProfileSection = ({ title, children, onEdit, isEditing, onSave, onCancel }
               className="opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={onEdit}
             >
-              <Edit2 className="h-5 w-5 text-secondary hover:text-accent transition-colors" />
+              <Edit2 className="h-5 w-5 text-[#7DF9FF]/60 hover:text-[#7DF9FF] transition-colors" />
             </motion.button>
           )}
           {isEditing && (
@@ -211,38 +211,38 @@ const handleSectionSave = async (section) => {
 
       return (
         <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <div className="flex-1 p-6 mt-16 ml-64 overflow-auto">
+      <div className="flex-1 p-6 mt-16 ml-64 h-[calc(100vh-6rem)] overflow-y-auto">
       <div className="max-w-4xl mx-auto space-y-6">
           <motion.div
     initial={{ opacity: 0, y: -20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
   >
-            <h1 className="text-4xl font-audiowide mb-6 gradient-text">Profile Settings</h1>
+            <h1 className="text-4xl font-audiowide mb-6 text-[#7DF9FF]">Profile Settings</h1>
     
             <Tabs defaultValue="basic" className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-6 glass-card">
               <TabsTrigger 
                 value="basic"
-                className="text-white data-[state=active]:bg-primary data-[state=active]:text-white font-syncopate"
+                className="text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate"
               >
                 Basic Info
               </TabsTrigger>
               <TabsTrigger 
                 value="owner"
-                className="text-white data-[state=active]:bg-primary data-[state=active]:text-white font-syncopate"
+                className="text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate"
               >
                 Owner Details
               </TabsTrigger>
               <TabsTrigger 
                 value="location"
-                className="text-white data-[state=active]:bg-primary data-[state=active]:text-white font-syncopate"
+                className="text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate"
               >
                 Location
               </TabsTrigger>
               <TabsTrigger 
                 value="additional"
-                className="text-white data-[state=active]:bg-primary data-[state=active]:text-white font-syncopate"
+                className="text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate"
               >
                 Additional Info
               </TabsTrigger>
@@ -259,25 +259,25 @@ const handleSectionSave = async (section) => {
                 >
                   <div className="space-y-4">
                     <div>
-                      <Label>Jam Room Name</Label>
+                      <Label className="text-[#7DF9FF]/80">Jam Room Name</Label>
                       {editingSection === 'jamRoomDetails' ? (
                         <Input
                           {...register('jamRoomDetails.name')}
                           defaultValue={jamRoomData.jamRoomDetails.name}
                         />
                       ) : (
-                        <p className="text-lg">{jamRoomData.jamRoomDetails.name}</p>
+                        <p className="text-lg text-[#7DF9FF]">{jamRoomData.jamRoomDetails.name}</p>
                       )}
                     </div>
                     <div>
-                      <Label>Description</Label>
+                      <Label className="text-[#7DF9FF]/80">Description</Label>
                       {editingSection === 'jamRoomDetails' ? (
                         <Textarea
                           {...register('jamRoomDetails.description')}
                           defaultValue={jamRoomData.jamRoomDetails.description}
                         />
                       ) : (
-                        <p className="text-gray-600">{jamRoomData.jamRoomDetails.description}</p>
+                        <p className="text-lg text-[#7DF9FF]">{jamRoomData.jamRoomDetails.description}</p>
                       )}
                     </div>
                   </div>
@@ -294,36 +294,36 @@ const handleSectionSave = async (section) => {
                 >
                   <div className="space-y-4">
                     <div>
-                        <Label>Owner Name</Label>
+                        <Label className="text-[#7DF9FF]/80">Owner Name</Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
                             {...register('ownerDetails.fullname')}
                             defaultValue={jamRoomData.ownerDetails.fullname}
                           />
                         ) : (
-                          <p className="text-lg">{jamRoomData.ownerDetails.fullname}</p>
+                          <p className="text-lg text-[#7DF9FF]">{jamRoomData.ownerDetails.fullname}</p>
                         )}
                     </div>
                     <div>
-                        <Label>Email Address</Label>
+                        <Label className="text-[#7DF9FF]/80">Email Address</Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
                             {...register('ownerDetails.email')}
                             defaultValue={jamRoomData.ownerDetails.email}
                           />
                         ) : (
-                          <p className="text-lg">{jamRoomData.ownerDetails.email}</p>
+                          <p className="text-lg text-[#7DF9FF]">{jamRoomData.ownerDetails.email}</p>
                         )}
                     </div>
                     <div>
-                        <Label>Phone Number</Label>
+                        <Label className="text-[#7DF9FF]/80">Phone Number</Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
                             {...register('ownerDetails.phone')}
                             defaultValue={jamRoomData.ownerDetails.phone}
                           />
                         ) : (
-                          <p className="text-lg">{jamRoomData.ownerDetails.phone}</p>
+                          <p className="text-lg text-[#7DF9FF]">{jamRoomData.ownerDetails.phone}</p>
                         )}
                     </div>
                   </div>
@@ -341,7 +341,7 @@ const handleSectionSave = async (section) => {
                   {editingSection === 'location' ? (
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <Label>Address</Label>
+                        <Label className="text-[#7DF9FF]/80">Address</Label>
                         <Button 
                           type="button" 
                           onClick={() => setUseAutocomplete(!useAutocomplete)}
@@ -365,7 +365,7 @@ const handleSectionSave = async (section) => {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-lg">{jamRoomData.location.address}</p>
+                      <p className="text-lg text-[#7DF9FF]">{jamRoomData.location.address}</p>
                       <p className="text-sm text-gray-500">
                         Lat: {jamRoomData.location.latitude}, 
                         Long: {jamRoomData.location.longitude}
@@ -385,7 +385,7 @@ const handleSectionSave = async (section) => {
                 >
                   <div className="space-y-4">
                   <div>
-  <Label>Images</Label>
+  <Label className="text-[#7DF9FF]/80">Images</Label>
   {editingSection === 'additional' ? (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-4 mb-4">
@@ -460,7 +460,7 @@ const handleSectionSave = async (section) => {
   )}
 </div>
                     <div>
-                      <Label>Fees per Slot</Label>
+                      <Label className="text-[#7DF9FF]/80">Fees per Slot</Label>
                       {editingSection === 'additional' ? (
                         <Input
                           type="number"
@@ -468,11 +468,11 @@ const handleSectionSave = async (section) => {
                           defaultValue={jamRoomData.feesPerSlot}
                         />
                       ) : (
-                        <p className="text-lg">₹{jamRoomData.feesPerSlot}</p>
+                        <p className="text-lg text-[#7DF9FF]">₹{jamRoomData.feesPerSlot}</p>
                       )}
                     </div>
                     <div>
-                      <Label>Time Slots</Label>
+                      <Label className="text-[#7DF9FF]/80">Time Slots</Label>
                         {editingSection === 'additional' ? (
                                <TimeSlotSelector
                                selectedSlots={watch('slots') || jamRoomData.slots}

@@ -114,7 +114,7 @@ const PayoutHistory = () => {
       <div className="max-w-7xl mx-auto space-y-6">
 
       <div className="sticky top-0 z-10 bg-black/60 backdrop-blur-sm pb-4">
-        <h1 className="text-3xl font-audiowide gradient-text mb-6">Payout History</h1>
+        <h1 className="text-3xl font-audiowide text-[#7DF9FF] mb-6">Payout History</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Input
@@ -129,7 +129,7 @@ const PayoutHistory = () => {
             placeholder="Max Amount"
             value={filters.maxAmount}
             onChange={handleFilterChange}
-            className="glassmorphism glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
+            className="glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
           />
           <Input
             name="startDate"
@@ -137,7 +137,7 @@ const PayoutHistory = () => {
             placeholder="Start Date"
             value={filters.startDate}
             onChange={handleFilterChange}
-            className="glassmorphism glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
+            className="glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
           />
           <Input
             name="endDate"
@@ -145,7 +145,7 @@ const PayoutHistory = () => {
             placeholder="End Date"
             value={filters.endDate}
             onChange={handleFilterChange}
-            className="glassmorphism glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
+            className="glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
           />
         </div>
         <div className="flex gap-4 mb-4">
@@ -153,7 +153,7 @@ const PayoutHistory = () => {
             value={filters.sortBy}
             onValueChange={(value) => handleSortChange(value, filters.sortOrder)}
           >
-            <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
+            <SelectTrigger className="bg-black/40 border-[#7DF9FF]/20 text-[#7DF9FF]">
               <SelectValue placeholder="Sort By" className="text-white"/>
             </SelectTrigger>
             <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
@@ -165,7 +165,7 @@ const PayoutHistory = () => {
             value={filters.sortOrder}
             onValueChange={(value) => handleSortChange(filters.sortBy, value)}
           >
-            <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
+            <SelectTrigger className="bg-black/40 border-[#7DF9FF]/20 text-[#7DF9FF]">
               <SelectValue placeholder="Sort Order" className="text-white"/>
             </SelectTrigger>
             <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
@@ -184,19 +184,19 @@ const PayoutHistory = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
+            <Card className="glass-card bg-gradient-to-b from-white/10 to-purple-500/10 border-[#7DF9FF]/20">
               <CardHeader>
-                <h3 className="text-lg font-semibold text-[#7DF9FF] text-shadow">Payout ID: {payout._id}</h3>
+                <h3 className="text-lg font-audiowide text-[#7DF9FF]">Payout ID: {payout._id}</h3>
               </CardHeader>
               <CardContent>
-                <p className="text-white">Amount: ₹{payout.amount}</p>
-                <p className="text-white">Status: {payout.status}</p>
-                <p className="text-white">Date: {new Date(payout.createdAt).toLocaleDateString()}</p>
+                <p className="text-[#7DF9FF]/80">Amount: ₹{payout.amount}</p>
+                <p className="text-[#7DF9FF]/80">Status: {payout.status}</p>
+                <p className="text-[#7DF9FF]/80">Date: {new Date(payout.createdAt).toLocaleDateString()}</p>
               </CardContent>
               <Button 
                 onClick={() => router.push(`/bookings/${payout.reference_id}?bookingId=${payout.bookingId}`)} 
                 variant="outline"
-                className="mt-2 mb-4 mx-4 bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white border-[#7DF9FF]/30"
+                className="mt-2 mb-4 mx-4 bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-[#7DF9FF] border-[#7DF9FF]/30"
               >
                 View Booking
               </Button>
