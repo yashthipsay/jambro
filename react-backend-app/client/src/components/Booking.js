@@ -281,16 +281,20 @@ function Booking() {
       }
     })
 
+    const totalAmount = calculateTotalCost();
+    const addonsCost = calculateAddonsCost();
+
     const selectedAddonsDetails = selectedAddons.map(addonId => {
       const addon = addons.find(a => a._id === addonId);
       return {
         addonId: addon._id,
         instrumentType: addon.instrumentType,
-        pricePerHour: addon.pricePerHour
+        pricePerHour: addon.pricePerHour,
+        hours: selectedSlots.length
       };
     });
 
-    const totalAmount = selectedSlots.length * selectedRoom.feesPerSlot
+
 
     setTimeout(() => {
       setIsLoading(false)
