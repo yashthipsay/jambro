@@ -14,6 +14,6 @@ router.put('/:id/addons', verifyToken, updateAddons);
 router.get('/:id/addons', getAddon);
 router.delete('/:id/addons/:addonId', deleteAddon);
 router.get('/email/:email', getJamRoomByEmail);
-router.put('/:id/images', uploadJamRoomImages); // New route for image uploads
+router.route('/images').post(uploadJamRoomImages).put(uploadJamRoomImages) // New route for image uploads
 
 module.exports = router;

@@ -12,7 +12,7 @@ const OlaMap = ({ apiKey, onLocationSelect, onClose }) => {
   // Reverse geocode to get address from lat/lon
   const reverseGeocode = async (lat, lon) => {
     try {
-      const url = `http://13.126.198.106:5000/proxy?lat=${lat}&lon=${lon}&apiKey=${apiKey}`;
+      const url = `http://localhost:5000/proxy?lat=${lat}&lon=${lon}&apiKey=${apiKey}`;
       const response = await fetch(url);
       const data = await response.json();
       console.log('Reverse geocoding response:', data);
