@@ -2,6 +2,7 @@ const JamRoom = require("../models/JamRooms");
 const path = require("path");
 const multer = require("multer");
 const Aws = require("aws-sdk");
+const { generateToken } = require("../middleware/auth");
 
 // Configure AWS S3
 const s3 = new Aws.S3({
