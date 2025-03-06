@@ -73,19 +73,6 @@ function Booking() {
     }
   }, [selectedRoom])
 
-  useEffect(() => {
-    if (selectedRoom) {
-      socket.emit("getBookings", selectedRoom.id)
-    }
-
-    socket.on("bookings", (data) => {
-      setBookings(data)
-    })
-
-    return () => {
-      socket.off("bookings")
-    }
-  }, [selectedRoom])
 
   useEffect(() => {
     if (user) {
@@ -175,6 +162,9 @@ function Booking() {
     const selectedDateStr = moment(selectedDate).format("YYYY-MM-DD")
 
     return bookings.some((booking) => {
+            // Skip terminated bookings
+            if (booking.status === 'TERMINATED') return false
+
       // Format the booking date in YYYY-MM-DD format for consistent comparison
       const bookingDateStr = moment(booking.date).format("YYYY-MM-DD")
       return bookingDateStr === selectedDateStr && booking.slots.some((slot) => slot.slotId === slotId)
@@ -288,7 +278,7 @@ function Booking() {
       const addon = addons.find(a => a._id === addonId);
       return {
         addonId: addon._id,
-        instrumentType: addon.instrumentType,
+        instrumentType: Array.isArray(addon.instrumentType) ? addon.instrumentType : [addon.instrumentType], // Handle both array and string,
         pricePerHour: addon.pricePerHour,
         hours: selectedSlots.length
       };

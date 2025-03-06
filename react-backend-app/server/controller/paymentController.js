@@ -46,6 +46,8 @@ const paymentVerification = async (req, res) => {
       date: req.body.date,
       slots: req.body.slots,
       totalAmount: req.body.totalAmount,
+      addonsCost: req.body.addonsCost,
+      selectedAddons: req.body.selectedAddons,
       paymentId: razorpay_payment_id,
     });
 
