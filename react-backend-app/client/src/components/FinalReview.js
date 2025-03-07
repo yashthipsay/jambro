@@ -5,9 +5,10 @@ import {
   CardContent,
   Typography,
   Button,
-  Grid2,
   Divider,
+  IconButton,
 } from "@mui/material";
+import { ChevronLeft, CreditCard } from "lucide-react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 const FinalReview = () => {
@@ -133,83 +134,158 @@ const FinalReview = () => {
   };
 
   return (
-    <Grid2 container spacing={2} className="p-4">
-      <Grid2 item xs={12}>
-        <Card>
-          <CardContent>
-            <Typography variant="h4" gutterBottom>
-              Review Your Booking
-            </Typography>
-            <Typography variant="h6">Jam Room: {jamRoomName}</Typography>
-            <Typography variant="h6" className="mt-4">
-              Total Amount: ₹{totalAmount}
-            </Typography>
-          </CardContent>
-        </Card>
-      </Grid2>
+    <div className="min-h-screen bg-gray-50 pb-28">
+      <div className="max-w-md mx-auto p-4">
+        {/* Back Button at top */}
+        <div className="mb-4 flex items-center">
+          <IconButton
+            onClick={() => navigate(-1)}
+            edge="start"
+            color="primary"
+          >
+            <ChevronLeft />
+          </IconButton>
+          <Typography variant="h6" className="ml-2 font-semibold">
+            Review Your Booking
+          </Typography>
+        </div>
 
-      <Grid2 item xs={12}>
-        {selectedSlots.map((slot, index) => (
-          <Card key={index} className="mt-2">
-            <CardContent>
-              <Typography variant="body1">
-                Slot {slot.slotId}: {slot.startTime} - {slot.endTime}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </Grid2>
+        {/* Jam Room Details */}
+        <Card className="mb-4 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-indigo-600 p-4 text-white">
+            <Typography variant="h6" className="font-semibold">{jamRoomName}</Typography>
+            <Typography variant="body2" className="opacity-90">
+              {selectedDate}
+            </Typography>
+          </div>
 
-      {location.state.selectedAddons.length > 0 && (
-        <Grid2 item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Selected Add-ons</Typography>
-              {location.state.selectedAddons.map((addon, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center mt-2"
+          <CardContent className="p-4">
+            <Typography variant="subtitle2" className="text-gray-600 mb-3">
+              Selected Time Slots
+            </Typography>
+            
+            <div className="space-y-2">
+              {selectedSlots.map((slot, index) => (
+                <div 
+                  key={index} 
+                  className="bg-gray-50 p-3 rounded-lg flex justify-between items-center"
                 >
-                  <Typography>{addon.instrumentType}</Typography>
-                  <Typography>₹{addon.pricePerHour * addon.hours}</Typography>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></div>
+                    <Typography variant="body2">
+                      {slot.startTime} - {slot.endTime}
+                    </Typography>
+                  </div>
+                  <Typography variant="body2" className="text-gray-700 font-medium">
+                    Slot {slot.slotId}
+                  </Typography>
                 </div>
               ))}
-              <Divider className="my-2" />
-              <div className="flex justify-between items-center">
-                <Typography>Add-ons Total</Typography>
-                <Typography>₹{location.state.addonsCost}</Typography>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Add-ons Section */}
+        {selectedAddons && selectedAddons.length > 0 && (
+          <Card className="mb-4 rounded-xl shadow-sm">
+            <CardContent className="p-4">
+              <Typography variant="subtitle2" className="text-gray-600 mb-3">
+                Selected Add-ons
+              </Typography>
+              
+              <div className="space-y-2">
+                {selectedAddons.map((addon, index) => (
+                  <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                    <Typography variant="body2">
+                      {addon.instrumentType.join(", ")}
+                    </Typography>
+                    <Typography variant="body2" className="font-medium">
+                      ₹{addon.pricePerHour * addon.hours}
+                    </Typography>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center pt-2">
+                  <Typography variant="body2" className="font-medium">Add-ons Total</Typography>
+                  <Typography variant="body2" className="font-medium">₹{addonsCost}</Typography>
+                </div>
               </div>
             </CardContent>
           </Card>
-        </Grid2>
-      )}
+        )}
 
-      <Grid2 item xs={12}>
-        <Card>
-          <CardContent>
-            <Typography variant="h6" className="mt-4">
+        {/* Coupons and Credits */}
+        <Card className="mb-4 rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <Typography variant="subtitle2" className="text-gray-600 mb-2">
               Apply Coupons
             </Typography>
-            <Typography variant="h6" className="mt-4">
+            <div className="bg-gray-50 p-3 rounded-lg mb-3 text-center text-gray-500 text-sm">
+              No coupons available
+            </div>
+            
+            <Typography variant="subtitle2" className="text-gray-600 mb-2">
               Use Credits
             </Typography>
+            <div className="bg-gray-50 p-3 rounded-lg text-center text-gray-500 text-sm">
+              No credits available
+            </div>
           </CardContent>
         </Card>
-      </Grid2>
 
-      <Grid2 item xs={12} className="flex justify-between">
-        <Button variant="outlined" onClick={() => navigate(-1)}>
-          Back
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => checkoutHandler(totalAmount)}
-        >
-          Proceed to Payment
-        </Button>
-      </Grid2>
-    </Grid2>
+        {/* Pricing Summary */}
+        <Card className="mb-6 rounded-xl shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-2">
+              <Typography variant="body2" className="text-gray-600">
+                Jam Room Fee ({selectedSlots.length} slots)
+              </Typography>
+              <Typography variant="body2">
+                ₹{totalAmount - addonsCost}
+              </Typography>
+            </div>
+
+            {addonsCost > 0 && (
+              <div className="flex justify-between items-center mb-2">
+                <Typography variant="body2" className="text-gray-600">
+                  Add-on Instruments
+                </Typography>
+                <Typography variant="body2">
+                  ₹{addonsCost}
+                </Typography>
+              </div>
+            )}
+
+            <Divider className="my-2" />
+
+            <div className="flex justify-between items-center">
+              <Typography variant="subtitle1" className="font-semibold">
+                Total Amount
+              </Typography>
+              <Typography variant="h6" className="font-bold text-indigo-700">
+                ₹{totalAmount}
+              </Typography>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sticky Payment Button */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t p-4 z-10">
+        <div className="max-w-md mx-auto">
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            size="large"
+            className="rounded-lg py-3"
+            onClick={() => checkoutHandler(totalAmount)}
+            startIcon={<CreditCard className="w-5 h-5" />}
+          >
+            Proceed to Payment
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
 

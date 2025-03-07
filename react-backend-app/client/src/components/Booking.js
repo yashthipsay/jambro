@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import { LocalizationProvider } from "@mui/x-date-pickers"
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3"
-import { DatePicker } from "@mui/x-date-pickers"
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
+import { DatePicker } from "@mui/x-date-pickers";
 import {
   Button,
   Card,
@@ -24,55 +24,63 @@ import {
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
-} from "@mui/material"
-import { Calendar, Clock, ChevronLeft, Phone, Plus, Trash2, Music, Check, Guitar } from "lucide-react"
-import moment from "moment-timezone"
-import io from "socket.io-client"
-import { useAuth0 } from "@auth0/auth0-react"
+} from "@mui/material";
+import {
+  Calendar,
+  Clock,
+  ChevronLeft,
+  Phone,
+  Plus,
+  Trash2,
+  Music,
+  Check,
+  Guitar,
+} from "lucide-react";
+import moment from "moment-timezone";
+import io from "socket.io-client";
+import { useAuth0 } from "@auth0/auth0-react";
 
-const socket = io("http://localhost:5000")
+const socket = io("http://localhost:5000");
 
 function Booking() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const { user } = useAuth0()
-  const selectedRoom = JSON.parse(localStorage.getItem("selectedJamRoom"))
-  const [selectedDate, setSelectedDate] = useState(null)
-  const [selectedSlots, setSelectedSlots] = useState([])
-  const [bookings, setBookings] = useState([])
-  const [phoneNumber, setPhoneNumber] = useState("")
-  const [savedNumbers, setSavedNumbers] = useState([])
-  const [selectedPhoneNumber, setSelectedPhoneNumber] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [addons, setAddons] = useState([])
-  const [selectedAddons, setSelectedAddons] = useState([])
-
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth0();
+  const selectedRoom = JSON.parse(localStorage.getItem("selectedJamRoom"));
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [savedNumbers, setSavedNumbers] = useState([]);
+  const [selectedPhoneNumber, setSelectedPhoneNumber] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [addons, setAddons] = useState([]);
+  const [selectedAddons, setSelectedAddons] = useState([]);
 
   useEffect(() => {
     if (selectedRoom) {
-      socket.emit("getBookings", selectedRoom.id)
-      
+      socket.emit("getBookings", selectedRoom.id);
+
       // Fetch addons for this jamroom
       fetch(`http://localhost:5000/api/jamrooms/${selectedRoom.id}/addons`)
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           if (data.success) {
             setAddons(data.data);
           }
         })
-        .catch(err => console.error("Error fetching addons:", err));
+        .catch((err) => console.error("Error fetching addons:", err));
     }
 
     socket.on("bookings", (data) => {
-      setBookings(data)
-    })
+      setBookings(data);
+    });
 
     return () => {
-      socket.off("bookings")
-    }
-  }, [selectedRoom])
-
+      socket.off("bookings");
+    };
+  }, [selectedRoom]);
 
   useEffect(() => {
     if (user) {
@@ -86,33 +94,33 @@ function Booking() {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            setSavedNumbers(data.data.savedNumbers)
+            setSavedNumbers(data.data.savedNumbers);
           }
-        })
+        });
     }
-  }, [user])
+  }, [user]);
 
   useEffect(() => {
     socket.on("sessionStatusUpdate", (data) => {
       setBookings((prevBookings) =>
         prevBookings.map((booking) => {
           if (booking._id === data.bookingId) {
-            return { ...booking, status: data.status }
+            return { ...booking, status: data.status };
           }
-          return booking
-        }),
-      )
-    })
+          return booking;
+        })
+      );
+    });
 
     return () => {
-      socket.off("sessionStatusUpdate")
-    }
-  }, [])
+      socket.off("sessionStatusUpdate");
+    };
+  }, []);
 
   const handleAddonToggle = (addonId) => {
-    setSelectedAddons(prev => {
+    setSelectedAddons((prev) => {
       if (prev.includes(addonId)) {
-        return prev.filter(id => id !== addonId);
+        return prev.filter((id) => id !== addonId);
       } else {
         return [...prev, addonId];
       }
@@ -122,9 +130,9 @@ function Booking() {
   const calculateAddonsCost = () => {
     // Calculate based on number of selected slots (hours)
     const hoursBooked = selectedSlots.length;
-    
+
     return selectedAddons.reduce((total, addonId) => {
-      const addon = addons.find(a => a._id === addonId);
+      const addon = addons.find((a) => a._id === addonId);
       return total + (addon ? addon.pricePerHour * hoursBooked : 0);
     }, 0);
   };
@@ -140,7 +148,9 @@ function Booking() {
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-md p-6 w-full max-w-md text-center">
           <Music className="w-16 h-16 text-indigo-400 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-gray-800 mb-4">No Jam Room selected</h1>
+          <h1 className="text-xl font-bold text-gray-800 mb-4">
+            No Jam Room selected
+          </h1>
           <Button
             variant="contained"
             color="primary"
@@ -152,142 +162,159 @@ function Booking() {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   const isSlotBooked = (slotId) => {
-    if (!selectedDate) return false
+    if (!selectedDate) return false;
 
     // Format the selected date in YYYY-MM-DD format without timezone conversion
-    const selectedDateStr = moment(selectedDate).format("YYYY-MM-DD")
+    const selectedDateStr = moment(selectedDate).format("YYYY-MM-DD");
 
     return bookings.some((booking) => {
-            // Skip terminated bookings
-            if (booking.status === 'TERMINATED') return false
+      // Skip terminated bookings
+      if (booking.status === "TERMINATED") return false;
 
       // Format the booking date in YYYY-MM-DD format for consistent comparison
-      const bookingDateStr = moment(booking.date).format("YYYY-MM-DD")
-      return bookingDateStr === selectedDateStr && booking.slots.some((slot) => slot.slotId === slotId)
-    })
-  }
+      const bookingDateStr = moment(booking.date).format("YYYY-MM-DD");
+      return (
+        bookingDateStr === selectedDateStr &&
+        booking.slots.some((slot) => slot.slotId === slotId)
+      );
+    });
+  };
 
   const hasSlotTimePassedToday = (slot) => {
-    const currentDate = moment().tz("Asia/Kolkata").format("YYYY-MM-DD")
-    const selectedDateStr = selectedDate ? moment(selectedDate).tz("Asia/Kolkata").format("YYYY-MM-DD") : null
-    if (currentDate !== selectedDateStr) return false
+    const currentDate = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
+    const selectedDateStr = selectedDate
+      ? moment(selectedDate).tz("Asia/Kolkata").format("YYYY-MM-DD")
+      : null;
+    if (currentDate !== selectedDateStr) return false;
 
-    const currentTime = moment().tz("Asia/Kolkata")
+    const currentTime = moment().tz("Asia/Kolkata");
     const slotTime = moment()
       .tz("Asia/Kolkata")
       .set({
         hour: Number.parseInt(slot.startTime.split(":")[0]),
         minute: Number.parseInt(slot.startTime.split(":")[1]),
-      })
-    return currentTime.isAfter(slotTime)
-  }
+      });
+    return currentTime.isAfter(slotTime);
+  };
 
   const handleSlotChange = (slotId) => {
-    setSelectedSlots((prev) => (prev.includes(slotId) ? prev.filter((id) => id !== slotId) : [...prev, slotId]))
-  }
+    setSelectedSlots((prev) =>
+      prev.includes(slotId)
+        ? prev.filter((id) => id !== slotId)
+        : [...prev, slotId]
+    );
+  };
 
   const handleSaveNumber = async () => {
     if (!phoneNumber) {
-      alert("Please enter a valid phone number")
-      return
+      alert("Please enter a valid phone number");
+      return;
     }
 
     try {
-      setIsSaving(true)
-      const response = await fetch("http://localhost:5000/api/users/save-number", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: user.email, phoneNumber }),
-      })
+      setIsSaving(true);
+      const response = await fetch(
+        "http://localhost:5000/api/users/save-number",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: user.email, phoneNumber }),
+        }
+      );
 
-      const data = await response.json()
+      const data = await response.json();
       if (data.success) {
-        setSavedNumbers(data.data.savedNumbers)
-        setPhoneNumber("")
+        setSavedNumbers(data.data.savedNumbers);
+        setPhoneNumber("");
       } else {
-        alert("Error saving phone number")
+        alert("Error saving phone number");
       }
     } catch (error) {
-      console.error("Error saving phone number:", error)
+      console.error("Error saving phone number:", error);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleDeleteNumber = async (number) => {
     try {
-      const response = await fetch("http://localhost:5000/api/users/delete-number", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: user.email, phoneNumber: number }),
-      })
+      const response = await fetch(
+        "http://localhost:5000/api/users/delete-number",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: user.email, phoneNumber: number }),
+        }
+      );
 
-      const data = await response.json()
+      const data = await response.json();
       if (data.success) {
-        setSavedNumbers(data.data.savedNumbers)
+        setSavedNumbers(data.data.savedNumbers);
         if (selectedPhoneNumber === number) {
-          setSelectedPhoneNumber("")
+          setSelectedPhoneNumber("");
         }
       } else {
-        alert("Error deleting phone number")
+        alert("Error deleting phone number");
       }
     } catch (error) {
-      console.error("Error deleting phone number:", error)
+      console.error("Error deleting phone number:", error);
     }
-  }
+  };
 
   const handlePhoneNumberChange = (e) => {
-    setPhoneNumber(e.target.value)
-    setSelectedPhoneNumber(e.target.value)
-  }
+    setPhoneNumber(e.target.value);
+    setSelectedPhoneNumber(e.target.value);
+  };
 
   const handleSavedNumberChange = (e) => {
-    setSelectedPhoneNumber(e.target.value)
-    setPhoneNumber(e.target.value)
-  }
+    setSelectedPhoneNumber(e.target.value);
+    setPhoneNumber(e.target.value);
+  };
 
   const handleProceedToReview = () => {
     if (selectedSlots.length === 0 || !selectedDate || !phoneNumber) {
-      alert("Please select a date, at least one time slot, and enter a valid phone number")
-      return
+      alert(
+        "Please select a date, at least one time slot, and enter a valid phone number"
+      );
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     const slotsDetails = selectedSlots.map((slotId) => {
-      const slot = selectedRoom.slots.find((s) => s.slotId === slotId)
+      const slot = selectedRoom.slots.find((s) => s.slotId === slotId);
       return {
         slotId: slot.slotId,
         startTime: slot.startTime,
         endTime: slot.endTime,
-      }
-    })
+      };
+    });
 
     const totalAmount = calculateTotalCost();
     const addonsCost = calculateAddonsCost();
 
-    const selectedAddonsDetails = selectedAddons.map(addonId => {
-      const addon = addons.find(a => a._id === addonId);
+    const selectedAddonsDetails = selectedAddons.map((addonId) => {
+      const addon = addons.find((a) => a._id === addonId);
       return {
         addonId: addon._id,
-        instrumentType: Array.isArray(addon.instrumentType) ? addon.instrumentType : [addon.instrumentType], // Handle both array and string,
+        instrumentType: Array.isArray(addon.instrumentType)
+          ? addon.instrumentType
+          : [addon.instrumentType], // Handle both array and string,
         pricePerHour: addon.pricePerHour,
-        hours: selectedSlots.length
+        hours: selectedSlots.length,
       };
     });
 
-
-
     setTimeout(() => {
-      setIsLoading(false)
+      setIsLoading(false);
       navigate("/final-review", {
         state: {
           jamRoomName: selectedRoom.name,
@@ -295,19 +322,25 @@ function Booking() {
           totalAmount,
           phoneNumber: selectedPhoneNumber,
           selectedRoomId: selectedRoom.id,
-          selectedDate: moment(selectedDate).tz("Asia/Kolkata").format("YYYY-MM-DD"),
+          selectedDate: moment(selectedDate)
+            .tz("Asia/Kolkata")
+            .format("YYYY-MM-DD"),
           selectedAddons: selectedAddonsDetails,
-          addonsCost: calculateAddonsCost()
+          addonsCost: calculateAddonsCost(),
         },
-      })
-    }, 500)
-  }
+      });
+    }, 500);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-gray-50 pb-28">
+      <div className="max-w-md mx-auto p-4">
         <div className="mb-4 flex items-center">
-          <IconButton onClick={() => navigate(`/jam-room/${selectedRoom.id}`)} edge="start" color="primary">
+          <IconButton
+            onClick={() => navigate(`/jam-room/${selectedRoom.id}`)}
+            edge="start"
+            color="primary"
+          >
             <ChevronLeft />
           </IconButton>
           <Typography variant="h6" className="ml-2 font-semibold">
@@ -355,17 +388,25 @@ function Booking() {
             ) : (
               <FormGroup className="grid grid-cols-2 gap-2">
                 {selectedRoom.slots.map((slot) => {
-                  const isBooked = isSlotBooked(slot.slotId)
-                  const isPassed = hasSlotTimePassedToday(slot)
-                  const isDisabled = isBooked || isPassed
+                  const isBooked = isSlotBooked(slot.slotId);
+                  const isPassed = hasSlotTimePassedToday(slot);
+                  const isDisabled = isBooked || isPassed;
 
                   return (
                     <div
                       key={slot.slotId}
                       className={`
                         border rounded-lg p-3 relative
-                        ${isDisabled ? "bg-gray-100 border-gray-200" : "border-gray-300"}
-                        ${selectedSlots.includes(slot.slotId) ? "border-indigo-500 bg-indigo-50" : ""}
+                        ${
+                          isDisabled
+                            ? "bg-gray-100 border-gray-200"
+                            : "border-gray-300"
+                        }
+                        ${
+                          selectedSlots.includes(slot.slotId)
+                            ? "border-indigo-500 bg-indigo-50"
+                            : ""
+                        }
                       `}
                     >
                       <FormControlLabel
@@ -387,19 +428,30 @@ function Booking() {
                                 {slot.startTime} - {slot.endTime}
                               </Typography>
                             </div>
-                            <Typography variant="caption" className="text-gray-500">
+                            <Typography
+                              variant="caption"
+                              className="text-gray-500"
+                            >
                               ₹{selectedRoom.feesPerSlot}
                             </Typography>
 
-                            {isBooked && <div className="mt-1 text-xs text-red-500">Already booked</div>}
+                            {isBooked && (
+                              <div className="mt-1 text-xs text-red-500">
+                                Already booked
+                              </div>
+                            )}
 
-                            {isPassed && !isBooked && <div className="mt-1 text-xs text-orange-500">Time passed</div>}
+                            {isPassed && !isBooked && (
+                              <div className="mt-1 text-xs text-orange-500">
+                                Time passed
+                              </div>
+                            )}
                           </div>
                         }
                         className="m-0"
                       />
                     </div>
-                  )
+                  );
                 })}
               </FormGroup>
             )}
@@ -412,7 +464,7 @@ function Booking() {
             <Typography variant="subtitle2" className="text-gray-600 mb-3">
               Available Add-ons
             </Typography>
-            
+
             {addons.length === 0 ? (
               <div className="text-center py-4 bg-gray-50 rounded-lg">
                 <Guitar className="w-6 h-6 text-gray-400 mx-auto mb-2" />
@@ -422,33 +474,38 @@ function Booking() {
               </div>
             ) : (
               <List>
-                {addons.map((addon) => (
-                  addon.isAvailable && (
-                    <ListItem 
-                      key={addon._id} 
-                      className={`
+                {addons.map(
+                  (addon) =>
+                    addon.isAvailable && (
+                      <ListItem
+                        key={addon._id}
+                        className={`
                         border rounded-lg mb-2 transition-all
-                        ${selectedAddons.includes(addon._id) ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'}
+                        ${
+                          selectedAddons.includes(addon._id)
+                            ? "border-indigo-500 bg-indigo-50"
+                            : "border-gray-200"
+                        }
                       `}
-                    >
-                      <ListItemIcon>
-                        <Guitar className="text-gray-600" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={addon.instrumentType.join(', ')}
-                        secondary={`₹${addon.pricePerHour}/hour · ${addon.quantity} available`}
-                      />
-                      <ListItemSecondaryAction>
-                        <Checkbox
-                          edge="end"
-                          onChange={() => handleAddonToggle(addon._id)}
-                          checked={selectedAddons.includes(addon._id)}
-                          color="primary"
+                      >
+                        <ListItemIcon>
+                          <Guitar className="text-gray-600" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={addon.instrumentType.join(", ")}
+                          secondary={`₹${addon.pricePerHour}/hour · ${addon.quantity} available`}
                         />
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  )
-                ))}
+                        <ListItemSecondaryAction>
+                          <Checkbox
+                            edge="end"
+                            onChange={() => handleAddonToggle(addon._id)}
+                            checked={selectedAddons.includes(addon._id)}
+                            color="primary"
+                          />
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    )
+                )}
               </List>
             )}
           </CardContent>
@@ -469,7 +526,9 @@ function Booking() {
                 variant="outlined"
                 placeholder="Enter your phone number"
                 InputProps={{
-                  startAdornment: <Phone className="w-4 h-4 text-gray-400 mr-2" />,
+                  startAdornment: (
+                    <Phone className="w-4 h-4 text-gray-400 mr-2" />
+                  ),
                 }}
               />
               <div className="flex justify-end mt-2">
@@ -479,7 +538,13 @@ function Booking() {
                   onClick={handleSaveNumber}
                   size="small"
                   disabled={!phoneNumber || isSaving}
-                  startIcon={isSaving ? <CircularProgress size={16} /> : <Plus className="w-4 h-4" />}
+                  startIcon={
+                    isSaving ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )
+                  }
                 >
                   {isSaving ? "Saving..." : "Save Number"}
                 </Button>
@@ -491,10 +556,20 @@ function Booking() {
                 <Typography variant="subtitle2" className="text-gray-600 mb-2">
                   Saved Numbers
                 </Typography>
-                <RadioGroup value={selectedPhoneNumber} onChange={handleSavedNumberChange}>
+                <RadioGroup
+                  value={selectedPhoneNumber}
+                  onChange={handleSavedNumberChange}
+                >
                   {savedNumbers.map((number, index) => (
-                    <div key={index} className="flex items-center justify-between border-b border-gray-100 py-2">
-                      <FormControlLabel value={number} control={<Radio color="primary" />} label={number} />
+                    <div
+                      key={index}
+                      className="flex items-center justify-between border-b border-gray-100 py-2"
+                    >
+                      <FormControlLabel
+                        value={number}
+                        control={<Radio color="primary" />}
+                        label={number}
+                      />
                       <IconButton
                         onClick={() => handleDeleteNumber(number)}
                         size="small"
@@ -520,7 +595,7 @@ function Booking() {
                 ₹{selectedSlots.length * (selectedRoom.feesPerSlot || 500)}
               </Typography>
             </div>
-            
+
             {selectedAddons.length > 0 && (
               <div className="flex justify-between items-center mb-2">
                 <Typography variant="body2" className="text-gray-600">
@@ -531,9 +606,9 @@ function Booking() {
                 </Typography>
               </div>
             )}
-            
+
             <Divider className="my-2" />
-            
+
             <div className="flex justify-between items-center">
               <Typography variant="subtitle1" className="font-semibold">
                 Total Amount
@@ -543,28 +618,46 @@ function Booking() {
               </Typography>
             </div>
             <Typography variant="caption" className="text-gray-500">
-              {selectedSlots.length} slot{selectedSlots.length !== 1 ? "s" : ""} × ₹{selectedRoom.feesPerSlot || 500}
-              {selectedAddons.length > 0 && ` + ${selectedAddons.length} add-on${selectedAddons.length !== 1 ? "s" : ""}`}
+              {selectedSlots.length} slot{selectedSlots.length !== 1 ? "s" : ""}{" "}
+              × ₹{selectedRoom.feesPerSlot || 500}
+              {selectedAddons.length > 0 &&
+                ` + ${selectedAddons.length} add-on${
+                  selectedAddons.length !== 1 ? "s" : ""
+                }`}
             </Typography>
           </CardContent>
         </Card>
 
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          size="large"
-          className="rounded-lg py-3"
-          disabled={selectedSlots.length === 0 || !selectedDate || !phoneNumber || isLoading}
-          onClick={handleProceedToReview}
-          startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <Check className="w-5 h-5" />}
-        >
-          {isLoading ? "Processing..." : "Proceed to Review"}
-        </Button>
+        {/* Fixed button at bottom */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t p-4 z-10">
+          <div className="max-w-md mx-auto"></div>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            size="large"
+            className="rounded-lg py-3"
+            disabled={
+              selectedSlots.length === 0 ||
+              !selectedDate ||
+              !phoneNumber ||
+              isLoading
+            }
+            onClick={handleProceedToReview}
+            startIcon={
+              isLoading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <Check className="w-5 h-5" />
+              )
+            }
+          >
+            {isLoading ? "Processing..." : "Proceed to Review"}
+          </Button>
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Booking
-
+export default Booking;
