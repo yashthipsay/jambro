@@ -9,6 +9,7 @@ import JamRoomDetails from "./components/JamRoomDetails"
 import Booking from "./components/Booking"
 import FinalReview from "./components/FinalReview"
 import BookingConfirmation from "./components/BookingConfirmation"
+import SubscriptionsPage from "./components/subscriptionComponents/SubscriptionsPage"
 import {
   Button,
   AppBar,
@@ -293,6 +294,9 @@ function App() {
           <Route path="/final-review" element={<FinalReview />} />
           <Route path="/confirmation/:id" element={<BookingConfirmation />} />
           <Route path="/bookings" element={<PastBookings />} />
+
+          {/* Subscription Routes */}
+          <Route path="/subscriptions" element={<SubscriptionsPage />} />
         </Routes>
     </>
   )

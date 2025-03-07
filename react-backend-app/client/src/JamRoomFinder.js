@@ -10,11 +10,21 @@ import {
   CircularProgress,
   Divider,
 } from "@mui/material";
-import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import {
+  ChevronLeft,
+  ChevronRight,
+  LibraryMusic,
+  LocationOn,
+  MusicNote,
+  Star,
+  AccessTime,
+  Event,
+  CardMembership,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import { LocationOn, MusicNote, Star, AccessTime } from "@mui/icons-material";
 import { findClosestJamRooms } from "./utils/jamRoomUtils";
+import { Mic, Guitar } from "lucide-react";
 
 function JamRoomCard({ room, onClick, colors }) {
   const [currentImage, setCurrentImage] = useState(0);
@@ -177,6 +187,42 @@ function JamRoomFinder() {
   const [userLongitude, setUserLongitude] = useState(null);
   const navigate = useNavigate();
 
+  // Main service categories (superset)
+  const mainServices = [
+    {
+      id: "pass",
+      name: "GigSaw Pass",
+      icon: <CardMembership sx={{ fontSize: 20 }} />,
+      active: false,
+    },
+    {
+      id: "jamrooms_studios",
+      name: "JamRooms/Studios",
+      icon: <MusicNote sx={{ fontSize: 20 }} />,
+      active: true,
+    },
+    {
+      id: "rentals",
+      name: "Rentals",
+      icon: <LibraryMusic sx={{ fontSize: 20 }} />,
+      active: false,
+    },
+    {
+      id: "coaching",
+      name: "Coaching",
+      icon: <Guitar sx={{ fontSize: 20 }} />,
+      active: false,
+    },
+    {
+      id: "events",
+      name: "Events",
+      icon: <Event sx={{ fontSize: 20 }} />,
+      active: false,
+    },
+  ];
+
+  const [activeService, setActiveService] = useState("jamrooms");
+
   // Categories for the horizontal scroll
   const categories = ["All", "Jamrooms", "Recording Studios", "Pass Eligible"];
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -219,6 +265,7 @@ function JamRoomFinder() {
       loginWithRedirect();
       return;
     }
+
     const selectedRoom = {
       id: room.id,
       name: room.name,
@@ -235,6 +282,14 @@ function JamRoomFinder() {
     console.log("Selected room:", selectedRoom);
     localStorage.setItem("selectedJamRoom", JSON.stringify(selectedRoom));
     navigate(`/jam-room/${room.id}`);
+  };
+
+  // Handler for main service selection
+  const handleServiceClick = (serviceId) => {
+    setActiveService(serviceId);
+    // Here you would implement logic to change the workflow based on service
+    // For now we'll just reset the category filter
+    setSelectedCategory("All");
   };
 
   return (
@@ -271,6 +326,48 @@ function JamRoomFinder() {
           <Typography variant="body2" sx={{ color: textColor, opacity: 0.8 }}>
             Discover nearby jam rooms and book your session in minutes
           </Typography>
+        </div>
+
+        {/* NEW: Main Service Categories (superset) */}
+        <div className="mb-6">
+          <Card
+            className="rounded-xl overflow-hidden"
+            sx={{
+              backgroundColor: cardBackground,
+              boxShadow: "0 4px 16px rgba(100, 52, 252, 0.15)",
+              border: "1px solid rgba(160, 133, 235, 0.2)",
+            }}
+          >
+            <div className="relative">
+              {/* Horizontal scrollable service categories */}
+              <div className="flex overflow-x-auto scrollbar-hide py-3 px-4">
+                {mainServices.map((service) => (
+                  <button
+                    key={service.id}
+                    onClick={() => handleServiceClick(service.id)}
+                    className={`
+                      flex items-center space-x-2 whitespace-nowrap px-4 py-2 mx-1 rounded-full
+                      transition-all duration-200 first:ml-0 last:mr-0
+                      ${
+                        activeService === service.id
+                          ? `bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium`
+                          : `bg-white text-gray-700 border border-gray-200 hover:border-indigo-200 hover:bg-indigo-50`
+                      }
+                    `}
+                  >
+                    <span className="flex items-center justify-center">
+                      {service.icon}
+                    </span>
+                    <span>{service.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Gradient fade indicators for scrolling */}
+              <div className="absolute pointer-events-none left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10" />
+              <div className="absolute pointer-events-none right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent z-10" />
+            </div>
+          </Card>
         </div>
 
         {/* Find Button */}
