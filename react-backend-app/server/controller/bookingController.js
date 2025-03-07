@@ -148,11 +148,34 @@ const getUserDataFromBooking = async (req, res) => {
   }
 };
 
+// Get bookings by user ID
+const getBookingsByUserId = async (req, res) => {
+  try {
+    console.log("req.params:", req.params);
+    const { userId } = req.params;
+    const bookings = await BookingSchema.find({ user: userId })
+      .populate("jamRoom")
+      .sort({ date: -1 }); // Sort by date descending
+
+    res.status(200).json({
+      success: true,
+      data: bookings,
+    });
+  } catch (error) {
+    console.error("Error fetching bookings by user ID:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 module.exports = {
   createBooking,
   getAllBookings,
   getBookingsByJamRoomId,
   getUserDataFromBooking,
+  getBookingsByUserId,
 };
 
 // Example schema

@@ -30,6 +30,16 @@ const invoiceSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
+    addonsCost: {
+      type: Number,
+      default: 0
+    },
+    selectedAddons: [{
+      addonId: String,
+      instrumentType: [String],
+      pricePerHour: Number,
+      hours: Number
+    }],
     createdAt: {
       type: Date,
       default: Date.now,

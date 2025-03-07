@@ -9,6 +9,7 @@ require('dotenv').config();
 const Booking = require('../models/BookingSchema');
 const {createBooking} = require('./bookingController');
 
+
 const checkout = async (req, res) => {
 
     const {amount} = req.body;
@@ -45,6 +46,8 @@ const paymentVerification = async (req, res) => {
       date: req.body.date,
       slots: req.body.slots,
       totalAmount: req.body.totalAmount,
+      addonsCost: req.body.addonsCost,
+      selectedAddons: req.body.selectedAddons,
       paymentId: razorpay_payment_id,
     });
 
@@ -126,4 +129,57 @@ const getInvoice = async (req, res) => {
   });
 };
 
-module.exports = {checkout, paymentVerification, getInvoice}
+// In server/controller/paymentController.js
+
+const getInvoiceData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Find the invoice directly using the Invoice model
+    const invoice = await Invoice.findById(id)
+      .populate('userId')
+      .populate('jamRoomId');
+    
+    if (!invoice) {
+      return res.status(404).json({
+        success: false,
+        message: 'Invoice not found'
+      });
+    }
+    
+    // Format the invoice data using the Invoice model structure
+    const invoiceData = {
+      invoiceNumber: invoice._id,
+      createdAt: invoice.createdAt,
+      customerName: invoice.userId.name,
+      customerEmail: invoice.userId.email,
+      customerPhone: invoice.userId.phoneNumber || '', // Add fallback if not available
+      jamRoomName: invoice.jamRoomId.jamRoomDetails.name,
+      jamRoomLocation: invoice.jamRoomId.location.address,
+      bookingDate: invoice.date,
+      slots: invoice.slots,
+      jamRoomFee: invoice.totalAmount - (invoice.addonsFee || 0),
+      addonsFee: invoice.addonsFee || 0,
+      taxAmount: invoice.taxAmount || 0,
+      totalAmount: invoice.totalAmount,
+      paymentMethod: 'Razorpay',
+      paymentId: invoice.paymentId,
+      status: invoice.status || 'Paid'
+    };
+    
+    res.status(200).json({
+      success: true,
+      invoice: invoiceData
+    });
+    
+  } catch (error) {
+    console.error('Error fetching invoice data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+
+module.exports = {checkout, paymentVerification, getInvoice, getInvoiceData}

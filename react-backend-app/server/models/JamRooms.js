@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const validateContact = (contact) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -7,21 +7,21 @@ const validateContact = (contact) => {
 };
 const addonSchema = new mongoose.Schema({
   instrumentType: {
-   type: Array,
+    type: Array,
   },
   quantity: {
     type: Number,
-    min: 0
+    min: 0,
   },
   pricePerHour: {
     type: Number,
-    min: 0
+    min: 0,
   },
   isAvailable: {
     type: Boolean,
-    default: true
-  }
-})
+    default: true,
+  },
+});
 
 const jamRoomSchema = new mongoose.Schema({
   jamRoomDetails: {
@@ -30,24 +30,34 @@ const jamRoomSchema = new mongoose.Schema({
   },
   ownerDetails: {
     fullname: { type: String, required: true },
-    email: { type: String, required: true, validate: [validateContact, 'Please enter a valid email'] },
-    phone: { type: String, required: true, validate: [validateContact, 'Please enter a valid phone number'] },
+    email: {
+      type: String,
+      required: true,
+      validate: [validateContact, "Please enter a valid email"],
+    },
+    phone: {
+      type: String,
+      required: true,
+      validate: [validateContact, "Please enter a valid phone number"],
+    },
     spotify: {
       username: String,
       displayName: String,
       profileUrl: String,
       followers: Number,
-      images: [{
-        url: String,
-        height: Number,
-        width: Number
-      }],
+      images: [
+        {
+          url: String,
+          height: Number,
+          width: Number,
+        },
+      ],
       isVerified: {
         type: Boolean,
-        default: false
+        default: false,
       },
-      verifiedAt: Date
-    }
+      verifiedAt: Date,
+    },
   },
   location: {
     address: { type: String, required: true },
@@ -69,9 +79,13 @@ const jamRoomSchema = new mongoose.Schema({
     {
       slotId: { type: Number, required: true },
       startTime: { type: String, required: true }, // e.g., "09:00"
-      endTime: { type: String, required: true },   // e.g., "10:00"
+      endTime: { type: String, required: true }, // e.g., "10:00"
       isBooked: { type: Boolean, default: false },
-      bookedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+      bookedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
     },
   ],
   feesPerSlot: {
@@ -85,10 +99,10 @@ const jamRoomSchema = new mongoose.Schema({
   bankValidationData: {
     type: Object, // Data returned after bank account validation
   },
-  // Add one more feature, addons, where the owner can display equipments for rent for a live jamming session. 
+  // Add one more feature, addons, where the owner can display equipments for rent for a live jamming session.
   addons: [addonSchema],
 });
 
-const JamRoom = mongoose.model('JamRoom', jamRoomSchema);
+const JamRoom = mongoose.model("JamRoom", jamRoomSchema);
 
 module.exports = JamRoom;

@@ -1,17 +1,17 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Card, CardContent, Typography, Button, Grid2 } from '@mui/material';
+import { Card, CardContent, Typography, Button, Grid2, Divider } from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
 
 const FinalReview = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { jamRoomName, selectedSlots, totalAmount, phoneNumber, selectedRoomId, selectedDate } = location.state;
+  const { jamRoomName, selectedSlots, totalAmount, phoneNumber, selectedRoomId, selectedDate, addonsCost, selectedAddons } = location.state;
   const { user } = useAuth0();
   console.log(user.sub);
   const checkoutHandler = async (amount) => {
     try {
-      const response = await fetch('http://13.126.198.106:5000/api/payments/checkout', {
+      const response = await fetch('http://localhost:5000/api/payments/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ const FinalReview = () => {
         },
         handler: async (response) => {
           console.log(response);
-          const verificationResponse = await fetch('http://13.126.198.106:5000/api/payments/verify', {
+          const verificationResponse = await fetch('http://localhost:5000/api/payments/verify', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -55,6 +55,8 @@ const FinalReview = () => {
               date: selectedDate,
               slots: selectedSlots,
               totalAmount,
+              addonsCost,
+              selectedAddons,
             }),
           });
 
@@ -62,7 +64,7 @@ const FinalReview = () => {
           console.log('Verification data:', verificationData);
           if (verificationData.success) {
             // Fetch user by email to get user ID
-            const userResponse = await fetch('http://13.126.198.106:5000/api/users', {
+            const userResponse = await fetch('http://localhost:5000/api/users', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -75,7 +77,7 @@ const FinalReview = () => {
               const userId = userData.data._id;
               console.log("selected date", selectedDate);
               // Store the booking
-              await fetch('http://13.126.198.106:5000/api/bookings', {
+              await fetch('http://localhost:5000/api/bookings', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -136,6 +138,27 @@ const FinalReview = () => {
         ))}
       </Grid2>
 
+      {location.state.selectedAddons.length > 0 && (
+      <Grid2 item xs={12}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6">Selected Add-ons</Typography>
+            {location.state.selectedAddons.map((addon, index) => (
+              <div key={index} className="flex justify-between items-center mt-2">
+                <Typography>{addon.instrumentType}</Typography>
+                <Typography>₹{addon.pricePerHour * addon.hours}</Typography>
+              </div>
+            ))}
+            <Divider className="my-2" />
+            <div className="flex justify-between items-center">
+              <Typography>Add-ons Total</Typography>
+              <Typography>₹{location.state.addonsCost}</Typography>
+            </div>
+          </CardContent>
+        </Card>
+      </Grid2>
+    )}
+
       <Grid2 item xs={12}>
         <Card>
           <CardContent>
@@ -164,6 +187,8 @@ const FinalReview = () => {
           Proceed to Payment
         </Button>
       </Grid2>
+
+
     </Grid2>
   );
 };
