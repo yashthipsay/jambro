@@ -92,7 +92,7 @@ function JamRoomDetails() {
   const hasInstagramProfile = selectedRoom.socialMedia?.instagram;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 pb-28">
       <div className="max-w-md mx-auto">
         <div className="mb-4 flex items-center">
           <Button
@@ -454,38 +454,41 @@ function JamRoomDetails() {
           </CardContent>
         </Card>
 
-        <div className="flex gap-2 mb-6">
-          <ShareButton
-            title={`Check out ${selectedRoom.name}`}
-            text={`I found this amazing jam room: ${
-              selectedRoom.name
-            }. It's only ${selectedRoom.distance.toFixed(2)} km away!`}
-            url={window.location.href}
-            image={
-              selectedRoom.images && selectedRoom.images.length > 0
-                ? selectedRoom.images[0]
-                : ""
-            }
-            variant="outlined"
-            color="primary"
-            fullWidth
-            className="rounded-lg py-2"
-          >
-            Share
-          </ShareButton>
-        </div>
+        {/* Fixed action buttons at bottom */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t p-4 z-10">
+          <div className="max-w-md mx-auto flex flex-col gap-3">
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              className="rounded-lg py-3"
+              onClick={() => navigate(`/booking/${selectedRoom.id}`)}
+              startIcon={<Calendar className="w-5 h-5" />}
+            >
+              Book Now
+            </Button>
 
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          size="large"
-          className="rounded-lg py-3 sticky bottom-4 shadow-lg"
-          onClick={() => navigate(`/booking/${selectedRoom.id}`)}
-          startIcon={<Calendar className="w-5 h-5" />}
-        >
-          Book Now
-        </Button>
+            <ShareButton
+              title={`Check out ${selectedRoom.name}`}
+              text={`I found this amazing jam room: ${
+                selectedRoom.name
+              }. It's only ${selectedRoom.distance.toFixed(2)} km away!`}
+              url={window.location.href}
+              image={
+                selectedRoom.images && selectedRoom.images.length > 0
+                  ? selectedRoom.images[0]
+                  : ""
+              }
+              variant="outlined"
+              color="primary"
+              fullWidth
+              className="rounded-lg"
+            >
+              Share
+            </ShareButton>
+          </div>
+        </div>
       </div>
     </div>
   );
