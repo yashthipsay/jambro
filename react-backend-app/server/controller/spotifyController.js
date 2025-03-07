@@ -1,6 +1,6 @@
-const SpotifyWebApi = require('spotify-web-api-node');
-const JamRoom = require('../models/JamRooms');
-require('dotenv').config();
+const SpotifyWebApi = require("spotify-web-api-node");
+const JamRoom = require("../models/JamRooms");
+require("dotenv").config();
 
 const spotifyApi = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
@@ -15,7 +15,7 @@ const initiateSpotifyVerification = async (req, res) => {
     if (!jamRoom) {
       return res.status(404).json({
         success: false,
-        message: 'Jam room not found'
+        message: "Jam room not found",
       });
     }
 
@@ -24,13 +24,13 @@ const initiateSpotifyVerification = async (req, res) => {
     spotifyApi.setAccessToken(credentials.body.access_token);
 
     // Try to fetch the artist profile using getUser instead of getArtist
-    const artistProfile = await spotifyApi.getArtist(spotifyUsername)
-      .catch(err => {
-        throw new Error('Invalid Spotify username');
+    const artistProfile = await spotifyApi
+      .getArtist(spotifyUsername)
+      .catch((err) => {
+        throw new Error("Invalid Spotify username");
       });
 
-
-      console.log(`Spotify user profile:`, artistProfile.body);
+    console.log(`Spotify user profile:`, artistProfile.body);
 
     // Update jamroom with verified spotify details
     jamRoom.ownerDetails.spotify = {
@@ -40,35 +40,34 @@ const initiateSpotifyVerification = async (req, res) => {
       followers: artistProfile.body.followers.total,
       images: artistProfile.body.images,
       isVerified: true,
-      verifiedAt: new Date()
+      verifiedAt: new Date(),
     };
 
     await jamRoom.save();
 
     res.status(200).json({
       success: true,
-      message: 'Spotify profile verified successfully',
+      message: "Spotify profile verified successfully",
       profile: {
         username: spotifyUsername,
         displayName: artistProfile.body.name,
         profileUrl: artistProfile.body.external_urls.spotify,
         followers: artistProfile.body.followers.total,
-        images: artistProfile.body.images
-      }
+        images: artistProfile.body.images,
+      },
     });
-
   } catch (error) {
-    console.error('Spotify verification error:', error);
+    console.error("Spotify verification error:", error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to verify Spotify profile'
+      message: error.message || "Failed to verify Spotify profile",
     });
   }
 };
 
 const getArtistAlbums = async (req, res) => {
-  try{
-    const {artistId} = req.params;
+  try {
+    const { artistId } = req.params;
 
     const credentials = await spotifyApi.clientCredentialsGrant();
     spotifyApi.setAccessToken(credentials.body.access_token);
@@ -77,17 +76,17 @@ const getArtistAlbums = async (req, res) => {
 
     res.json({
       success: true,
-      albums: albums.body.items
+      albums: albums.body.items,
     });
-  }catch (error) {
+  } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
-}
+};
 
 module.exports = {
   initiateSpotifyVerification,
-  getArtistAlbums
+  getArtistAlbums,
 };
