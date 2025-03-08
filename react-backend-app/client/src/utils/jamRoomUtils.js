@@ -1,9 +1,3 @@
-import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
-
-const client = new ApolloClient({
-  uri: 'http://localhost:4000', // Update this with your Apollo Server URL
-  cache: new InMemoryCache(),
-})
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371 // Radius of the Earth in km
