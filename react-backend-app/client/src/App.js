@@ -147,7 +147,6 @@ function AppContent() {
               body: JSON.stringify({
                 name: user.name || "NA",
                 email: user.email,
-                mobileNumber: user.phone_number || "",
               }),
             }
           );

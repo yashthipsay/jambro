@@ -3,24 +3,20 @@ const User = require("../models/User");
 
 const createUser = async (req, res) => {
   try {
-    const { email, name, mobileNumber } = req.body;
+    const { email, name } = req.body;
 
     // Find existing user or create new one
     let user = await User.findOne({ email });
 
     if (user) {
-      // If user exists, update their info
+      // If user exists, update their name if provided
       if (name) user.name = name;
-      if (mobileNumber && !user.savedNumbers.includes(mobileNumber)) {
-        user.savedNumbers.push(mobileNumber);
-      }
       await user.save();
     } else {
-      // Create new user
+      // Create new user without phone number
       user = new User({
         email,
         name: name || "NA",
-        savedNumbers: mobileNumber ? [mobileNumber] : [],
       });
       await user.save();
     }
