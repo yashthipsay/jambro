@@ -3,31 +3,34 @@ const User = require("../models/User");
 
 const createUser = async (req, res) => {
   try {
-    const { name, email, mobileNumber } = req.body;
+    const { email, name, mobileNumber } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already registered",
+    // Find existing user or create new one
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // If user exists, update their info
+      if (name) user.name = name;
+      if (mobileNumber && !user.savedNumbers.includes(mobileNumber)) {
+        user.savedNumbers.push(mobileNumber);
+      }
+      await user.save();
+    } else {
+      // Create new user
+      user = new User({
+        email,
+        name: name || "NA",
+        savedNumbers: mobileNumber ? [mobileNumber] : [],
       });
+      await user.save();
     }
 
-    // Create new user
-    const user = new User({
-      name,
-      email,
-      mobileNumber,
-    });
-
-    await user.save();
-
-    res.status(201).json({
+    res.json({
       success: true,
       data: user,
     });
   } catch (error) {
+    console.error("User registration error:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -62,8 +65,16 @@ const getUserByEmail = async (req, res) => {
 const savePhoneNumber = async (req, res) => {
   try {
     const { email, phoneNumber } = req.body;
-    const user = await User.findOne({ email });
 
+    // Validate phone number format
+    if (!phoneNumber.match(/^\+?([0-9]{2})?\d{10}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number format",
+      });
+    }
+
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -71,14 +82,20 @@ const savePhoneNumber = async (req, res) => {
       });
     }
 
-    user.savedNumbers.push(phoneNumber);
-    await user.save();
+    // Check if number already exists
+    if (!user.savedNumbers.includes(phoneNumber)) {
+      user.savedNumbers.push(phoneNumber);
+      await user.save();
+    }
 
-    res.status(200).json({
+    res.json({
       success: true,
-      data: user,
+      data: {
+        savedNumbers: user.savedNumbers,
+      },
     });
   } catch (error) {
+    console.error("Save phone number error:", error);
     res.status(500).json({
       success: false,
       message: error.message,
