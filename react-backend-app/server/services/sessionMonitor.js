@@ -18,7 +18,7 @@ class SessionMonitor {
 
   async checkSessions() {
     const currentDate = moment().tz('Asia/Kolkata');
-    console.log('Current Date:', currentDate.format());
+    // console.log('Current Date:', currentDate.format());
   
     try {
       // 1. Get all active bookings
@@ -26,15 +26,15 @@ class SessionMonitor {
         status: { $nin: ['COMPLETED', 'TERMINATED'] }
       }).populate('jamRoom');
   
-      console.log(`Found ${bookings.length} active bookings to check`);
+      // console.log(`Found ${bookings.length} active bookings to check`);
   
       // 2. Debug log all booking IDs first
-      console.log('All booking IDs:', bookings.map(b => b._id));
+      // console.log('All booking IDs:', bookings.map(b => b._id));
   
       // 3. Process each booking
       for(const booking of bookings) {
         try {
-          console.log(`\nProcessing booking ${booking._id} with current status: ${booking.status}`);
+          // console.log(`\nProcessing booking ${booking._id} with current status: ${booking.status}`);
           
           const bookingDate = moment(booking.date).tz('Asia/Kolkata').startOf('day');
           
@@ -53,8 +53,8 @@ class SessionMonitor {
             });
           });
   
-          console.log('Booking date:', bookingDate.format());
-          console.log('Start times:', startTimes.map(t => t.format()));
+          // console.log('Booking date:', bookingDate.format());
+          // console.log('Start times:', startTimes.map(t => t.format()));
   
           const endTimes = sortedSlots.map(slot => {
             const [hours, minutes] = slot.endTime.split(':');
@@ -76,18 +76,18 @@ class SessionMonitor {
             status: booking.status
           };
   
-          console.log('Booking details:', bookingDetails);
+          // console.log('Booking details:', bookingDetails);
   
           // Handle status transitions
           if (currentDate.isBetween(earliestStart, latestEnd, null, '[]') && 
               booking.status === 'NOT_STARTED') {
-            console.log(`Updating booking ${booking._id} to ONGOING`);
+            // console.log(`Updating booking ${booking._id} to ONGOING`);
             booking.status = 'ONGOING';
             await booking.save();
             
             // Verify the save
             const updatedBooking = await BookingSchema.findById(booking._id);
-            console.log(`Booking status after save: ${updatedBooking.status}`);
+            // console.log(`Booking status after save: ${updatedBooking.status}`);
             
             this.io.emit('sessionStatusUpdate', { 
               bookingId: booking._id,
@@ -95,7 +95,7 @@ class SessionMonitor {
             });
           }
           else if (currentDate.isAfter(latestEnd)) {
-            console.log(`Updating booking ${booking._id} to COMPLETED`);
+            // console.log(`Updating booking ${booking._id} to COMPLETED`);
             booking.status = 'COMPLETED';
             await booking.save();
             
@@ -107,12 +107,12 @@ class SessionMonitor {
             await this.processPayout(booking);
           }
         } catch (error) {
-          console.error(`Error processing booking ${booking._id}:`, error);
+          // console.error(`Error processing booking ${booking._id}:`, error);
           continue; // Continue with next booking even if one fails
         }
       }
     } catch (error) {
-      console.error('Error in checkSessions:', error);
+      // console.error('Error in checkSessions:', error);
     }
   }
 
@@ -121,7 +121,7 @@ class SessionMonitor {
 
  // Skip payout if booking is terminated
       if (booking.status === 'TERMINATED') {
-        console.log(`Skipping payout for terminated booking ${booking._id}`);
+        // console.log(`Skipping payout for terminated booking ${booking._id}`);
         return;
       }
 

@@ -22,7 +22,7 @@ class PayoutMonitor {
                 status: { $in: ['PENDING', 'queued', 'processing']}
             });
 
-            console.log(`pendingPayouts.length} pending payouts to check`);
+            // console.log(`pendingPayouts.length} pending payouts to check`);
 
             for(const payout of pendingPayouts){
                 try{
@@ -36,7 +36,7 @@ class PayoutMonitor {
                 }
             }
         } catch (error) {
-            console.error('Error in checkPayoutStatuses:', error);
+            // console.error('Error in checkPayoutStatuses:', error);
           }
     }
 
@@ -53,7 +53,7 @@ class PayoutMonitor {
 
             return response.data;
         } catch(error) {
-            console.error('Error fetching payout details:', error);
+            // console.error('Error fetching payout details:', error);
             return null;
         }
     }
@@ -77,7 +77,7 @@ class PayoutMonitor {
         payout.statusDetails = payoutDetails.status_details;
         await payout.save();
 
-        console.log(`Updated payout ${payout._id} status to ${newStatus}`);
+        // console.log(`Updated payout ${payout._id} status to ${newStatus}`);
 
         // Emit websocket event for real-time updates
         this.io.emit('payoutStatusUpdate', {
@@ -87,7 +87,7 @@ class PayoutMonitor {
         });
       }
         } catch(error) {
-            console.error('Error updating payout status:', error);
+            // console.error('Error updating payout status:', error);
         }
     }
 }
