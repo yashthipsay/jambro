@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 
 export const useSubscriptionLogic = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, loginWithRedirect, user } = useAuth0();
 
   // State for tier selections
   const [selections, setSelections] = useState({
@@ -12,6 +12,34 @@ export const useSubscriptionLogic = () => {
     pro: { hours: 25, access: "jamrooms", frequency: "monthly" },
     premium: { hours: 25, access: "both", frequency: "monthly" },
   });
+
+    // State to track the currently active plan (if any)
+    const [activePlan, setActivePlan] = useState(null);
+
+    // Mock function to fetch active subscription
+    // In a real app, you would fetch this from your backend
+    useEffect(() => {
+      const fetchActiveSubscription = async () => {
+        if (!isAuthenticated || !user) return;
+        
+        try {
+          // Mock API call - replace with your actual API
+          // const response = await fetch(`/api/subscriptions/user/${user.sub}`);
+          // const data = await response.json();
+          // if (data.success && data.subscription) {
+          //   setActivePlan(data.subscription.tier);
+          // }
+          
+          // For demo purposes, let's pretend the user has the Pro plan
+          // Remove this in production and replace with the actual API call above
+          // setActivePlan("pro");
+        } catch (error) {
+          console.error("Error fetching subscription:", error);
+        }
+      };
+      
+      fetchActiveSubscription();
+    }, [isAuthenticated, user]);
 
   // Handler for selection changes
   const handleSelectionChange = (tier, field, value) => {
@@ -73,6 +101,14 @@ export const useSubscriptionLogic = () => {
     }
 
     const { hours, access, frequency } = selections;
+
+        // Determine if this is a new subscription, upgrade, or downgrade
+        let actionType = "subscribe";
+        if (activePlan) {
+          const tierRanking = { basic: 1, pro: 2, premium: 3 };
+          actionType = tierRanking[tier] > tierRanking[activePlan] ? "upgrade" : "downgrade";
+        }
+
     console.log(`Subscription selected:`, {
       tier,
       hours,
@@ -80,6 +116,10 @@ export const useSubscriptionLogic = () => {
       frequency,
       pricing: calculatePrice(tier, hours, access || "jamrooms", frequency),
     });
+
+        // For demo purposes, set the active plan immediately
+    // In a real implementation, you would navigate to checkout and only update after payment
+    setActivePlan(tier);
 
     // In a real implementation, you would navigate to a checkout page
     // navigate('/checkout', { state: { subscription: { tier, hours, access, frequency } } });
@@ -90,5 +130,6 @@ export const useSubscriptionLogic = () => {
     handleSelectionChange,
     calculatePrice,
     handleSubscribe,
+    activePlan,
   };
 };

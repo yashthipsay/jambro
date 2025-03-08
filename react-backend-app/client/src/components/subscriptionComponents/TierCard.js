@@ -11,6 +11,7 @@ import {
   Divider,
   Box,
   Chip,
+  useMediaQuery,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import {
@@ -19,25 +20,46 @@ import {
   Star,
   CheckCircle,
   AccessTime,
+  ArrowUpward,
+  ArrowDownward,
+  Check,
 } from "@mui/icons-material";
 import FeatureList from "./FeatureList";
 import PriceDisplay from "./PriceDisplay";
 import { subscriptionColors } from "./SubscriptionsPage";
 
 // Styled components
-const StyledCard = styled(Card)(({ theme, isPopular }) => ({
+const StyledCard = styled(Card)(({ theme, isPopular, isActive }) => ({
   backgroundColor: subscriptionColors.cardBackground,
-  boxShadow: `0 8px 24px ${isPopular ? 'rgba(100, 52, 252, 0.25)' : 'rgba(100, 52, 252, 0.15)'}`,
-  border: `1px solid ${isPopular ? 'rgba(100, 52, 252, 0.3)' : 'rgba(160, 133, 235, 0.2)'}`,
+  boxShadow: `0 8px 24px ${
+    isActive
+      ? "rgba(100, 52, 252, 0.35)"
+      : isPopular
+      ? "rgba(100, 52, 252, 0.25)"
+      : "rgba(100, 52, 252, 0.15)"
+  }`,
+  border: `1px solid ${
+    isActive
+      ? "rgba(100, 52, 252, 0.5)"
+      : isPopular
+      ? "rgba(100, 52, 252, 0.3)"
+      : "rgba(160, 133, 235, 0.2)"
+  }`,
   borderRadius: 16,
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-  position: 'relative',
-  '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: `0 12px 32px ${isPopular ? 'rgba(100, 52, 252, 0.35)' : 'rgba(100, 52, 252, 0.25)'}`,
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
+  position: "relative",
+  "&:hover": {
+    transform: "translateY(-8px)",
+    boxShadow: `0 12px 32px ${
+      isActive
+        ? "rgba(100, 52, 252, 0.45)"
+        : isPopular
+        ? "rgba(100, 52, 252, 0.35)"
+        : "rgba(100, 52, 252, 0.25)"
+    }`,
   },
 }));
 
@@ -53,6 +75,23 @@ const PopularFlag = styled(Box)(({ theme }) => ({
   fontSize: 14,
   zIndex: 1,
   boxShadow: "0 2px 8px rgba(255, 87, 34, 0.4)",
+}));
+
+const ActiveFlag = styled(Box)(({ theme }) => ({
+  position: "absolute",
+  top: 12,
+  right: 12,
+  backgroundColor: "#4CAF50",
+  color: "white",
+  padding: "4px 12px",
+  borderRadius: 12,
+  fontWeight: 600,
+  fontSize: 14,
+  zIndex: 1,
+  display: "flex",
+  alignItems: "center",
+  gap: "4px",
+  boxShadow: "0 2px 8px rgba(76, 175, 80, 0.4)",
 }));
 
 const SpotifyChip = styled(Chip)(({ theme }) => ({
@@ -76,7 +115,14 @@ const TierCard = ({
   calculatePrice,
   onSubscribe,
   showAccessOptions = false,
+  activePlan = null, // New prop to know currently active plan
 }) => {
+  const isMobile = useMediaQuery("(max-width:600px)");
+  const isTablet = useMediaQuery("(max-width:960px)");
+
+  // Check if this card represents the currently active plan
+  const isActive = activePlan === tier;
+
   // Hours options
   const hourOptions = [25, 30, 35, 40, 45];
 
@@ -94,19 +140,108 @@ const TierCard = ({
     selections.frequency
   );
 
+  // Function to get appropriate button text based on active plan
+  const getButtonText = () => {
+    if (isActive) return "Currently Active";
+
+    if (!activePlan) return "Subscribe Now";
+
+    // Compare tiers to determine if this is an upgrade or downgrade
+    const tierRanking = { basic: 1, pro: 2, premium: 3 };
+    const currentRank = tierRanking[activePlan];
+    const thisRank = tierRanking[tier];
+
+    if (thisRank > currentRank) return isMobile ? "Upgrade" : "Upgrade Plan";
+    return isMobile ? "Downgrade" : "Downgrade Plan";
+  };
+
+  // Get button icon
+  const getButtonIcon = () => {
+    if (isActive) return <Check fontSize="small" sx={{ mr: 0.5 }} />;
+
+    if (!activePlan) return null;
+
+    const tierRanking = { basic: 1, pro: 2, premium: 3 };
+    const currentRank = tierRanking[activePlan];
+    const thisRank = tierRanking[tier];
+
+    if (thisRank > currentRank)
+      return <ArrowUpward fontSize="small" sx={{ mr: 0.5 }} />;
+    return <ArrowDownward fontSize="small" sx={{ mr: 0.5 }} />;
+  };
+
+  // Get color scheme for button
+  const getButtonColor = () => {
+    if (isActive)
+      return {
+        bg: "#4CAF50",
+        hover: "#45a049",
+        shadow: "rgba(76, 175, 80, 0.4)",
+      };
+
+    if (!activePlan)
+      return {
+        bg: subscriptionColors.primaryColor,
+        hover: subscriptionColors.accentColor,
+        shadow: "rgba(100, 52, 252, 0.4)",
+      };
+
+    const tierRanking = { basic: 1, pro: 2, premium: 3 };
+    const currentRank = tierRanking[activePlan];
+    const thisRank = tierRanking[tier];
+
+    if (thisRank > currentRank)
+      return {
+        bg: "#2196F3", // Blue for upgrade
+        hover: "#1976D2",
+        shadow: "rgba(33, 150, 243, 0.4)",
+      };
+
+    return {
+      bg: "#FF9800", // Orange for downgrade
+      hover: "#F57C00",
+      shadow: "rgba(255, 152, 0, 0.4)",
+    };
+  };
+
+  const buttonColor = getButtonColor();
+
   return (
-    <StyledCard isPopular={isPopular}>
-      {isPopular && <PopularFlag>Most Popular</PopularFlag>}
-      <CardContent sx={{ p: 4, display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <StyledCard isPopular={isPopular} isActive={isActive}>
+      {isPopular && !isActive && <PopularFlag>Most Popular</PopularFlag>}
+      {isActive && (
+        <ActiveFlag>
+          <Check fontSize="small" /> Current Plan
+        </ActiveFlag>
+      )}
+
+      <CardContent
+        sx={{
+          p: isMobile ? 3 : 4,
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
         <Typography
           variant="h5"
-          sx={{ fontWeight: 700, color: subscriptionColors.textColor, mb: 1 }}
+          sx={{
+            fontWeight: 700,
+            color: subscriptionColors.textColor,
+            mb: 1,
+            fontSize: isMobile ? "1.25rem" : "1.5rem",
+          }}
         >
           {title}
         </Typography>
         <Typography
           variant="body2"
-          sx={{ color: subscriptionColors.textColor, opacity: 0.8, mb: 2 }}
+          sx={{
+            color: subscriptionColors.textColor,
+            opacity: 0.8,
+            mb: 2,
+            fontSize: isMobile ? "0.875rem" : "1rem",
+          }}
         >
           {description}
         </Typography>
@@ -119,8 +254,12 @@ const TierCard = ({
 
         <Divider sx={{ my: 2 }} />
 
-        <Box mb={3}>
-          <FormControl fullWidth variant="outlined" sx={{ mb: 3 }}>
+        <Box mb={isMobile ? 2 : 3}>
+          <FormControl
+            fullWidth
+            variant="outlined"
+            sx={{ mb: isMobile ? 2 : 3 }}
+          >
             <InputLabel id={`${tier}-hours-label`}>Hours per month</InputLabel>
             <Select
               labelId={`${tier}-hours-label`}
@@ -129,6 +268,7 @@ const TierCard = ({
               onChange={(e) => onChange("hours", e.target.value)}
               label="Hours per month"
               sx={{ color: subscriptionColors.textColor }}
+              disabled={isActive}
             >
               {hourOptions.map((hour) => (
                 <MenuItem key={hour} value={hour}>
@@ -139,7 +279,11 @@ const TierCard = ({
           </FormControl>
 
           {showAccessOptions && (
-            <FormControl fullWidth variant="outlined" sx={{ mb: 3 }}>
+            <FormControl
+              fullWidth
+              variant="outlined"
+              sx={{ mb: isMobile ? 2 : 3 }}
+            >
               <InputLabel id={`${tier}-access-label`}>Access Type</InputLabel>
               <Select
                 labelId={`${tier}-access-label`}
@@ -148,6 +292,7 @@ const TierCard = ({
                 onChange={(e) => onChange("access", e.target.value)}
                 label="Access Type"
                 sx={{ color: subscriptionColors.textColor }}
+                disabled={isActive}
               >
                 <MenuItem value="jamrooms">
                   Jamrooms Only (₹{tier === "pro" ? "600" : "1000"}/hr)
@@ -171,6 +316,7 @@ const TierCard = ({
               onChange={(e) => onChange("frequency", e.target.value)}
               label="Payment Frequency"
               sx={{ color: subscriptionColors.textColor }}
+              disabled={isActive}
             >
               {frequencyOptions.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -191,20 +337,28 @@ const TierCard = ({
             fullWidth
             size="large"
             onClick={() => onSubscribe(tier, selections)}
+            disabled={isActive}
+            startIcon={getButtonIcon()}
             sx={{
               mt: 2,
-              backgroundColor: subscriptionColors.primaryColor,
+              backgroundColor: buttonColor.bg,
               color: "#ffffff",
-              py: 1.5,
+              py: isMobile ? 1.2 : 1.5,
               borderRadius: 2,
-              boxShadow: "0 4px 12px rgba(100, 52, 252, 0.3)",
+              boxShadow: `0 4px 12px ${buttonColor.shadow}`,
               "&:hover": {
-                backgroundColor: subscriptionColors.accentColor,
-                boxShadow: "0 6px 16px rgba(100, 52, 252, 0.4)",
+                backgroundColor: buttonColor.hover,
+                boxShadow: `0 6px 16px ${buttonColor.shadow}`,
               },
+              "&:disabled": {
+                backgroundColor: "#4CAF50",
+                color: "white",
+                opacity: 0.9,
+              },
+              fontSize: isMobile ? "0.875rem" : "1rem",
             }}
           >
-            Subscribe Now
+            {getButtonText()}
           </Button>
         </Box>
       </CardContent>

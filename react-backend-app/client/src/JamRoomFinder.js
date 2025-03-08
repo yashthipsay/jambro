@@ -287,9 +287,22 @@ function JamRoomFinder() {
   // Handler for main service selection
   const handleServiceClick = (serviceId) => {
     setActiveService(serviceId);
-    // Here you would implement logic to change the workflow based on service
-    // For now we'll just reset the category filter
-    setSelectedCategory("All");
+    // Navigate based on service type
+    if (serviceId === "pass") {
+      // Navigate to subscriptions page for GigSaw Pass
+      navigate("/subscriptions");
+    } else if (serviceId === "jamrooms_studios") {
+      // Stay on the current page or navigate to home for JamRooms/Studios
+      // This is the default view, so we can either do nothing or explicitly navigate to "/"
+      // Setting it as active service is already handled above
+      setSelectedCategory("All"); // Reset the category filter
+    } else {
+      // For other services (rentals, coaching, events),
+      // just update state for now and reset the category filter
+      setSelectedCategory("All");
+      // In the future you might want to navigate to specific pages for these services
+      // e.g., navigate(`/${serviceId}`);
+    }
   };
 
   return (
