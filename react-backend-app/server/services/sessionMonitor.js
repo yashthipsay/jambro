@@ -149,7 +149,7 @@ class SessionMonitor {
           json: () => {},
           status: () => {}
         });
-        console.log(`Payout processed for booking ${booking._id}`);
+        // console.log(`Payout processed for booking ${booking._id}`);
       } catch (error) {
         console.error('Payout processing error:', error);
       }
