@@ -43,7 +43,7 @@ const PastBookings = () => {
         if (!user?.email) return;
 
         // Get user ID
-        const userResponse = await fetch("http://localhost:5000/api/users", {
+        const userResponse = await fetch("https://gigsaw.onrender.com/api/users", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -58,7 +58,7 @@ const PastBookings = () => {
 
         // Fetch bookings with the user ID
         const bookingsResponse = await fetch(
-          `http://localhost:5000/api/bookings/users/${userId}/`
+          `https://gigsaw.onrender.com/api/bookings/users/${userId}/`
         );
         const bookingsData = await bookingsResponse.json();
 

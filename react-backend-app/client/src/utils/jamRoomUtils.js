@@ -24,7 +24,7 @@ export function findClosestJamRooms() {
 
         try {
           // Fetch jam rooms from MongoDB API
-          const response = await fetch('http://localhost:5000/api/jamrooms');
+          const response = await fetch('https://gigsaw.onrender.com/api/jamrooms');
           const data = await response.json();
           console.log(data);
 
