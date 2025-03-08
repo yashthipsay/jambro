@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-
+import CancelSubscriptionDialog from "./components/dialogs/CancelSubscriptionDialog";
 import {
   BrowserRouter as Router,
   Routes,
@@ -54,6 +54,8 @@ import {
   XCircle,
 } from "lucide-react";
 import PastBookings from "./components/PastBookings";
+import { useSubscription } from "./context/SubscriptionContext";
+import { SubscriptionProvider } from "./context/SubscriptionContext";
 
 // Add this new styled component for the subscription card
 const SubscriptionCard = styled(Box)(({ theme }) => ({
@@ -65,7 +67,7 @@ const SubscriptionCard = styled(Box)(({ theme }) => ({
   border: "1px solid rgba(100, 52, 252, 0.2)",
 }));
 
-function App() {
+function AppContent() {
   const {
     loginWithRedirect,
     logout,
@@ -78,10 +80,13 @@ function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
-  const [subscription, setSubscription] = useState(null);
-
-  // Add this after your existing useState declarations
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  
+  const {
+    subscription,
+    showCancelDialog,
+    setShowCancelDialog,
+    cancelSubscription,
+  } = useSubscription();
 
   // Add this mock subscription data (temporary until backend integration)
   const mockSubscription = useMemo(
@@ -97,30 +102,6 @@ function App() {
     []
   );
 
-  // Add the cancel dialog component
-  const CancelSubscriptionDialog = () => (
-    <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
-      <DialogTitle>Cancel Subscription?</DialogTitle>
-      <DialogContent>
-        <Typography>
-          Are you sure you want to cancel your {mockSubscription.tier} plan? You
-          will continue to have access until {mockSubscription.nextBilling}.
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setShowCancelDialog(false)}>Keep Plan</Button>
-        <Button
-          color="error"
-          onClick={() => {
-            setSubscription(null);
-            setShowCancelDialog(false);
-          }}
-        >
-          Cancel Plan
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
 
   const menuItems = [
     { text: "Past Bookings", icon: <History />, path: "/bookings" },
@@ -231,7 +212,7 @@ function App() {
             <CreditCard className="w-4 h-4 text-indigo-600" />
           </div>
 
-          {mockSubscription ? (
+          {subscription ? (
             <>
               <div className="flex items-center gap-2 mb-4">
                 <Star className="w-5 h-5 text-indigo-600" />
@@ -239,25 +220,25 @@ function App() {
                   variant="h6"
                   className="font-semibold text-indigo-600"
                 >
-                  {mockSubscription.tier.charAt(0).toUpperCase() +
-                    mockSubscription.tier.slice(1)}{" "}
+                  {subscription.tier.charAt(0).toUpperCase() +
+                    subscription.tier.slice(1)}{" "}
                   Plan
                 </Typography>
               </div>
 
               <div className="space-y-2 mb-4">
                 <Typography variant="body2" className="text-gray-600">
-                  • {mockSubscription.hours} hours per month
+                  • {subscription.hours} hours per month
                 </Typography>
                 <Typography variant="body2" className="text-gray-600">
                   •{" "}
-                  {mockSubscription.access === "both"
+                  {subscription.access === "both"
                     ? "Jamrooms & Studios"
-                    : mockSubscription.access.charAt(0).toUpperCase() +
-                      mockSubscription.access.slice(1)}
+                    : subscription.access.charAt(0).toUpperCase() +
+                      subscription.access.slice(1)}
                 </Typography>
                 <Typography variant="body2" className="text-gray-600">
-                  • Next billing: {mockSubscription.nextBilling}
+                  • Next billing: {subscription.nextBilling}
                 </Typography>
               </div>
 
@@ -376,108 +357,124 @@ function App() {
 
   return (
     <>
-      <AppBar
-        position="static"
-        color="default"
-        elevation={1}
-        className="bg-white"
-      >
-        <Toolbar className="justify-between">
-          <div className="flex items-center gap-4">
-            {isAuthenticated && (
-              <IconButton
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                onClick={toggleDrawer(true)}
-              >
-                <MenuIcon className="h-6 w-6" />
-              </IconButton>
-            )}
-            <img
-              src="/gigsaw_ss.png"
-              alt="JamRoom Logo"
-              className="h-8 object-contain cursor-pointer rounded-lg transition-transform hover:scale-105"
-              onClick={() => (window.location.href = "/")}
-            />
-          </div>
-
-          {isAuthenticated && user ? (
-            <div>
-              <IconButton
-                onClick={handleMenuClick}
-                size="small"
-                aria-controls={open ? "account-menu" : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? "true" : undefined}
-              >
-                <Avatar src={user.picture} alt={user.name} className="w-8 h-8">
-                  {user.name?.charAt(0) || "U"}
-                </Avatar>
-              </IconButton>
-              <Menu
-                id="account-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleMenuClose}
-                transformOrigin={{ horizontal: "right", vertical: "top" }}
-                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-              >
-                <MenuItem disabled className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  <div className="flex flex-col">
-                    <Typography variant="body2" className="font-medium">
-                      {user.name}
-                    </Typography>
-                    <Typography variant="caption" className="text-gray-500">
-                      {user.email}
-                    </Typography>
-                  </div>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    handleMenuClose();
-                    logout({ returnTo: window.location.origin });
-                  }}
-                  className="text-red-600"
+        <AppBar
+          position="static"
+          color="default"
+          elevation={1}
+          className="bg-white"
+        >
+          <Toolbar className="justify-between">
+            <div className="flex items-center gap-4">
+              {isAuthenticated && (
+                <IconButton
+                  edge="start"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={toggleDrawer(true)}
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </MenuItem>
-              </Menu>
+                  <MenuIcon className="h-6 w-6" />
+                </IconButton>
+              )}
+              <img
+                src="/gigsaw_ss.png"
+                alt="JamRoom Logo"
+                className="h-8 object-contain cursor-pointer rounded-lg transition-transform hover:scale-105"
+                onClick={() => (window.location.href = "/")}
+              />
             </div>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleLogin}
-              size="small"
-            >
-              Login
-            </Button>
-          )}
-        </Toolbar>
-      </AppBar>
-      {isAuthenticated && (
-        <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-          {drawerContent()}
-        </Drawer>
-      )}
 
-      <CancelSubscriptionDialog />
+            {isAuthenticated && user ? (
+              <div>
+                <IconButton
+                  onClick={handleMenuClick}
+                  size="small"
+                  aria-controls={open ? "account-menu" : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open ? "true" : undefined}
+                >
+                  <Avatar
+                    src={user.picture}
+                    alt={user.name}
+                    className="w-8 h-8"
+                  >
+                    {user.name?.charAt(0) || "U"}
+                  </Avatar>
+                </IconButton>
+                <Menu
+                  id="account-menu"
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleMenuClose}
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                >
+                  <MenuItem disabled className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <div className="flex flex-col">
+                      <Typography variant="body2" className="font-medium">
+                        {user.name}
+                      </Typography>
+                      <Typography variant="caption" className="text-gray-500">
+                        {user.email}
+                      </Typography>
+                    </div>
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuClose();
+                      logout({ returnTo: window.location.origin });
+                    }}
+                    className="text-red-600"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </div>
+            ) : (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleLogin}
+                size="small"
+              >
+                Login
+              </Button>
+            )}
+          </Toolbar>
+        </AppBar>
+        {isAuthenticated && (
+          <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
+            {drawerContent()}
+          </Drawer>
+        )}
 
-      <Routes>
-        <Route path="/" element={<JamRoomFinder />} />
-        <Route path="/jam-room/:id" element={<JamRoomDetails />} />
-        <Route path="/booking/:id" element={<Booking />} />
-        <Route path="/final-review" element={<FinalReview />} />
-        <Route path="/confirmation/:id" element={<BookingConfirmation />} />
-        <Route path="/bookings" element={<PastBookings />} />
+        <CancelSubscriptionDialog
+          open={showCancelDialog}
+          onClose={() => setShowCancelDialog(false)}
+          onConfirm={cancelSubscription}
+          subscriptionDetails={subscription}
+        />
+        <Routes>
+          <Route path="/" element={<JamRoomFinder />} />
+          <Route path="/jam-room/:id" element={<JamRoomDetails />} />
+          <Route path="/booking/:id" element={<Booking />} />
+          <Route path="/final-review" element={<FinalReview />} />
+          <Route path="/confirmation/:id" element={<BookingConfirmation />} />
+          <Route path="/bookings" element={<PastBookings />} />
 
-        {/* Subscription Routes */}
-        <Route path="/subscriptions" element={<SubscriptionsPage />} />
-      </Routes>
+          {/* Subscription Routes */}
+          <Route path="/subscriptions" element={<SubscriptionsPage />} />
+        </Routes>
     </>
+  );
+}
+
+function App() {
+  return (
+    <SubscriptionProvider>
+      <AppContent />
+    </SubscriptionProvider>
   );
 }
 
