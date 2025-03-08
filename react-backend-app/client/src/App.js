@@ -80,7 +80,7 @@ function AppContent() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
-  
+
   const {
     subscription,
     showCancelDialog,
@@ -101,7 +101,6 @@ function AppContent() {
     }),
     []
   );
-
 
   const menuItems = [
     { text: "Past Bookings", icon: <History />, path: "/bookings" },
@@ -147,6 +146,7 @@ function AppContent() {
               body: JSON.stringify({
                 name: user.name || "NA",
                 email: user.email,
+                ...(user.phone_number && { mobileNumber: user.phone_number }),
               }),
             }
           );
@@ -356,115 +356,111 @@ function AppContent() {
 
   return (
     <>
-        <AppBar
-          position="static"
-          color="default"
-          elevation={1}
-          className="bg-white"
-        >
-          <Toolbar className="justify-between">
-            <div className="flex items-center gap-4">
-              {isAuthenticated && (
-                <IconButton
-                  edge="start"
-                  color="inherit"
-                  aria-label="menu"
-                  onClick={toggleDrawer(true)}
-                >
-                  <MenuIcon className="h-6 w-6" />
-                </IconButton>
-              )}
-              <img
-                src="/gigsaw_ss.png"
-                alt="JamRoom Logo"
-                className="h-8 object-contain cursor-pointer rounded-lg transition-transform hover:scale-105"
-                onClick={() => (window.location.href = "/")}
-              />
-            </div>
-
-            {isAuthenticated && user ? (
-              <div>
-                <IconButton
-                  onClick={handleMenuClick}
-                  size="small"
-                  aria-controls={open ? "account-menu" : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={open ? "true" : undefined}
-                >
-                  <Avatar
-                    src={user.picture}
-                    alt={user.name}
-                    className="w-8 h-8"
-                  >
-                    {user.name?.charAt(0) || "U"}
-                  </Avatar>
-                </IconButton>
-                <Menu
-                  id="account-menu"
-                  anchorEl={anchorEl}
-                  open={open}
-                  onClose={handleMenuClose}
-                  transformOrigin={{ horizontal: "right", vertical: "top" }}
-                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-                >
-                  <MenuItem disabled className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <div className="flex flex-col">
-                      <Typography variant="body2" className="font-medium">
-                        {user.name}
-                      </Typography>
-                      <Typography variant="caption" className="text-gray-500">
-                        {user.email}
-                      </Typography>
-                    </div>
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() => {
-                      handleMenuClose();
-                      logout({ returnTo: window.location.origin });
-                    }}
-                    className="text-red-600"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </MenuItem>
-                </Menu>
-              </div>
-            ) : (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleLogin}
-                size="small"
+      <AppBar
+        position="static"
+        color="default"
+        elevation={1}
+        className="bg-white"
+      >
+        <Toolbar className="justify-between">
+          <div className="flex items-center gap-4">
+            {isAuthenticated && (
+              <IconButton
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                onClick={toggleDrawer(true)}
               >
-                Login
-              </Button>
+                <MenuIcon className="h-6 w-6" />
+              </IconButton>
             )}
-          </Toolbar>
-        </AppBar>
-        {isAuthenticated && (
-          <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-            {drawerContent()}
-          </Drawer>
-        )}
+            <img
+              src="/gigsaw_ss.png"
+              alt="JamRoom Logo"
+              className="h-8 object-contain cursor-pointer rounded-lg transition-transform hover:scale-105"
+              onClick={() => (window.location.href = "/")}
+            />
+          </div>
 
-        <CancelSubscriptionDialog
-          open={showCancelDialog}
-          onClose={() => setShowCancelDialog(false)}
-          onConfirm={cancelSubscription}
-          subscriptionDetails={subscription}
-        />
-        <Routes>
-          <Route path="/" element={<JamRoomFinder />} />
-          <Route path="/jam-room/:id" element={<JamRoomDetails />} />
-          <Route path="/booking/:id" element={<Booking />} />
-          <Route path="/final-review" element={<FinalReview />} />
-          <Route path="/confirmation/:id" element={<BookingConfirmation />} />
-          <Route path="/bookings" element={<PastBookings />} />
+          {isAuthenticated && user ? (
+            <div>
+              <IconButton
+                onClick={handleMenuClick}
+                size="small"
+                aria-controls={open ? "account-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? "true" : undefined}
+              >
+                <Avatar src={user.picture} alt={user.name} className="w-8 h-8">
+                  {user.name?.charAt(0) || "U"}
+                </Avatar>
+              </IconButton>
+              <Menu
+                id="account-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleMenuClose}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              >
+                <MenuItem disabled className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  <div className="flex flex-col">
+                    <Typography variant="body2" className="font-medium">
+                      {user.name}
+                    </Typography>
+                    <Typography variant="caption" className="text-gray-500">
+                      {user.email}
+                    </Typography>
+                  </div>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    logout({ returnTo: window.location.origin });
+                  }}
+                  className="text-red-600"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </MenuItem>
+              </Menu>
+            </div>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleLogin}
+              size="small"
+            >
+              Login
+            </Button>
+          )}
+        </Toolbar>
+      </AppBar>
+      {isAuthenticated && (
+        <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
+          {drawerContent()}
+        </Drawer>
+      )}
 
-          {/* Subscription Routes */}
-          <Route path="/subscriptions" element={<SubscriptionsPage />} />
-        </Routes>
+      <CancelSubscriptionDialog
+        open={showCancelDialog}
+        onClose={() => setShowCancelDialog(false)}
+        onConfirm={cancelSubscription}
+        subscriptionDetails={subscription}
+      />
+      <Routes>
+        <Route path="/" element={<JamRoomFinder />} />
+        <Route path="/jam-room/:id" element={<JamRoomDetails />} />
+        <Route path="/booking/:id" element={<Booking />} />
+        <Route path="/final-review" element={<FinalReview />} />
+        <Route path="/confirmation/:id" element={<BookingConfirmation />} />
+        <Route path="/bookings" element={<PastBookings />} />
+
+        {/* Subscription Routes */}
+        <Route path="/subscriptions" element={<SubscriptionsPage />} />
+      </Routes>
     </>
   );
 }
