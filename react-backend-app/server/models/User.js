@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
     },
     savedNumbers: {
       type: [String],
+      required: false,
       default: [], // This sets an empty array as default value
       validate: {
         validator: function (numbers) {
