@@ -138,7 +138,7 @@ function AppContent() {
       if (isAuthenticated && user) {
         try {
           const response = await fetch(
-            "https://gigsaw.onrender.com/api/users/register",
+            "http://localhost:5000/api/users/register",
             {
               method: "POST",
               headers: {

@@ -12,10 +12,12 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const bnkVerification = require("./routes/bnkVerification");
 const payoutRoutes = require("./routes/payoutRoutes");
 const authRoutes = require("./routes/authRoutes");
+const createReservationRouter = require("./routes/reservationRoutes");
 const Booking = require("./models/BookingSchema");
 const User = require("./models/User");
 const SessionMonitor = require("./services/sessionMonitor");
 const PayoutMonitor = require("./services/PayoutMonitor");
+const rabbitmqService = require("./services/rabbitmqService");
 const app = express();
 require('dotenv').config();
 const PORT = process.env.PORT || 5000;
@@ -42,6 +44,7 @@ app.use("/api/bank-verification", bnkVerification);
 app.use("/api/payouts", payoutRoutes);
 app.use('/api/spotify', spotifyRoutes);
 app.use("/api/auth", authRoutes);
+app.use('/api/reservations', createReservationRouter(io));
 app.use("/proxy", async (req, res) => {
   console.log("start");
   const { lat, lon, apiKey } = req.query;
@@ -64,6 +67,17 @@ const callDatabase = async () => {
   await connectDB(); // Connect to MongoDB
 };
 
+// Initialize RabbitMQ before starting the server
+async function startServer() {
+  try {
+    await rabbitmqService.connect();
+
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
 // Call the database when the server starts
 callDatabase();
 
@@ -84,6 +98,9 @@ io.on("connection", (socket) => {
     console.log("user disconnected");
   });
 });
+
+// Start the server
+startServer();
 
 // After your socket.io setup
 const sessionMonitor = new SessionMonitor(io);

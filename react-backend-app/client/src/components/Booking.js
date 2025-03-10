@@ -40,7 +40,7 @@ import moment from "moment-timezone";
 import io from "socket.io-client";
 import { useAuth0 } from "@auth0/auth0-react";
 
-const socket = io("https://gigsaw.onrender.com");
+const socket = io("http://localhost:5000");
 
 function Booking() {
   const { id } = useParams();
@@ -57,13 +57,14 @@ function Booking() {
   const [isSaving, setIsSaving] = useState(false);
   const [addons, setAddons] = useState([]);
   const [selectedAddons, setSelectedAddons] = useState([]);
+  const [reservedSlots, setReservedSlots] = useState(new Set());
 
   useEffect(() => {
     if (selectedRoom) {
       socket.emit("getBookings", selectedRoom.id);
 
       // Fetch addons for this jamroom
-      fetch(`https://gigsaw.onrender.com/api/jamrooms/${selectedRoom.id}/addons`)
+      fetch(`http://localhost:5000/api/jamrooms/${selectedRoom.id}/addons`)
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
@@ -84,7 +85,7 @@ function Booking() {
 
   useEffect(() => {
     if (user) {
-      fetch("https://gigsaw.onrender.com/api/users", {
+      fetch("http://localhost:5000/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -116,6 +117,50 @@ function Booking() {
       socket.off("sessionStatusUpdate");
     };
   }, []);
+
+  // Add after existing useEffect hooks
+  useEffect(() => {
+    if (selectedDate && selectedRoom) {
+      // Initial check for reservations
+      checkReservations();
+
+      // Listen for real-time reservation updates
+      socket.on("reservationUpdate", (data) => {
+        if (
+          data.jamRoomId === selectedRoom.id &&
+          data.date === moment(selectedDate).format("YYYY-MM-DD")
+        ) {
+          setReservedSlots(
+            new Set(data.reservations.slots.map((r) => r.slotId))
+          );
+        }
+      });
+
+      return () => {
+        socket.off("reservationUpdate");
+      };
+    }
+  }, [selectedDate, selectedRoom]);
+
+  // Add this function to handle reservation checks
+  const checkReservations = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/reservations/check/${
+          selectedRoom.id
+        }/${moment(selectedDate).format("YYYY-MM-DD")}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Reservation check failed");
+      }
+
+      const data = await response.json();
+      setReservedSlots(new Set(data.reservations.slots.map((r) => r.slotId)));
+    } catch (error) {
+      console.error("Error checking reservations:", error);
+    }
+  };
 
   const handleAddonToggle = (addonId) => {
     setSelectedAddons((prev) => {
@@ -168,14 +213,13 @@ function Booking() {
   const isSlotBooked = (slotId) => {
     if (!selectedDate) return false;
 
-    // Format the selected date in YYYY-MM-DD format without timezone conversion
     const selectedDateStr = moment(selectedDate).format("YYYY-MM-DD");
 
-    return bookings.some((booking) => {
-      // Skip terminated bookings
-      if (booking.status === "TERMINATED") return false;
+    // Check reservations first
+    if (reservedSlots.has(slotId)) return true;
 
-      // Format the booking date in YYYY-MM-DD format for consistent comparison
+    return bookings.some((booking) => {
+      if (booking.status === "TERMINATED") return false;
       const bookingDateStr = moment(booking.date).format("YYYY-MM-DD");
       return (
         bookingDateStr === selectedDateStr &&
@@ -218,7 +262,7 @@ function Booking() {
     try {
       setIsSaving(true);
       const response = await fetch(
-        "https://gigsaw.onrender.com/api/users/save-number",
+        "http://localhost:5000/api/users/save-number",
         {
           method: "POST",
           headers: {
@@ -245,7 +289,7 @@ function Booking() {
   const handleDeleteNumber = async (number) => {
     try {
       const response = await fetch(
-        "https://gigsaw.onrender.com/api/users/delete-number",
+        "http://localhost:5000/api/users/delete-number",
         {
           method: "POST",
           headers: {
@@ -279,7 +323,7 @@ function Booking() {
     setPhoneNumber(e.target.value);
   };
 
-  const handleProceedToReview = () => {
+  const handleProceedToReview = async () => {
     if (selectedSlots.length === 0 || !selectedDate || !phoneNumber) {
       alert(
         "Please select a date, at least one time slot, and enter a valid phone number"
@@ -289,37 +333,55 @@ function Booking() {
 
     setIsLoading(true);
 
-    const slotsDetails = selectedSlots.map((slotId) => {
-      const slot = selectedRoom.slots.find((s) => s.slotId === slotId);
-      return {
-        slotId: slot.slotId,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-      };
-    });
+    try {
+      const slotsDetails = selectedSlots.map((slotId) => {
+        const slot = selectedRoom.slots.find((s) => s.slotId === slotId);
+        return {
+          slotId: slot.slotId,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        };
+      });
 
-    const totalAmount = calculateTotalCost();
-    const addonsCost = calculateAddonsCost();
+      const selectedAddonsDetails = selectedAddons.map((addonId) => {
+        const addon = addons.find((a) => a._id === addonId);
+        return {
+          addonId: addon._id,
+          instrumentType: Array.isArray(addon.instrumentType)
+            ? addon.instrumentType
+            : [addon.instrumentType],
+          pricePerHour: addon.pricePerHour,
+          quantity: addon.quantity,
+          hours: selectedSlots.length,
+        };
+      });
 
-    const selectedAddonsDetails = selectedAddons.map((addonId) => {
-      const addon = addons.find((a) => a._id === addonId);
-      return {
-        addonId: addon._id,
-        instrumentType: Array.isArray(addon.instrumentType)
-          ? addon.instrumentType
-          : [addon.instrumentType], // Handle both array and string,
-        pricePerHour: addon.pricePerHour,
-        hours: selectedSlots.length,
-      };
-    });
+      // Create temporary reservation
+      const reservation = await fetch(
+        "http://localhost:5000/api/reservations/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jamRoomId: selectedRoom.id,
+            date: moment(selectedDate).format("YYYY-MM-DD"),
+            slots: slotsDetails,
+            selectedAddons: selectedAddonsDetails,
+            userId: user.sub,
+          }),
+        }
+      ).then((res) => res.json());
 
-    setTimeout(() => {
-      setIsLoading(false);
+      if (!reservation.success) {
+        alert(reservation.message || "Failed to reserve slots and addons");
+        return;
+      }
+
       navigate("/final-review", {
         state: {
           jamRoomName: selectedRoom.name,
           selectedSlots: slotsDetails,
-          totalAmount,
+          totalAmount: calculateTotalCost(),
           phoneNumber: selectedPhoneNumber,
           selectedRoomId: selectedRoom.id,
           selectedDate: moment(selectedDate)
@@ -327,9 +389,15 @@ function Booking() {
             .format("YYYY-MM-DD"),
           selectedAddons: selectedAddonsDetails,
           addonsCost: calculateAddonsCost(),
+          reservationExpiresAt: reservation.expiresAt,
         },
       });
-    }, 500);
+    } catch (error) {
+      console.error("Error creating reservation:", error);
+      alert("Failed to create reservation");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

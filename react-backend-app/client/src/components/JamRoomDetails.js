@@ -40,7 +40,7 @@ function JamRoomDetails() {
     const fetchArtistAlbums = async (artistId) => {
       try {
         const response = await fetch(
-          `https://gigsaw.onrender.com/api/spotify/artist-albums/${artistId}`
+          `http://localhost:5000/api/spotify/artist-albums/${artistId}`
         );
         const data = await response.json();
         if (data.success) {
