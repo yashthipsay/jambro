@@ -40,7 +40,7 @@ import moment from "moment-timezone";
 import io from "socket.io-client";
 import { useAuth0 } from "@auth0/auth0-react";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://gigsaw.onrender.com");
 
 function Booking() {
   const { id } = useParams();
@@ -63,7 +63,7 @@ function Booking() {
       socket.emit("getBookings", selectedRoom.id);
 
       // Fetch addons for this jamroom
-      fetch(`http://localhost:5000/api/jamrooms/${selectedRoom.id}/addons`)
+      fetch(`https://gigsaw.onrender.com/api/jamrooms/${selectedRoom.id}/addons`)
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
@@ -84,7 +84,7 @@ function Booking() {
 
   useEffect(() => {
     if (user) {
-      fetch("http://localhost:5000/api/users", {
+      fetch("https://gigsaw.onrender.com/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -218,7 +218,7 @@ function Booking() {
     try {
       setIsSaving(true);
       const response = await fetch(
-        "http://localhost:5000/api/users/save-number",
+        "https://gigsaw.onrender.com/api/users/save-number",
         {
           method: "POST",
           headers: {
@@ -245,7 +245,7 @@ function Booking() {
   const handleDeleteNumber = async (number) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/users/delete-number",
+        "https://gigsaw.onrender.com/api/users/delete-number",
         {
           method: "POST",
           headers: {

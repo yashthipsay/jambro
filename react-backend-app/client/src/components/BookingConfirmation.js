@@ -17,7 +17,7 @@ const BookingConfirmation = () => {
     const fetchInvoiceData = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch(`http://localhost:5000/api/payments/invoice-data/${id}`)
+        const response = await fetch(`https://gigsaw.onrender.com/api/payments/invoice-data/${id}`)
         const data = await response.json()
         
         if (data.success) {

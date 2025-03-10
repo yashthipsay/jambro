@@ -29,7 +29,7 @@ const FinalReview = () => {
   const checkoutHandler = async (amount) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/payments/checkout",
+        "https://gigsaw.onrender.com/api/payments/checkout",
         {
           method: "POST",
           headers: {
@@ -62,7 +62,7 @@ const FinalReview = () => {
         handler: async (response) => {
           console.log(response);
           const verificationResponse = await fetch(
-            "http://localhost:5000/api/payments/verify",
+            "https://gigsaw.onrender.com/api/payments/verify",
             {
               method: "POST",
               headers: {
@@ -88,7 +88,7 @@ const FinalReview = () => {
           if (verificationData.success) {
             // Fetch user by email to get user ID
             const userResponse = await fetch(
-              "http://localhost:5000/api/users",
+              "https://gigsaw.onrender.com/api/users",
               {
                 method: "POST",
                 headers: {
@@ -103,7 +103,7 @@ const FinalReview = () => {
               const userId = userData.data._id;
               console.log("selected date", selectedDate);
               // Store the booking
-              await fetch("http://localhost:5000/api/bookings", {
+              await fetch("https://gigsaw.onrender.com/api/bookings", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
