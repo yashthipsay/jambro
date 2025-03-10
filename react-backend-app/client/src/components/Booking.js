@@ -63,7 +63,9 @@ function Booking() {
       socket.emit("getBookings", selectedRoom.id);
 
       // Fetch addons for this jamroom
-      fetch(`https://gigsaw.onrender.com/api/jamrooms/${selectedRoom.id}/addons`)
+      fetch(
+        `https://gigsaw.onrender.com/api/jamrooms/${selectedRoom.id}/addons`
+      )
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
