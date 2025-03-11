@@ -121,10 +121,8 @@ function Booking() {
   // Add after existing useEffect hooks
   useEffect(() => {
     if (selectedDate && selectedRoom) {
-      // Initial check for reservations
       checkReservations();
 
-      // Listen for real-time reservation updates
       socket.on("reservationUpdate", (data) => {
         if (
           data.jamRoomId === selectedRoom.id &&
@@ -136,6 +134,7 @@ function Booking() {
         }
       });
 
+      // Clean up socket listener
       return () => {
         socket.off("reservationUpdate");
       };
@@ -215,10 +214,8 @@ function Booking() {
 
     const selectedDateStr = moment(selectedDate).format("YYYY-MM-DD");
 
-    // Check reservations first
-    if (reservedSlots.has(slotId)) return true;
-
-    return bookings.some((booking) => {
+    // First check for permanent bookings
+    const isPermanentlyBooked = bookings.some((booking) => {
       if (booking.status === "TERMINATED") return false;
       const bookingDateStr = moment(booking.date).format("YYYY-MM-DD");
       return (
@@ -226,6 +223,13 @@ function Booking() {
         booking.slots.some((slot) => slot.slotId === slotId)
       );
     });
+
+    if (isPermanentlyBooked) return "PERMANENT";
+
+    // Then check for temporary reservations
+    if (reservedSlots.has(String(slotId))) return "TEMPORARY";
+
+    return false;
   };
 
   const hasSlotTimePassedToday = (slot) => {
@@ -456,26 +460,30 @@ function Booking() {
             ) : (
               <FormGroup className="grid grid-cols-2 gap-2">
                 {selectedRoom.slots.map((slot) => {
-                  const isBooked = isSlotBooked(slot.slotId);
+                  const bookingStatus = isSlotBooked(slot.slotId);
                   const isPassed = hasSlotTimePassedToday(slot);
-                  const isDisabled = isBooked || isPassed;
+                  const isDisabled = bookingStatus || isPassed;
 
                   return (
                     <div
                       key={slot.slotId}
                       className={`
-                        border rounded-lg p-3 relative
-                        ${
-                          isDisabled
-                            ? "bg-gray-100 border-gray-200"
-                            : "border-gray-300"
-                        }
-                        ${
-                          selectedSlots.includes(slot.slotId)
-                            ? "border-indigo-500 bg-indigo-50"
-                            : ""
-                        }
-                      `}
+        border rounded-lg p-3 relative
+        ${
+          isPassed
+            ? "bg-gray-100 border-gray-200"
+            : bookingStatus === "TEMPORARY"
+            ? "bg-yellow-50 border-yellow-200"
+            : bookingStatus === "PERMANENT"
+            ? "bg-gray-100 border-gray-200"
+            : "border-gray-300"
+        }
+        ${
+          selectedSlots.includes(slot.slotId)
+            ? "border-indigo-500 bg-indigo-50"
+            : ""
+        }
+      `}
                     >
                       <FormControlLabel
                         control={
@@ -503,13 +511,19 @@ function Booking() {
                               ₹{selectedRoom.feesPerSlot}
                             </Typography>
 
-                            {isBooked && (
+                            {bookingStatus === "PERMANENT" && (
                               <div className="mt-1 text-xs text-red-500">
                                 Already booked
                               </div>
                             )}
 
-                            {isPassed && !isBooked && (
+                            {bookingStatus === "TEMPORARY" && (
+                              <div className="mt-1 text-xs text-yellow-600">
+                                Temporarily reserved
+                              </div>
+                            )}
+
+                            {isPassed && !bookingStatus && (
                               <div className="mt-1 text-xs text-orange-500">
                                 Time passed
                               </div>

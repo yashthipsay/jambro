@@ -76,7 +76,7 @@ class RabbitMQService {
         "reservation_expiry",
         Buffer.from(JSON.stringify(expiryMsg))
       );
-    }, 10 * 60 * 1000); // 10 minutes
+    }, 5 * 60 * 1000); // 10 minutes
 
     return { success: true, expiresAt: reservation.expiresAt };
   }
@@ -101,10 +101,11 @@ class RabbitMQService {
     const key = `${jamRoomId}-${date}`;
     const roomReservations = this.tempReservations.get(key);
     if (!roomReservations) return false;
-
-    const reservation = roomReservations.get(slotId);
+  
+    const slotKey = `slot-${slotId}`; // Fix: Use the correct key format
+    const reservation = roomReservations.get(slotKey);
     if (!reservation) return false;
-
+  
     return reservation.expiresAt > Date.now();
   }
 
@@ -112,7 +113,12 @@ class RabbitMQService {
     const key = `${jamRoomId}-${date}`;
     const roomReservations = this.tempReservations.get(key);
     if (roomReservations) {
-      slots.forEach((slot) => roomReservations.delete(slot.slotId));
+      if (roomReservations) {
+        slots.forEach((slot) => {
+          // Use the same key format as in createReservation
+          roomReservations.delete(`slot-${slot.slotId}`);
+        });
+      }
     }
   }
 
