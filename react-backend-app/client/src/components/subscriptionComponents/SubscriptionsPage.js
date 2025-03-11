@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Typography, useMediaQuery } from "@mui/material";
 import TierCard from "./TierCard";
 import SubscriptionFAQ from "./SubscriptionFAQ";
 import { useSubscriptionLogic } from "./hooks/useSubscriptionLogic";
+import SubscriptionTypeModal from "./SubscriptionTypeModal";
 
 // Define color constants used throughout all subscription components
 export const subscriptionColors = {
@@ -16,6 +17,8 @@ export const subscriptionColors = {
 };
 
 const SubscriptionsPage = () => {
+  const [typeModalOpen, setTypeModalOpen] = useState(false);
+  const [selectedTier, setSelectedTier] = useState(null);
   const {
     selections,
     handleSelectionChange,
@@ -23,6 +26,16 @@ const SubscriptionsPage = () => {
     handleSubscribe,
     activePlan,
   } = useSubscriptionLogic();
+
+  const handleTierClick = (tier) => {
+    setSelectedTier(tier);
+    setTypeModalOpen(true);
+  };
+
+  const handleTypeSelect = (type, tier) => {
+    handleSubscribe(tier, type);
+    setTypeModalOpen(false);
+  };
 
   const isMobile = useMediaQuery("(max-width:600px)");
   const isTablet = useMediaQuery("(max-width:960px)");
@@ -115,7 +128,7 @@ const SubscriptionsPage = () => {
               handleSelectionChange("basic", field, value)
             }
             calculatePrice={calculatePrice}
-            onSubscribe={handleSubscribe}
+            onSubscribe={() => handleTierClick("basic")}
             activePlan={activePlan}
           />
 
@@ -129,7 +142,7 @@ const SubscriptionsPage = () => {
               handleSelectionChange("pro", field, value)
             }
             calculatePrice={calculatePrice}
-            onSubscribe={handleSubscribe}
+            onSubscribe={() => handleTierClick("pro")}
             showAccessOptions={true}
             activePlan={activePlan}
           />
@@ -144,13 +157,20 @@ const SubscriptionsPage = () => {
               handleSelectionChange("premium", field, value)
             }
             calculatePrice={calculatePrice}
-            onSubscribe={handleSubscribe}
+            onSubscribe={() => handleTierClick("premium")}
             showAccessOptions={true}
             activePlan={activePlan}
           />
         </Box>
 
         <SubscriptionFAQ />
+
+        <SubscriptionTypeModal
+          open={typeModalOpen}
+          onClose={() => setTypeModalOpen(false)}
+          onSelect={handleTypeSelect}
+          tier={selectedTier}
+        />
       </Box>
     </Box>
   );

@@ -54,7 +54,7 @@ export const useSubscriptionLogic = () => {
   };
 
   // Pricing logic
-  const calculatePrice = (tier, hours, access, frequency) => {
+  const calculatePrice = (tier, hours, access, frequency, type = 'INDIVIDUAL') => {
     let hourlyRate = 0;
 
     // Determine hourly rate based on tier and access
@@ -96,14 +96,15 @@ export const useSubscriptionLogic = () => {
   };
 
   // Handle subscription button click
-  const handleSubscribe = (tier, selections) => {
+  const handleSubscribe = (tier, type) => {
     if (!isAuthenticated) {
       loginWithRedirect();
       return;
     }
-
-    const { hours, access, frequency } = selections;
-
+  
+    const tierSelections = selections[tier];
+    const { hours, access, frequency } = tierSelections;
+  
     // Determine if this is a new subscription, upgrade, or downgrade
     let actionType = "subscribe";
     if (subscription?.tier) {
@@ -113,16 +114,19 @@ export const useSubscriptionLogic = () => {
           ? "upgrade"
           : "downgrade";
     }
-
-    // Create new subscription object with pricing details
+  
+    // Create new subscription object with pricing details and type
     const pricing = calculatePrice(
       tier,
       hours,
       access || "jamrooms",
-      frequency
+      frequency,
+      type
     );
+  
     const newSubscription = {
       tier,
+      type, // Add subscription type
       hours,
       access: access || "jamrooms",
       frequency,
@@ -131,16 +135,21 @@ export const useSubscriptionLogic = () => {
       ).toLocaleDateString(),
       pricing,
       actionType,
+      memberEmails: [], // Initialize empty array for group members
     };
-
+  
     // Log subscription change
     console.log(`${actionType.toUpperCase()} subscription:`, newSubscription);
-
+  
     // Update subscription in context
     updateSubscription(newSubscription);
-
-    // Show success message (you can add a toast notification here)
-    // For example: toast.success(`Successfully ${actionType}d to ${tier} plan!`);
+  
+    // If it's a group subscription, navigate to member management
+    if (type === 'GROUP') {
+      navigate('/group-setup', { 
+        state: { subscription: newSubscription }
+      });
+    }
   };
 
   return {
