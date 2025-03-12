@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  TextField, 
-  Button, 
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Button,
   IconButton,
   Tooltip,
   List,
@@ -23,6 +23,16 @@ const GroupSetup = () => {
   const { subscription, updateSubscription } = useSubscription();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+
+  // // Prevent direct access to group setup if subscription exists with members
+  // useEffect(() => {
+  //   if (
+  //     subscription?.memberEmails?.length > 0 &&
+  //     subscription.status !== "CANCELLED"
+  //   ) {
+  //     navigate("/subscriptions");
+  //   }
+  // }, [subscription, navigate]);
 
   // Member emails state (from subscription or empty array)
   const [memberEmails, setMemberEmails] = useState(
@@ -51,22 +61,38 @@ const GroupSetup = () => {
       return;
     }
 
-    setMemberEmails([...memberEmails, email]);
-    
-    // Update subscription context
+    const newMemberEmails = [...memberEmails, email];
+    setMemberEmails(newMemberEmails);
+
+    // Update subscription context with new member
     updateSubscription({
       ...subscription,
-      memberEmails: [...memberEmails, email],
+      type: "GROUP", // Ensure type is set
+      memberEmails: newMemberEmails,
+      status: subscription?.status || "ACTIVE", // Ensure status is set
     });
-    
+
     setEmail("");
     setError("");
   };
 
+  const handleConfirmGroup = () => {
+    // Update subscription one final time before navigating
+    updateSubscription({
+      ...subscription,
+      type: "GROUP",
+      memberEmails: memberEmails,
+      status: "ACTIVE",
+    });
+    navigate("/subscriptions");
+  };
+
   const handleRemoveMember = (emailToRemove) => {
-    const updatedEmails = memberEmails.filter(email => email !== emailToRemove);
+    const updatedEmails = memberEmails.filter(
+      (email) => email !== emailToRemove
+    );
     setMemberEmails(updatedEmails);
-    
+
     // Update subscription context
     updateSubscription({
       ...subscription,
@@ -86,10 +112,20 @@ const GroupSetup = () => {
       </Box>
 
       {subscription ? (
-        <Box sx={{ mb: 4, p: 3, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
+        <Box
+          sx={{
+            mb: 4,
+            p: 3,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 1,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
             <Typography variant="h6">
-              {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)} Group Plan
+              {subscription.tier.charAt(0).toUpperCase() +
+                subscription.tier.slice(1)}{" "}
+              Group Plan
             </Typography>
             <Tooltip title={`${5 - memberEmails.length} spots remaining`}>
               <IconButton size="small">
@@ -121,8 +157,8 @@ const GroupSetup = () => {
             variant="outlined"
             size="medium"
           />
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleAddMember}
             disabled={memberEmails.length >= 5}
             sx={{ minWidth: "120px" }}
@@ -144,8 +180,8 @@ const GroupSetup = () => {
             <ListItem key={memberEmail} divider>
               <ListItemText primary={memberEmail} />
               <ListItemSecondaryAction>
-                <IconButton 
-                  edge="end" 
+                <IconButton
+                  edge="end"
                   onClick={() => handleRemoveMember(memberEmail)}
                   size="small"
                 >
@@ -168,11 +204,7 @@ const GroupSetup = () => {
         <Button
           variant="contained"
           fullWidth
-          onClick={() => {
-            // Here you would normally save the group details to backend
-            // For now just navigate back to subscriptions
-            navigate("/subscriptions");
-          }}
+          onClick={handleConfirmGroup}
         >
           Confirm Group
         </Button>

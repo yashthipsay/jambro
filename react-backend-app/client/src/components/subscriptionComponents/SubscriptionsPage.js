@@ -25,11 +25,18 @@ const SubscriptionsPage = () => {
     calculatePrice,
     handleSubscribe,
     activePlan,
+    subscription,
   } = useSubscriptionLogic();
 
   const handleTierClick = (tier) => {
-    setSelectedTier(tier);
-    setTypeModalOpen(true);
+    // Only show type modal for new subscriptions
+    if (!subscription || subscription.status === "CANCELLED") {
+      setSelectedTier(tier);
+      setTypeModalOpen(true);
+    } else {
+      // For upgrades/downgrades, keep existing type
+      handleSubscribe(tier, subscription.type);
+    }
   };
 
   const handleTypeSelect = (type, tier) => {

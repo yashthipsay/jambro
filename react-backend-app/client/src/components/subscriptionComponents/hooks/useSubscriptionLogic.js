@@ -54,7 +54,13 @@ export const useSubscriptionLogic = () => {
   };
 
   // Pricing logic
-  const calculatePrice = (tier, hours, access, frequency, type = 'INDIVIDUAL') => {
+  const calculatePrice = (
+    tier,
+    hours,
+    access,
+    frequency,
+    type = "INDIVIDUAL"
+  ) => {
     let hourlyRate = 0;
 
     // Determine hourly rate based on tier and access
@@ -101,10 +107,10 @@ export const useSubscriptionLogic = () => {
       loginWithRedirect();
       return;
     }
-  
+
     const tierSelections = selections[tier];
     const { hours, access, frequency } = tierSelections;
-  
+
     // Determine if this is a new subscription, upgrade, or downgrade
     let actionType = "subscribe";
     if (subscription?.tier) {
@@ -114,41 +120,52 @@ export const useSubscriptionLogic = () => {
           ? "upgrade"
           : "downgrade";
     }
-  
+
     // Create new subscription object with pricing details and type
-    const pricing = calculatePrice(
-      tier,
-      hours,
-      access || "jamrooms",
-      frequency,
-      type
-    );
-  
     const newSubscription = {
       tier,
-      type, // Add subscription type
+      // For upgrades/downgrades, preserve existing type and members
+      type: subscription?.status !== "CANCELLED" ? subscription?.type : type,
       hours,
       access: access || "jamrooms",
       frequency,
       nextBilling: new Date(
         Date.now() + 30 * 24 * 60 * 60 * 1000
       ).toLocaleDateString(),
-      pricing,
+      pricing: calculatePrice(
+        tier,
+        hours,
+        access || "jamrooms",
+        frequency,
+        type
+      ),
       actionType,
-      memberEmails: [], // Initialize empty array for group members
+      // Preserve existing members for upgrades/downgrades
+      memberEmails:
+        subscription?.status !== "CANCELLED"
+          ? subscription?.memberEmails || []
+          : [],
     };
-  
+
     // Log subscription change
     console.log(`${actionType.toUpperCase()} subscription:`, newSubscription);
-  
+
     // Update subscription in context
     updateSubscription(newSubscription);
-  
+
     // If it's a group subscription, navigate to member management
-    if (type === 'GROUP') {
-      navigate('/group-setup', { 
-        state: { subscription: newSubscription }
+    if (
+      type === "GROUP" &&
+      (!subscription ||
+        subscription.status === "CANCELLED" ||
+        !subscription.memberEmails?.length)
+    ) {
+      navigate("/group-setup", {
+        state: { subscription: newSubscription },
       });
+    } else {
+      // Otherwise, complete the subscription update without group setup
+      navigate("/subscriptions");
     }
   };
 
@@ -158,5 +175,6 @@ export const useSubscriptionLogic = () => {
     calculatePrice,
     handleSubscribe,
     activePlan: subscription?.tier || null,
+    subscription,
   };
 };
