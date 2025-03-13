@@ -13,6 +13,7 @@ const bnkVerification = require("./routes/bnkVerification");
 const payoutRoutes = require("./routes/payoutRoutes");
 const subscriptionRoutes = require('./routes/subscriptions/subscriptionRoutes');
 const authRoutes = require("./routes/authRoutes");
+const skuRoutes = require("./routes/subscriptions/skuAdminRoutes");
 const createReservationRouter = require("./routes/reservationRoutes");
 const Booking = require("./models/BookingSchema");
 const User = require("./models/User");
@@ -46,6 +47,7 @@ app.use("/api/payouts", payoutRoutes);
 app.use('/api/spotify', spotifyRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/skus', skuRoutes);
 app.use('/api/reservations', createReservationRouter(io));
 app.use("/proxy", async (req, res) => {
   console.log("start");

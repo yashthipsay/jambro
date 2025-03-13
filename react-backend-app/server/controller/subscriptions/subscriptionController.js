@@ -3,6 +3,7 @@ const {
   SKU,
   SKUPayment,
 } = require("../../models/subscriptions/SubscriptionSchema");
+const User = require("../../models/User");
 const { v4: uuidv4 } = require("uuid");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
@@ -28,6 +29,15 @@ const purchaseSubscription = async (req, res) => {
       memberEmails = [],
     } = req.body;
 
+    // First check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     // Check if user already has an active subscription
     const existingSubscription = await Subscription.findOne({
       primaryUserId: userId,
@@ -52,7 +62,6 @@ const purchaseSubscription = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Invalid subscription plan",
-
       });
     }
 
@@ -87,14 +96,12 @@ const purchaseSubscription = async (req, res) => {
       subscriptionId: uuidv4(),
       type,
       primaryUserId: userId,
-      memberEmails: type === "GROUP" ? memberEmails : [],
       skuId: sku._id,
-      status: "PENDING", // Will be updated to ACTIVE after payment
+      status: "PENDING",
       startDate: new Date(),
       endDate: calculateEndDate("monthly"),
       remainingHours: hours,
-      jamRoomAccess: access === "jamrooms" || access === "both",
-      studioAccess: access === "studios" || access === "both",
+      accessType: access.toUpperCase(),
       razorpaySubscriptionId: razorpaySubscription.id,
     });
 
