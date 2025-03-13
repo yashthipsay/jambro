@@ -249,8 +249,7 @@ const cancelSubscription = async (req, res) => {
   }
 };
 
-// Upgrade subscription
-const upgradeSubscription = async (req, res) => {
+const updateSubscription = async (req, res) => {
   try {
     const {
       userId,
@@ -284,12 +283,20 @@ const upgradeSubscription = async (req, res) => {
     if (!newSku) {
       return res.status(404).json({
         success: false,
-        message: "Invalid upgrade plan",
+        message: "Invalid plan",
       });
     }
 
-    // Calculate upgrade cost
-    const upgradeCost = calculateUpgradeCost(currentSubscription, newSku);
+    // Determine if this is an upgrade or downgrade
+    const tierRanking = { BASIC: 1, PRO: 2, PREMIUM: 3 };
+    const isUpgrade =
+      tierRanking[newTier.toUpperCase()] >
+      tierRanking[currentSubscription.tier.toUpperCase()];
+
+    // Calculate cost adjustment (positive for upgrade cost, negative for refund)
+    const costAdjustment = isUpgrade
+      ? calculateUpgradeCost(currentSubscription, newSku)
+      : -calculateDowngradeRefund(currentSubscription, newSku);
 
     // Update subscription
     const updatedSubscription = {
@@ -306,80 +313,16 @@ const upgradeSubscription = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Subscription upgraded successfully",
-      data: { upgradeCost },
+      message: `Subscription ${
+        isUpgrade ? "upgraded" : "downgraded"
+      } successfully`,
+      data: {
+        costAdjustment,
+        isUpgrade,
+      },
     });
   } catch (error) {
-    console.error("Error upgrading subscription:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// Downgrade subscription
-const downgradeSubscription = async (req, res) => {
-  try {
-    const {
-      userId,
-      currentSubscriptionId,
-      newTier,
-      newHours,
-      newAccess,
-      newFrequency,
-    } = req.body;
-
-    const currentSubscription = await Subscription.findOne({
-      subscriptionId: currentSubscriptionId,
-      primaryUserId: userId,
-      status: "ACTIVE",
-    });
-
-    if (!currentSubscription) {
-      return res.status(404).json({
-        success: false,
-        message: "Active subscription not found",
-      });
-    }
-
-    // Get new SKU details
-    const newSku = await SKU.findOne({
-      name: newTier.toUpperCase(),
-      duration: newFrequency,
-      isActive: true,
-    });
-
-    if (!newSku) {
-      return res.status(404).json({
-        success: false,
-        message: "Invalid downgrade plan",
-      });
-    }
-
-    // Calculate if any refund is due
-    const refundAmount = calculateDowngradeRefund(currentSubscription, newSku);
-
-    // Update subscription (will take effect next billing cycle)
-    const updatedSubscription = {
-      skuId: newSku._id,
-      remainingHours: newHours,
-      jamRoomAccess: newAccess === "jamrooms" || newAccess === "both",
-      studioAccess: newAccess === "studios" || newAccess === "both",
-    };
-
-    await Subscription.findByIdAndUpdate(
-      currentSubscription._id,
-      updatedSubscription
-    );
-
-    res.json({
-      success: true,
-      message: "Subscription downgraded successfully",
-      data: { refundAmount },
-    });
-  } catch (error) {
-    console.error("Error downgrading subscription:", error);
+    console.error("Error updating subscription:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -420,8 +363,7 @@ const calculateDowngradeRefund = (currentSubscription, newSku) => {
 module.exports = {
   purchaseSubscription,
   cancelSubscription,
-  upgradeSubscription,
-  downgradeSubscription,
+  updateSubscription,
   verifySubscriptionPayment,
 };
 

@@ -13,12 +13,12 @@ const bnkVerification = require("./routes/bnkVerification");
 const payoutRoutes = require("./routes/payoutRoutes");
 const subscriptionRoutes = require('./routes/subscriptions/subscriptionRoutes');
 const authRoutes = require("./routes/authRoutes");
-const webhookRoutes = require("./routes/webhooks/webhookRouter");
 const skuRoutes = require("./routes/subscriptions/skuAdminRoutes");
 const createReservationRouter = require("./routes/reservationRoutes");
 const Booking = require("./models/BookingSchema");
 const User = require("./models/User");
 const SessionMonitor = require("./services/sessionMonitor");
+const SubscriptionSyncService = require('./services/subscriptionSyncService');
 const PayoutMonitor = require("./services/PayoutMonitor");
 const rabbitmqService = require("./services/rabbitmqService");
 const app = express();
@@ -49,7 +49,6 @@ app.use('/api/spotify', spotifyRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/skus', skuRoutes);
-app.use('/api/webhooks', webhookRoutes);
 app.use('/api/reservations', createReservationRouter(io));
 app.use("/proxy", async (req, res) => {
   console.log("start");
@@ -108,12 +107,17 @@ io.on("connection", (socket) => {
 // Start the server
 startServer();
 
+const subscriptionSync = new SubscriptionSyncService();
+subscriptionSync.start();
+
 // After your socket.io setup
 const sessionMonitor = new SessionMonitor(io);
 sessionMonitor.start();
 
 const payoutMonitor = new PayoutMonitor(io);
 payoutMonitor.start();
+
+
 
 // Start the Express server
 server.listen(PORT, () => {

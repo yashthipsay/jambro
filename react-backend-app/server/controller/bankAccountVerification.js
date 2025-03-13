@@ -7,6 +7,7 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_API_SECRET
 });
 
+
 const verifyBankAccount = async (req, res) => {
   try {
     const { name, email, contact, upiAddress } = req.body;
