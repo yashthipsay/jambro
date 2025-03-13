@@ -43,8 +43,8 @@ const purchaseSubscription = async (req, res) => {
 
     // Get SKU details
     const sku = await SKU.findOne({
-      name: tier.toUpperCase(),
-      duration: "monthly",
+      name: tier,
+      duration: 1,
       isActive: true,
     });
 
@@ -52,6 +52,7 @@ const purchaseSubscription = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Invalid subscription plan",
+
       });
     }
 
