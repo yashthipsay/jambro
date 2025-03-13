@@ -7,11 +7,12 @@ const { v4: uuidv4 } = require("uuid");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Group = require("../../models/subscriptions/GroupSchema");
+require("dotenv").config();
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id: process.env.RAZORPAY_API_KEY,
+  key_secret: process.env.RAZORPAY_API_SECRET,
 });
 
 // Create new subscription

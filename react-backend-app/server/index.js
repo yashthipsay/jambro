@@ -11,6 +11,7 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const bnkVerification = require("./routes/bnkVerification");
 const payoutRoutes = require("./routes/payoutRoutes");
+const subscriptionRoutes = require('./routes/subscriptions/subscriptionRoutes');
 const authRoutes = require("./routes/authRoutes");
 const createReservationRouter = require("./routes/reservationRoutes");
 const Booking = require("./models/BookingSchema");
