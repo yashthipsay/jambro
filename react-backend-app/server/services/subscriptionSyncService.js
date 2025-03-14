@@ -22,6 +22,65 @@ class SubscriptionSyncService {
     });
   }
 
+  // New method to handle pending cancellations
+  async handlePendingCancellations() {
+    try {
+      // Find all subscriptions marked for cancellation at cycle end
+      const pendingCancellations = await Subscription.find({
+        pendingCancellation: true,
+        cancelAtEnd: true,
+        status: "ACTIVE",
+      });
+
+      console.log(
+        `Found ${pendingCancellations.length} pending cancellations to process`
+      );
+
+      for (const subscription of pendingCancellations) {
+        try {
+          // Fetch latest subscription data from Razorpay
+          const razorpaySubscription = await this.razorpay.subscriptions.fetch(
+            subscription.razorpaySubscriptionId
+          );
+
+          const currentTime = new Date().getTime() / 1000; // Convert to Unix timestamp
+
+          // Check if current billing cycle has ended
+          if (
+            razorpaySubscription.current_end &&
+            currentTime >= razorpaySubscription.current_end
+          ) {
+            // Update subscription status
+            subscription.status = "CANCELLED";
+            subscription.pendingCancellation = false;
+            subscription.cancelAtEnd = false;
+            subscription.cancelledAt = new Date();
+
+            await subscription.save();
+
+            console.log(
+              `Processed end-of-cycle cancellation for subscription ${subscription._id}`
+            );
+
+            // You might want to send a notification to the user here
+            // await notificationService.sendSubscriptionCancelledNotification(subscription);
+          } else {
+            console.log(
+              `Subscription ${subscription._id} still in active cycle, will check again later`
+            );
+          }
+        } catch (error) {
+          console.error(
+            `Error processing pending cancellation for subscription ${subscription._id}:`,
+            error
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error handling pending cancellations:", error);
+    }
+  }
+
   async syncSubscriptions() {
     try {
       // Get all active/pending subscriptions from your database
@@ -56,7 +115,8 @@ class SubscriptionSyncService {
     // Map Razorpay status to your status
     switch (razorpayData.status) {
       case "active":
-        status = "ACTIVE";
+        // Keep status as ACTIVE if it's pending cancellation
+        status = subscription.pendingCancellation ? "ACTIVE" : "ACTIVE";
         break;
       case "authenticated":
       case "pending":
@@ -65,13 +125,20 @@ class SubscriptionSyncService {
       case "halted":
       case "cancelled":
         status = "CANCELLED";
+        // Clear pending cancellation flags if cancelled
+        subscription.pendingCancellation = false;
+        subscription.cancelAtEnd = false;
+        subscription.cancelledAt = subscription.cancelledAt || new Date();
         break;
       case "completed":
         status = "EXPIRED";
         break;
     }
 
-    if (status !== subscription.status) {
+    if (
+      status !== subscription.status ||
+      razorpayData.current_end !== subscription.endDate?.getTime() / 1000
+    ) {
       subscription.status = status;
       subscription.endDate = new Date(razorpayData.current_end * 1000);
       await subscription.save();
