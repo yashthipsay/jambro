@@ -115,7 +115,7 @@ const TierCard = ({
   calculatePrice,
   onSubscribe,
   showAccessOptions = false,
-  activePlan = null, // New prop to know currently active plan
+  activePlan = null,
 }) => {
   const isMobile = useMediaQuery("(max-width:600px)");
   const isTablet = useMediaQuery("(max-width:960px)");
@@ -133,11 +133,11 @@ const TierCard = ({
     { value: "annual", label: "Annual (10% Off)" },
   ];
 
-  const pricing = calculatePrice(
+  const price = calculatePrice(
     tier,
     selections.hours,
     selections.access || "jamrooms",
-    selections.frequency
+    selections.frequency || "monthly"
   );
 
   // Function to get appropriate button text based on active plan
@@ -314,7 +314,12 @@ const TierCard = ({
         <FeatureList tier={tier} />
 
         <Box mt="auto" textAlign="center">
-          <PriceDisplay pricing={pricing} />
+        <PriceDisplay 
+          price={price} // Pass the calculated price directly
+          frequency={selections.frequency || "monthly"}
+          size="large"
+          color={subscriptionColors.textColor}
+        />
 
           <Button
             variant="contained"

@@ -34,6 +34,23 @@ const createSKU = async (req, res) => {
   }
 };
 
+const getSKUs = async (req, res) => {
+  try {
+    const skus = await SKU.find({ isActive: true });
+    
+    res.json({
+      success: true,
+      data: skus
+    });
+  } catch (error) {
+    console.error("Error fetching SKUs:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 const updateSKU = async (req, res) => {
   try {
     // Assume skuId is provided in req.params
@@ -94,6 +111,7 @@ const deleteSKU = async (req, res) => {
 
 module.exports = {
   createSKU,
+  getSKUs,
   updateSKU,
   deleteSKU,
 };

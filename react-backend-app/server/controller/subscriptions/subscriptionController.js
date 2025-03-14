@@ -26,7 +26,7 @@ const purchaseSubscription = async (req, res) => {
       hours,
       access,
       frequency,
-      memberEmails = [],
+      calculatedPrice, // new field from client
     } = req.body;
 
     // First check if user exists
@@ -71,7 +71,7 @@ const purchaseSubscription = async (req, res) => {
       interval: 1,
       item: {
         name: `${tier.toUpperCase()} ${type} Plan`,
-        amount: sku.price * 100, // Convert to paise
+        amount: calculatedPrice * 100, // Convert to paise
         currency: "INR",
         description: `${hours} hours per month, ${access} access`,
       },

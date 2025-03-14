@@ -6,7 +6,8 @@ import { useSubscription } from "../../../context/SubscriptionContext";
 export const useSubscriptionLogic = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loginWithRedirect, user } = useAuth0();
-  const { subscription, updateSubscription, setShowCancelDialog } = useSubscription();
+  const { subscription, updateSubscription, setShowCancelDialog } =
+    useSubscription();
 
   // State for tier selections - default values matching SKU schema
   const [selections, setSelections] = useState({
@@ -15,14 +16,47 @@ export const useSubscriptionLogic = () => {
     premium: { hours: 20, access: "both", frequency: "monthly" },
   });
 
-  const tierRanking = {
-    basic: 1,
-    pro: 2,
-    premium: 3,
-  };
+  const [skuPrices, setSkuPrices] = useState({
+    basic: {},
+    pro: {},
+    premium: {},
+  });
 
   // State to track the currently active plan (if any)
   const [activePlan, setActivePlan] = useState(null);
+
+  // Fetch SKU prices on component mount
+  useEffect(() => {
+    const fetchSKUs = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/skus/skus");
+        const data = await response.json();
+
+        if (data.success) {
+          // Organize SKUs by tier and hours
+          const prices = {
+            basic: {},
+            pro: {},
+            premium: {},
+          };
+
+          data.data.forEach((sku) => {
+            const tier = sku.name.toLowerCase();
+            prices[tier][sku.hoursPerMonth] = {
+              price: sku.price,
+              accessType: sku.accessType,
+            };
+          });
+
+          setSkuPrices(prices);
+        }
+      } catch (error) {
+        console.error("Error fetching SKU prices:", error);
+      }
+    };
+
+    fetchSKUs();
+  }, []);
 
   // Mock function to fetch active subscription
   // In a real app, you would fetch this from your backend
@@ -56,45 +90,57 @@ export const useSubscriptionLogic = () => {
     }));
   };
 
-  // Pricing logic
+  // Updated price calculation logic
   const calculatePrice = (tier, hours, access, frequency) => {
-    let basePrice = 0;
+    try {
+      // Find the closest SKU for the selected hours
+      const tierSkus = skuPrices[tier.toLowerCase()];
+      if (!tierSkus) return 0;
 
-    // Base prices for each tier at 20 hours
-    switch (tier) {
-      case "basic":
-        basePrice = 1999;
-        break;
-      case "pro":
-        basePrice = 2999;
-        break;
-      case "premium":
-        basePrice = 3999;
-        break;
-      default:
-        basePrice = 1999;
+      // Find the base SKU price for the selected hours
+      let basePrice = 0;
+      let closestHours = 20; // Default minimum hours
+
+      // Find the closest hour bracket
+      Object.keys(tierSkus).forEach((skuHours) => {
+        if (Number(skuHours) <= hours && Number(skuHours) > closestHours) {
+          closestHours = Number(skuHours);
+        }
+      });
+
+      basePrice = tierSkus[closestHours]?.price || 0;
+
+      // Calculate additional hours cost
+      const additionalHours = hours - closestHours;
+      if (additionalHours > 0) {
+        const hourlyRate = 300; // Rate per additional hour
+        basePrice += additionalHours * hourlyRate;
+      }
+
+      // Apply access type multiplier
+      if (access === "studios") {
+        basePrice *= 1.5; // 50% more for studios
+      } else if (access === "both") {
+        basePrice *= 2; // Double for both
+      }
+
+      // Apply frequency multiplier and discounts
+      switch (frequency) {
+        case "half_yearly":
+          basePrice = basePrice * 6 * 0.95; // 5% discount
+          break;
+        case "annual":
+          basePrice = basePrice * 12 * 0.9; // 10% discount
+          break;
+        default: // monthly
+          break;
+      }
+
+      return Math.round(basePrice);
+    } catch (error) {
+      console.error("Error calculating price:", error);
+      return 0;
     }
-
-    // Add price for additional hours (every 5 hours adds 500)
-    if (hours > 20) {
-      basePrice += Math.floor((hours - 20) / 5) * 500;
-    }
-
-    // Add access type cost - matches exactly with SKUs
-    if (access === "studios") {
-      basePrice += 1000;
-    } else if (access === "both") {
-      basePrice += 2000;
-    }
-
-    // Apply frequency multiplier
-    if (frequency === "half_yearly") {
-      basePrice *= 6;
-    } else if (frequency === "annual") {
-      basePrice *= 12;
-    }
-
-    return basePrice;
   };
 
   // Handle subscription button click
@@ -141,6 +187,9 @@ export const useSubscriptionLogic = () => {
 
       const dbUserId = userData.data._id;
 
+      // Calculate price using client-side calculation
+      const calculatedPrice = calculatePrice(tier, hours, access, frequency);
+
       // Create subscription through backend
       const response = await fetch(
         "http://localhost:5000/api/subscriptions/purchase",
@@ -156,6 +205,7 @@ export const useSubscriptionLogic = () => {
             hours,
             access: mappedAccess,
             frequency: mappedFrequency,
+            calculatedPrice, // New: pass the computed price
           }),
         }
       );
@@ -236,6 +286,6 @@ export const useSubscriptionLogic = () => {
     handleCancelSubscription,
     activePlan: subscription?.tier || null,
     subscription,
-    isPendingCancellation: subscription?.pendingCancellation || false
+    isPendingCancellation: subscription?.pendingCancellation || false,
   };
 };
