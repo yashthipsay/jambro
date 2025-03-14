@@ -17,8 +17,6 @@ export const subscriptionColors = {
 };
 
 const SubscriptionsPage = () => {
-  const [typeModalOpen, setTypeModalOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState(null);
   const {
     selections,
     handleSelectionChange,
@@ -29,14 +27,10 @@ const SubscriptionsPage = () => {
   } = useSubscriptionLogic();
 
   const handleTierClick = (tier) => {
-    setSelectedTier(tier);
-    setTypeModalOpen(true);
+    handleSubscribe(tier, "INDIVIDUAL");
   };
 
-  const handleTypeSelect = (type, tier) => {
-    handleSubscribe(tier, type);
-    setTypeModalOpen(false);
-  };
+
 
   const isMobile = useMediaQuery("(max-width:600px)");
   const isTablet = useMediaQuery("(max-width:960px)");
@@ -166,12 +160,6 @@ const SubscriptionsPage = () => {
 
         <SubscriptionFAQ />
 
-        <SubscriptionTypeModal
-          open={typeModalOpen}
-          onClose={() => setTypeModalOpen(false)}
-          onSelect={handleTypeSelect}
-          tier={selectedTier}
-        />
       </Box>
     </Box>
   );

@@ -29,7 +29,7 @@ export function SubscriptionProvider({ children }) {
       try {
         setLoading(true);
         setError(null);
-        
+
         // First get userId from database
         const userResponse = await fetch("http://localhost:5000/api/users", {
           method: "POST",
@@ -48,30 +48,34 @@ export function SubscriptionProvider({ children }) {
         const response = await fetch(
           `http://localhost:5000/api/subscriptions/user/${userData.data._id}`
         );
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
+
         const data = await response.json();
         console.log("Subscription data from backend:", data);
 
         if (data.success && data.data) {
           // Transform backend fields to frontend format
           const backendSubscription = data.data;
-          
+
           const transformedSubscription = {
             ...backendSubscription,
-            tier: backendSubscription.tier?.toLowerCase() || backendSubscription.name?.toLowerCase(),
+            tier:
+              backendSubscription.tier?.toLowerCase() ||
+              backendSubscription.name?.toLowerCase(),
             access: transformAccessType(backendSubscription.accessType),
             frequency: transformFrequency(backendSubscription.duration),
-            hours: backendSubscription.hoursPerMonth || backendSubscription.remainingHours,
-            nextBilling: backendSubscription.endDate 
-              ? new Date(backendSubscription.endDate).toLocaleDateString() 
-              : 'N/A',
+            hours:
+              backendSubscription.hoursPerMonth ||
+              backendSubscription.remainingHours,
+            nextBilling: backendSubscription.endDate
+              ? new Date(backendSubscription.endDate).toLocaleDateString()
+              : "N/A",
             type: backendSubscription.type || "INDIVIDUAL",
           };
-          
+
           console.log("Transformed subscription:", transformedSubscription);
           setSubscription(transformedSubscription);
         }
@@ -86,81 +90,71 @@ export function SubscriptionProvider({ children }) {
     fetchSubscription();
   }, [isAuthenticated, user]);
 
-    // Helper functions for data transformation
-    const transformAccessType = (accessType) => {
-      if (!accessType) return "jamrooms";
-      
-      const type = accessType.toLowerCase();
-      if (type === "jam_room") return "jamrooms";
-      if (type === "studio") return "studios";
-      if (type === "both") return "both";
-      return "jamrooms";
-    };
+  // Helper functions for data transformation
+  const transformAccessType = (accessType) => {
+    if (!accessType) return "jamrooms";
 
-    const transformFrequency = (duration) => {
-      if (!duration) return "monthly";
-      
-      if (duration === 1) return "monthly";
-      if (duration === 6) return "half_yearly";
-      if (duration === 12) return "annual";
-      return "monthly";
-    };
+    const type = accessType.toLowerCase();
+    if (type === "jam_room") return "jamrooms";
+    if (type === "studio") return "studios";
+    if (type === "both") return "both";
+    return "jamrooms";
+  };
 
-    const updateSubscription = (newSubscription) => {
-      if (typeof newSubscription === "function") {
-        setSubscription((prev) => newSubscription(prev));
-      } else {
-        setSubscription(newSubscription);
-      }
-    };
+  const transformFrequency = (duration) => {
+    if (!duration) return "monthly";
 
-    const cancelSubscription = async () => {
-      if (!subscription || !subscription.subscriptionId) {
-        console.error("No active subscription to cancel");
-        return;
-      }
-      
-      try {
-        setLoading(true);
-        
-        // Get user ID first
-        const userResponse = await fetch("http://localhost:5000/api/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: user.email }),
-        });
-        
-        const userData = await userResponse.json();
-        if (!userData.success) {
-          throw new Error("Failed to get user details");
-        }
-        
-        // Cancel subscription through API
-        const response = await fetch("http://localhost:5000/api/subscriptions/cancel", {
+    if (duration === 1) return "monthly";
+    if (duration === 6) return "half_yearly";
+    if (duration === 12) return "annual";
+    return "monthly";
+  };
+
+  const updateSubscription = (newSubscription) => {
+    if (typeof newSubscription === "function") {
+      setSubscription((prev) => newSubscription(prev));
+    } else {
+      setSubscription(newSubscription);
+    }
+  };
+
+  const cancelSubscription = async (cancelAtCycleEnd = false) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(
+        "http://localhost:5000/api/subscriptions/cancel",
+        {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            subscriptionId: subscription.subscriptionId,
-            userId: userData.data._id
+            subscriptionId: subscription.razorpaySubscriptionId,
+            cancelAtCycleEnd,
           }),
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          setSubscription(null);
-          setShowCancelDialog(false);
-        } else {
-          throw new Error(data.message || "Failed to cancel subscription");
         }
-      } catch (error) {
-        console.error("Error cancelling subscription:", error);
-      } finally {
-        setLoading(false);
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubscription((prev) => ({
+          ...prev,
+          status: cancelAtCycleEnd ? "ACTIVE" : "CANCELLED",
+          pendingCancellation: cancelAtCycleEnd,
+          cancelAtEnd: cancelAtCycleEnd,
+          cancelledAt: cancelAtCycleEnd ? null : new Date(),
+        }));
+        setShowCancelDialog(false);
+      } else {
+        throw new Error(data.message || "Failed to cancel subscription");
       }
-    };
-
-
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SubscriptionContext.Provider

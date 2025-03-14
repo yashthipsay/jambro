@@ -6,7 +6,7 @@ import { useSubscription } from "../../../context/SubscriptionContext";
 export const useSubscriptionLogic = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loginWithRedirect, user } = useAuth0();
-  const { subscription, updateSubscription } = useSubscription();
+  const { subscription, updateSubscription, setShowCancelDialog } = useSubscription();
 
   // State for tier selections - default values matching SKU schema
   const [selections, setSelections] = useState({
@@ -39,6 +39,11 @@ export const useSubscriptionLogic = () => {
 
     fetchActiveSubscription();
   }, [isAuthenticated, user, subscription]);
+
+  // Handler for subscription cancellation
+  const handleCancelSubscription = () => {
+    setShowCancelDialog(true);
+  };
 
   // Handler for selection changes
   const handleSelectionChange = (tier, field, value) => {
@@ -228,7 +233,9 @@ export const useSubscriptionLogic = () => {
     handleSelectionChange,
     calculatePrice,
     handleSubscribe,
+    handleCancelSubscription,
     activePlan: subscription?.tier || null,
     subscription,
+    isPendingCancellation: subscription?.pendingCancellation || false
   };
 };

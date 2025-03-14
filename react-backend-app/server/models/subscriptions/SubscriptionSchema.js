@@ -53,6 +53,17 @@ const subscriptionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    pendingCancellation: {
+      type: Boolean,
+      default: false,
+    },
+    cancelAtEnd: {
+      type: Boolean,
+      default: false,
+    },
+    cancelledAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

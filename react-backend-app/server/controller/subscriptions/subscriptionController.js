@@ -200,11 +200,10 @@ const verifySubscriptionPayment = async (req, res) => {
 // Cancel subscription
 const cancelSubscription = async (req, res) => {
   try {
-    const { subscriptionId, userId } = req.body;
+    const { subscriptionId, cancelAtCycleEnd = false } = req.body;
 
     const subscription = await Subscription.findOne({
-      subscriptionId,
-      primaryUserId: userId,
+      razorpaySubscriptionId: subscriptionId,
       status: "ACTIVE",
     });
 
@@ -215,22 +214,39 @@ const cancelSubscription = async (req, res) => {
       });
     }
 
-    // Calculate refund amount if applicable
-    const refundAmount = calculateRefundAmount(subscription);
+    // Cancel subscription in Razorpay
+    const options = {
+      cancel_at_cycle_end: cancelAtCycleEnd,
+    };
 
-    subscription.status = "CANCELLED";
+    const razorpayResponse = await razorpay.subscriptions.cancel(
+      subscriptionId,
+      options
+    );
+
+    // Update subscription status in our database
+    if (cancelAtCycleEnd) {
+      subscription.pendingCancellation = true;
+      subscription.cancelAtEnd = true;
+    } else {
+      subscription.status = "CANCELLED";
+      subscription.cancelledAt = new Date();
+    }
+
     await subscription.save();
 
     res.json({
       success: true,
-      message: "Subscription cancelled successfully",
-      data: { refundAmount },
+      message: cancelAtCycleEnd
+        ? "Subscription will be cancelled at the end of billing cycle"
+        : "Subscription cancelled successfully",
+      data: razorpayResponse,
     });
   } catch (error) {
     console.error("Error cancelling subscription:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Failed to cancel subscription",
     });
   }
 };
@@ -319,40 +335,40 @@ const updateSubscription = async (req, res) => {
 const getUserSubscription = async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     // Find active subscription for this user
     const subscription = await Subscription.findOne({
       primaryUserId: userId,
-      status: "ACTIVE"
-    }).populate('skuId');
-    
+      status: "ACTIVE",
+    }).populate("skuId");
+
     if (!subscription) {
       return res.json({
         success: true,
         message: "No active subscription found",
-        data: null
+        data: null,
       });
     }
-    
+
     // Get SKU details and merge with subscription
     const sku = subscription.skuId;
-    
+
     const subscriptionData = {
       ...subscription.toObject(),
       tier: sku.name,
-      hoursPerMonth: sku.hoursPerMonth
+      hoursPerMonth: sku.hoursPerMonth,
     };
-    
+
     res.json({
       success: true,
       message: "Subscription found",
-      data: subscriptionData
+      data: subscriptionData,
     });
   } catch (error) {
     console.error("Error fetching user subscription:", error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -392,7 +408,7 @@ module.exports = {
   cancelSubscription,
   updateSubscription,
   verifySubscriptionPayment,
-  getUserSubscription
+  getUserSubscription,
 };
 
 /*Razorpay subscription integration guide
