@@ -316,6 +316,47 @@ const updateSubscription = async (req, res) => {
   }
 };
 
+const getUserSubscription = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Find active subscription for this user
+    const subscription = await Subscription.findOne({
+      primaryUserId: userId,
+      status: "ACTIVE"
+    }).populate('skuId');
+    
+    if (!subscription) {
+      return res.json({
+        success: true,
+        message: "No active subscription found",
+        data: null
+      });
+    }
+    
+    // Get SKU details and merge with subscription
+    const sku = subscription.skuId;
+    
+    const subscriptionData = {
+      ...subscription.toObject(),
+      tier: sku.name,
+      hoursPerMonth: sku.hoursPerMonth
+    };
+    
+    res.json({
+      success: true,
+      message: "Subscription found",
+      data: subscriptionData
+    });
+  } catch (error) {
+    console.error("Error fetching user subscription:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 // Helper functions
 const calculateEndDate = (frequency) => {
   const now = new Date();
@@ -351,6 +392,7 @@ module.exports = {
   cancelSubscription,
   updateSubscription,
   verifySubscriptionPayment,
+  getUserSubscription
 };
 
 /*Razorpay subscription integration guide

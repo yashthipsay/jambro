@@ -8,6 +8,7 @@ export function SubscriptionProvider({ children }) {
   const [subscription, setSubscription] = useState(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Mock subscription for demo
   const mockSubscription = {
@@ -20,13 +21,15 @@ export function SubscriptionProvider({ children }) {
     ).toLocaleDateString(),
   };
 
-  // Fetch subscription
+  // Fetch subscription data from backend
   useEffect(() => {
     const fetchSubscription = async () => {
       if (!isAuthenticated || !user) return;
 
       try {
         setLoading(true);
+        setError(null);
+        
         // First get userId from database
         const userResponse = await fetch("http://localhost:5000/api/users", {
           method: "POST",
@@ -45,37 +48,36 @@ export function SubscriptionProvider({ children }) {
         const response = await fetch(
           `http://localhost:5000/api/subscriptions/user/${userData.data._id}`
         );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log("Subscription data from backend:", data);
 
         if (data.success && data.data) {
           // Transform backend fields to frontend format
           const backendSubscription = data.data;
-
-          setSubscription({
+          
+          const transformedSubscription = {
             ...backendSubscription,
-            tier: backendSubscription.tier?.toLowerCase(),
-            access:
-              backendSubscription.accessType?.toLowerCase() === "jam_room"
-                ? "jamrooms"
-                : backendSubscription.accessType?.toLowerCase() === "studio"
-                ? "studios"
-                : "both",
-            frequency:
-              backendSubscription.duration === 1
-                ? "monthly"
-                : backendSubscription.duration === 6
-                ? "half_yearly"
-                : "annual",
-            hours:
-              backendSubscription.hoursPerMonth ||
-              backendSubscription.remainingHours,
-            nextBilling: new Date(
-              backendSubscription.endDate
-            ).toLocaleDateString(),
-          });
+            tier: backendSubscription.tier?.toLowerCase() || backendSubscription.name?.toLowerCase(),
+            access: transformAccessType(backendSubscription.accessType),
+            frequency: transformFrequency(backendSubscription.duration),
+            hours: backendSubscription.hoursPerMonth || backendSubscription.remainingHours,
+            nextBilling: backendSubscription.endDate 
+              ? new Date(backendSubscription.endDate).toLocaleDateString() 
+              : 'N/A',
+            type: backendSubscription.type || "INDIVIDUAL",
+          };
+          
+          console.log("Transformed subscription:", transformedSubscription);
+          setSubscription(transformedSubscription);
         }
       } catch (error) {
         console.error("Error fetching subscription:", error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -84,18 +86,81 @@ export function SubscriptionProvider({ children }) {
     fetchSubscription();
   }, [isAuthenticated, user]);
 
-  const updateSubscription = (newSubscription) => {
-    if (typeof newSubscription === "function") {
-      setSubscription((prev) => newSubscription(prev));
-    } else {
-      setSubscription(newSubscription);
-    }
-  };
+    // Helper functions for data transformation
+    const transformAccessType = (accessType) => {
+      if (!accessType) return "jamrooms";
+      
+      const type = accessType.toLowerCase();
+      if (type === "jam_room") return "jamrooms";
+      if (type === "studio") return "studios";
+      if (type === "both") return "both";
+      return "jamrooms";
+    };
 
-  const cancelSubscription = () => {
-    setSubscription(null);
-    setShowCancelDialog(false);
-  };
+    const transformFrequency = (duration) => {
+      if (!duration) return "monthly";
+      
+      if (duration === 1) return "monthly";
+      if (duration === 6) return "half_yearly";
+      if (duration === 12) return "annual";
+      return "monthly";
+    };
+
+    const updateSubscription = (newSubscription) => {
+      if (typeof newSubscription === "function") {
+        setSubscription((prev) => newSubscription(prev));
+      } else {
+        setSubscription(newSubscription);
+      }
+    };
+
+    const cancelSubscription = async () => {
+      if (!subscription || !subscription.subscriptionId) {
+        console.error("No active subscription to cancel");
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        
+        // Get user ID first
+        const userResponse = await fetch("http://localhost:5000/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email }),
+        });
+        
+        const userData = await userResponse.json();
+        if (!userData.success) {
+          throw new Error("Failed to get user details");
+        }
+        
+        // Cancel subscription through API
+        const response = await fetch("http://localhost:5000/api/subscriptions/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subscriptionId: subscription.subscriptionId,
+            userId: userData.data._id
+          }),
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          setSubscription(null);
+          setShowCancelDialog(false);
+        } else {
+          throw new Error(data.message || "Failed to cancel subscription");
+        }
+      } catch (error) {
+        console.error("Error cancelling subscription:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
 
   return (
     <SubscriptionContext.Provider
@@ -105,6 +170,8 @@ export function SubscriptionProvider({ children }) {
         cancelSubscription,
         showCancelDialog,
         setShowCancelDialog,
+        loading,
+        error
       }}
     >
       {children}
