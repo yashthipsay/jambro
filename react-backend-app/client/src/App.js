@@ -54,6 +54,7 @@ import {
   Star,
   ArrowUpCircle,
   XCircle,
+  Users,
 } from "lucide-react";
 import PastBookings from "./components/PastBookings";
 import { useSubscription } from "./context/SubscriptionContext";
@@ -109,6 +110,7 @@ function AppContent() {
     { text: "About Us", icon: <Info />, path: "/about" },
     { text: "Contact", icon: <Mail />, path: "/contact" },
     { text: "Support", icon: <Phone />, path: "/support" },
+    { text: "My Groups", path: "/my-groups", icon: <Users size={20} /> },
   ];
 
   const footerItems = [
@@ -515,6 +517,7 @@ function AppContent() {
         {/* Subscription Routes */}
         <Route path="/subscriptions" element={<SubscriptionsPage />} />
         <Route path="/group-setup" element={<GroupSetup />} />
+        <Route path="/my-groups" element={<GroupSetup />} />
       </Routes>
     </>
   );

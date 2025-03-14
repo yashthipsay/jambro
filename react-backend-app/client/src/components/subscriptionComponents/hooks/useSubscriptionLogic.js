@@ -146,12 +146,11 @@ export const useSubscriptionLogic = () => {
           },
           body: JSON.stringify({
             userId: dbUserId,
-            type,
+            type: "INDIVIDUAL", // Always INDIVIDUAL
             tier: mappedTier,
             hours,
             access: mappedAccess,
             frequency: mappedFrequency,
-            memberEmails: [],
           }),
         }
       );

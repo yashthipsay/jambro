@@ -107,37 +107,14 @@ const purchaseSubscription = async (req, res) => {
 
     await subscription.save();
 
-    // If it's a group subscription, create the group
-    if (type === "GROUP" && memberEmails.length > 0) {
-      const group = new Group({
-        groupId: uuidv4(),
-        groupName: `${user.name}'s Group`,
-        groupDescription: `Group subscription created by ${user.email}`,
-        groupAdmin: userId,
-        subscriptionId: subscription._id,
-        groupMembers: [
-          {
-            email: user.email,
-            role: "ADMIN",
-            status: "ACTIVE",
-          },
-          ...memberEmails.map((email) => ({
-            email,
-            role: "MEMBER",
-            status: "PENDING",
-          })),
-        ],
-      });
-
-      await group.save();
-    }
-
     // Return checkout options
     const checkoutOptions = {
       key: process.env.RAZORPAY_API_KEY, // Use the API_KEY not KEY_ID
       subscription_id: razorpaySubscription.id,
       name: "GigSaw",
-      description: `${tier} ${type} Plan - ${frequency === 1 ? 'Monthly' : frequency === 6 ? 'Half-Yearly' : 'Annual'}`,
+      description: `${tier} ${type} Plan - ${
+        frequency === 1 ? "Monthly" : frequency === 6 ? "Half-Yearly" : "Annual"
+      }`,
       prefill: {
         name: user.name,
         email: user.email,
@@ -155,7 +132,7 @@ const purchaseSubscription = async (req, res) => {
         type: type,
         tier: tier,
         access: access,
-      }
+      },
     };
 
     res.status(201).json({
