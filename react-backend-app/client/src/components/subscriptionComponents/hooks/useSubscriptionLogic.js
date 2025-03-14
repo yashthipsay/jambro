@@ -8,39 +8,37 @@ export const useSubscriptionLogic = () => {
   const { isAuthenticated, loginWithRedirect, user } = useAuth0();
   const { subscription, updateSubscription } = useSubscription();
 
-  // State for tier selections
+  // State for tier selections - default values matching SKU schema
   const [selections, setSelections] = useState({
-    basic: { hours: 25, frequency: "monthly" },
-    pro: { hours: 25, access: "jamrooms", frequency: "monthly" },
-    premium: { hours: 25, access: "both", frequency: "monthly" },
+    basic: { hours: 20, frequency: "monthly" }, // Start with 20 hours
+    pro: { hours: 20, access: "jamrooms", frequency: "monthly" },
+    premium: { hours: 20, access: "both", frequency: "monthly" },
   });
+
+  const tierRanking = {
+    basic: 1,
+    pro: 2,
+    premium: 3,
+  };
 
   // State to track the currently active plan (if any)
   const [activePlan, setActivePlan] = useState(null);
 
   // Mock function to fetch active subscription
   // In a real app, you would fetch this from your backend
+  // Fetch active subscription
   useEffect(() => {
     const fetchActiveSubscription = async () => {
       if (!isAuthenticated || !user) return;
 
-      try {
-        // Mock API call - replace with your actual API
-        // const response = await fetch(`/api/subscriptions/user/${user.sub}`);
-        // const data = await response.json();
-        // if (data.success && data.subscription) {
-        //   setActivePlan(data.subscription.tier);
-        // }
-        // For demo purposes, let's pretend the user has the Pro plan
-        // Remove this in production and replace with the actual API call above
-        // setActivePlan("pro");
-      } catch (error) {
-        console.error("Error fetching subscription:", error);
+      // If subscription is already in context, use it
+      if (subscription) {
+        setActivePlan(subscription.tier?.toLowerCase() || null);
       }
     };
 
     fetchActiveSubscription();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, subscription]);
 
   // Handler for selection changes
   const handleSelectionChange = (tier, field, value) => {
@@ -54,118 +52,175 @@ export const useSubscriptionLogic = () => {
   };
 
   // Pricing logic
-  const calculatePrice = (
-    tier,
-    hours,
-    access,
-    frequency,
-    type = "INDIVIDUAL"
-  ) => {
-    let hourlyRate = 0;
+  const calculatePrice = (tier, hours, access, frequency) => {
+    let basePrice = 0;
 
-    // Determine hourly rate based on tier and access
+    // Base prices for each tier at 20 hours
     switch (tier) {
       case "basic":
-        hourlyRate = 350; // Fixed for Basic
+        basePrice = 1999;
         break;
       case "pro":
-        hourlyRate = access === "studios" ? 800 : access === "both" ? 800 : 600;
+        basePrice = 2999;
         break;
       case "premium":
-        hourlyRate =
-          access === "studios" ? 1500 : access === "both" ? 1500 : 1000;
+        basePrice = 3999;
         break;
       default:
-        hourlyRate = 350;
+        basePrice = 1999;
     }
 
-    // Calculate base monthly price
-    let basePrice = hourlyRate * hours;
+    // Add price for additional hours (every 5 hours adds 500)
+    if (hours > 20) {
+      basePrice += Math.floor((hours - 20) / 5) * 500;
+    }
 
-    // Calculate price based on frequency (artificially inflate first, then discount)
-    let inflatedPrice = basePrice;
-    let discount = 0;
+    // Add access type cost - matches exactly with SKUs
+    if (access === "studios") {
+      basePrice += 1000;
+    } else if (access === "both") {
+      basePrice += 2000;
+    }
 
+    // Apply frequency multiplier
     if (frequency === "half_yearly") {
-      inflatedPrice = Math.round(basePrice * 1.1);
-      discount = 5;
+      basePrice *= 6;
     } else if (frequency === "annual") {
-      inflatedPrice = Math.round(basePrice * 1.2);
-      discount = 10;
+      basePrice *= 12;
     }
 
-    return {
-      basePrice: inflatedPrice,
-      discountedPrice: Math.round((inflatedPrice * (100 - discount)) / 100),
-      discount,
-    };
+    return basePrice;
   };
 
   // Handle subscription button click
-  const handleSubscribe = (tier, type) => {
+  const handleSubscribe = async (tier, type) => {
     if (!isAuthenticated) {
       loginWithRedirect();
       return;
     }
 
-    const tierSelections = selections[tier];
-    const { hours, access, frequency } = tierSelections;
+    try {
+      const tierSelections = selections[tier];
+      const { hours, access = "jamrooms", frequency } = tierSelections;
 
-    // Determine if this is a new subscription, upgrade, or downgrade
-    let actionType = "subscribe";
-    if (subscription?.tier) {
-      const tierRanking = { basic: 1, pro: 2, premium: 3 };
-      actionType =
-        tierRanking[tier] > tierRanking[subscription.tier]
-          ? "upgrade"
-          : "downgrade";
-    }
+      // Map frontend values to match SKU schema
+      const mappedTier = tier.toUpperCase(); // Convert tier to uppercase
+      const mappedFrequency =
+        frequency === "monthly" ? 1 : frequency === "half_yearly" ? 6 : 12; // Map frequency to duration
+      // Careful mapping of access types to match SKU schema
+      let mappedAccess;
+      if (tier === "basic") {
+        // Basic tier only supports JAM_ROOM
+        mappedAccess = "JAM_ROOM";
+      } else {
+        // Pro and Premium tiers support all access types
+        mappedAccess = access
+          .toUpperCase()
+          .replace("JAMROOMS", "JAM_ROOM")
+          .replace("STUDIOS", "STUDIO");
+      }
 
-    // Create new subscription object with pricing details and type
-    const newSubscription = {
-      tier,
-      // For upgrades/downgrades, preserve existing type and members
-      type: subscription?.status !== "CANCELLED" ? subscription?.type : type,
-      hours,
-      access: access || "jamrooms",
-      frequency,
-      nextBilling: new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000
-      ).toLocaleDateString(),
-      pricing: calculatePrice(
-        tier,
-        hours,
-        access || "jamrooms",
-        frequency,
-        type
-      ),
-      actionType,
-      // Preserve existing members for upgrades/downgrades
-      memberEmails:
-        subscription?.status !== "CANCELLED"
-          ? subscription?.memberEmails || []
-          : [],
-    };
-
-    // Log subscription change
-    console.log(`${actionType.toUpperCase()} subscription:`, newSubscription);
-
-    // Update subscription in context
-    updateSubscription(newSubscription);
-
-    // If it's a group subscription, navigate to member management
-    if (
-      type === "GROUP" &&
-      (!subscription ||
-        subscription.status === "CANCELLED" ||
-        !subscription.memberEmails?.length)
-    ) {
-      navigate("/group-setup", {
-        state: { subscription: newSubscription },
+      // First get the database userId
+      const userResponse = await fetch("http://localhost:5000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: user.email }),
       });
-    } else {
-      // Otherwise, complete the subscription update without group setup
-      navigate("/subscriptions");
+
+      const userData = await userResponse.json();
+      if (!userData.success) {
+        throw new Error("Failed to get user details");
+      }
+
+      const dbUserId = userData.data._id;
+
+      // Create subscription through backend
+      const response = await fetch(
+        "http://localhost:5000/api/subscriptions/purchase",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: dbUserId,
+            type,
+            tier: mappedTier,
+            hours,
+            access: mappedAccess,
+            frequency: mappedFrequency,
+            memberEmails: [],
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
+      const { subscription: newSubscription, checkoutOptions } = data.data;
+
+      // Update local subscription context
+      updateSubscription({
+        ...newSubscription,
+        type,
+        tier: tier.toLowerCase(), // Keep lowercase for frontend consistency
+        hours,
+        access: access || "jamrooms",
+        frequency: frequency || "monthly",
+        status: "PENDING",
+      });
+
+      // Initialize Razorpay checkout
+      const rzp = new window.Razorpay({
+        ...checkoutOptions,
+        handler: async function (response) {
+          try {
+            // Verify payment
+            const verifyResponse = await fetch(
+              "http://localhost:5000/api/subscriptions/verify-payment",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_subscription_id: response.razorpay_subscription_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              }
+            );
+
+            const verifyData = await verifyResponse.json();
+            if (!verifyData.success) {
+              throw new Error("Payment verification failed");
+            }
+
+            // Update local subscription with verified status
+            updateSubscription((prev) => ({
+              ...prev,
+              status: "ACTIVE",
+            }));
+
+            // Navigate based on subscription type
+            if (type === "GROUP") {
+              navigate("/group-setup");
+            } else {
+              navigate("/subscriptions");
+            }
+          } catch (error) {
+            console.error("Payment verification error:", error);
+          }
+        },
+      });
+
+      // Open the popup
+      rzp.open();
+    } catch (error) {
+      console.error("Subscription error:", error);
+      // Add error handling here
     }
   };
 

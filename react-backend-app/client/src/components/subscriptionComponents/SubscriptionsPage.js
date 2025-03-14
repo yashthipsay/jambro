@@ -29,14 +29,8 @@ const SubscriptionsPage = () => {
   } = useSubscriptionLogic();
 
   const handleTierClick = (tier) => {
-    // Only show type modal for new subscriptions
-    if (!subscription || subscription.status === "CANCELLED") {
-      setSelectedTier(tier);
-      setTypeModalOpen(true);
-    } else {
-      // For upgrades/downgrades, keep existing type
-      handleSubscribe(tier, subscription.type);
-    }
+    setSelectedTier(tier);
+    setTypeModalOpen(true);
   };
 
   const handleTypeSelect = (type, tier) => {

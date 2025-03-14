@@ -134,11 +134,10 @@ const purchaseSubscription = async (req, res) => {
 
     // Return checkout options
     const checkoutOptions = {
-      key: process.env.RAZORPAY_KEY_ID,
+      key: process.env.RAZORPAY_API_KEY, // Use the API_KEY not KEY_ID
       subscription_id: razorpaySubscription.id,
       name: "GigSaw",
-      description: `${tier} ${type} Plan - Monthly`,
-      image: "/your_logo.jpg",
+      description: `${tier} ${type} Plan - ${frequency === 1 ? 'Monthly' : frequency === 6 ? 'Half-Yearly' : 'Annual'}`,
       prefill: {
         name: user.name,
         email: user.email,
@@ -147,6 +146,16 @@ const purchaseSubscription = async (req, res) => {
       theme: {
         color: "#6434fc",
       },
+      modal: {
+        confirm_close: true,
+        escape: false,
+      },
+      notes: {
+        userId: userId,
+        type: type,
+        tier: tier,
+        access: access,
+      }
     };
 
     res.status(201).json({
@@ -176,7 +185,7 @@ const verifySubscriptionPayment = async (req, res) => {
     } = req.body;
 
     const generatedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", process.env.RAZORPAY_API_SECRET)
       .update(`${razorpay_payment_id}|${razorpay_subscription_id}`)
       .digest("hex");
 

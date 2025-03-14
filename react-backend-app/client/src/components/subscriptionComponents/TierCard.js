@@ -255,52 +255,36 @@ const TierCard = ({
         <Divider sx={{ my: 2 }} />
 
         <Box mb={isMobile ? 2 : 3}>
-          <FormControl
-            fullWidth
-            variant="outlined"
-            sx={{ mb: isMobile ? 2 : 3 }}
-          >
-            <InputLabel id={`${tier}-hours-label`}>Hours per month</InputLabel>
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel id={`${tier}-hours-label`}>Hours</InputLabel>
             <Select
               labelId={`${tier}-hours-label`}
               id={`${tier}-hours`}
               value={selections.hours}
+              label="Hours"
               onChange={(e) => onChange("hours", e.target.value)}
-              label="Hours per month"
-              sx={{ color: subscriptionColors.textColor }}
-              disabled={isActive}
             >
-              {hourOptions.map((hour) => (
-                <MenuItem key={hour} value={hour}>
-                  {hour} hours
-                </MenuItem>
-              ))}
+              {/* Only offer hours that match SKU schema */}
+              <MenuItem value={20}>20 hours</MenuItem>
+              <MenuItem value={25}>25 hours</MenuItem>
+              <MenuItem value={40}>40 hours</MenuItem>
+              <MenuItem value={45}>45 hours</MenuItem>
             </Select>
           </FormControl>
 
           {showAccessOptions && (
-            <FormControl
-              fullWidth
-              variant="outlined"
-              sx={{ mb: isMobile ? 2 : 3 }}
-            >
-              <InputLabel id={`${tier}-access-label`}>Access Type</InputLabel>
+            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+              <InputLabel id={`${tier}-access-label`}>Access</InputLabel>
               <Select
                 labelId={`${tier}-access-label`}
                 id={`${tier}-access`}
-                value={selections.access}
+                value={selections.access || "jamrooms"}
+                label="Access"
                 onChange={(e) => onChange("access", e.target.value)}
-                label="Access Type"
-                sx={{ color: subscriptionColors.textColor }}
-                disabled={isActive}
               >
-                <MenuItem value="jamrooms">
-                  Jamrooms Only (₹{tier === "pro" ? "600" : "1000"}/hr)
-                </MenuItem>
-                <MenuItem value="studios">
-                  Studios Only (₹{tier === "pro" ? "800" : "1500"}/hr)
-                </MenuItem>
-                <MenuItem value="both">Both Jamrooms & Studios</MenuItem>
+                <MenuItem value="jamrooms">Jam Rooms</MenuItem>
+                <MenuItem value="studios">Studios</MenuItem>
+                <MenuItem value="both">Both</MenuItem>
               </Select>
             </FormControl>
           )}

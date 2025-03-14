@@ -1,43 +1,48 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
-import { subscriptionColors } from "./SubscriptionsPage";
+import { Typography, Box } from "@mui/material";
 
-const PriceBadge = styled(Box)(({ theme }) => ({
-  backgroundColor: subscriptionColors.primaryColor,
-  color: "white",
-  padding: "6px 16px",
-  borderRadius: 20,
-  fontWeight: 600,
-  display: "inline-flex",
-  alignItems: "center",
-  marginTop: 16,
-  marginBottom: 16,
-  boxShadow: "0 4px 12px rgba(100, 52, 252, 0.3)",
-}));
-
-const OldPrice = styled(Typography)(({ theme }) => ({
-  textDecoration: "line-through",
-  color: "#777",
-  display: "inline",
-  marginRight: 8,
-}));
-
-const PriceDisplay = ({ pricing }) => {
+const PriceDisplay = ({ price, frequency, size = "large", color }) => {
+  // Ensure price is a number or default to 0
+  const safePrice = typeof price === "number" ? price : 0;
+  
+  // Format price with thousand separators
+  const formattedPrice = safePrice.toLocaleString("en-IN");
+  
+  // Set size based on prop
+  const priceSize = size === "large" ? "h3" : "h5";
+  const rupeeSize = size === "large" ? "h5" : "subtitle1";
+  
   return (
-    <PriceBadge>
-      {pricing.discount > 0 && (
-        <OldPrice variant="body1">
-          ₹{pricing.basePrice.toLocaleString()}
-        </OldPrice>
-      )}
-      <Typography variant="h5" sx={{ fontWeight: 700 }}>
-        ₹{pricing.discountedPrice.toLocaleString()}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "baseline",
+        justifyContent: "center",
+        color: color || "inherit",
+      }}
+    >
+      <Typography
+        variant={rupeeSize}
+        component="span"
+        sx={{ fontWeight: 500, mr: 0.5 }}
+      >
+        ₹
       </Typography>
-      <Typography variant="body2" sx={{ ml: 1, opacity: 0.8 }}>
-        /month
+      <Typography
+        variant={priceSize}
+        component="span"
+        sx={{ fontWeight: 700, letterSpacing: "-0.5px" }}
+      >
+        {formattedPrice}
       </Typography>
-    </PriceBadge>
+      <Typography
+        variant="body2"
+        component="span"
+        sx={{ ml: 1, opacity: 0.7, fontWeight: 500 }}
+      >
+        /{frequency === "monthly" ? "mo" : frequency === "half_yearly" ? "6mo" : "yr"}
+      </Typography>
+    </Box>
   );
 };
 

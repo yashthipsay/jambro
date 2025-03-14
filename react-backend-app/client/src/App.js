@@ -221,8 +221,10 @@ function AppContent() {
                     variant="h6"
                     className="font-semibold text-indigo-600"
                   >
-                    {subscription.tier.charAt(0).toUpperCase() +
-                      subscription.tier.slice(1)}{" "}
+                    {subscription.tier && typeof subscription.tier === "string"
+                      ? subscription.tier.charAt(0).toUpperCase() +
+                        subscription.tier.slice(1)
+                      : "No Plan"}{" "}
                     {subscription.type === "GROUP" ? "Group" : "Individual"}{" "}
                     Plan
                   </Typography>
