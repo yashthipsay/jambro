@@ -36,15 +36,15 @@ const GroupSetup = () => {
   const [groupName, setGroupName] = useState("");
   const [groups, setGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Fetch user's groups when component mounts
   useEffect(() => {
     const fetchGroups = async () => {
       if (!user) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         // First get the database userId
         const userResponse = await fetch("http://localhost:5000/api/users", {
           method: "POST",
@@ -60,11 +60,13 @@ const GroupSetup = () => {
         }
 
         const userId = userData.data._id;
-        
+
         // Fetch user's groups
-        const groupsResponse = await fetch(`http://localhost:5000/api/groups/admin/${userId}`);
+        const groupsResponse = await fetch(
+          `http://localhost:5000/api/groups/admin/${userId}`
+        );
         const groupsData = await groupsResponse.json();
-        
+
         if (groupsData.success) {
           setGroups(groupsData.data || []);
         }
@@ -74,7 +76,7 @@ const GroupSetup = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchGroups();
   }, [user]);
 
@@ -111,7 +113,7 @@ const GroupSetup = () => {
   };
 
   const handleRemoveMember = (emailToRemove) => {
-    setMemberEmails(memberEmails.filter(email => email !== emailToRemove));
+    setMemberEmails(memberEmails.filter((email) => email !== emailToRemove));
   };
 
   const handleCreateGroup = async () => {
@@ -119,15 +121,15 @@ const GroupSetup = () => {
       setError("Please enter a group name");
       return;
     }
-    
+
     if (!subscription || subscription.status !== "ACTIVE") {
       setError("You need an active subscription to create a group");
       return;
     }
-    
+
     try {
       setIsSaving(true);
-      
+
       // First get the database userId
       const userResponse = await fetch("http://localhost:5000/api/users", {
         method: "POST",
@@ -143,7 +145,7 @@ const GroupSetup = () => {
       }
 
       const userId = userData.data._id;
-      
+
       // Create the group
       const response = await fetch("http://localhost:5000/api/groups/create", {
         method: "POST",
@@ -158,9 +160,9 @@ const GroupSetup = () => {
           subscriptionId: subscription._id,
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setSuccessMessage("Group created successfully!");
         setGroups([...groups, data.data]);
@@ -177,29 +179,75 @@ const GroupSetup = () => {
       setIsSaving(false);
     }
   };
-  
+
   const handleUpdateGroupMembers = async (groupId, groupMembers) => {
     // Implementation for updating group members
   };
-  
+
   const handleDeleteGroup = async (groupId) => {
-    // Implementation for deleting a group
+    try {
+      // First get the database userId
+      const userResponse = await fetch("http://localhost:5000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: user.email }),
+      });
+
+      const userData = await userResponse.json();
+      if (!userData.success) {
+        throw new Error("Failed to get user details");
+      }
+
+      const userId = userData.data._id;
+
+      // Delete the group
+      const response = await fetch(
+        `http://localhost:5000/api/groups/${groupId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            adminId: userId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        setSuccessMessage("Group deleted successfully!");
+        // Remove the deleted group from state
+        setGroups(groups.filter((group) => group.groupId !== groupId));
+      } else {
+        setError(data.message || "Failed to delete group");
+      }
+    } catch (error) {
+      console.error("Error deleting group:", error);
+      setError("An error occurred while deleting the group");
+    }
   };
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        >
           <Users size={32} /> My Groups
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Manage your subscription groups
         </Typography>
       </Box>
-      
+
       {successMessage && (
-        <Alert 
-          severity="success" 
+        <Alert
+          severity="success"
           sx={{ mb: 3 }}
           icon={<CheckCircle />}
           onClose={() => setSuccessMessage("")}
@@ -207,17 +255,13 @@ const GroupSetup = () => {
           {successMessage}
         </Alert>
       )}
-      
+
       {error && (
-        <Alert 
-          severity="error" 
-          sx={{ mb: 3 }}
-          onClose={() => setError("")}
-        >
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
           {error}
         </Alert>
       )}
-      
+
       {/* Create New Group Button */}
       {!showCreateForm && (
         <Button
@@ -230,7 +274,7 @@ const GroupSetup = () => {
           Create a Group for Your Subscription
         </Button>
       )}
-      
+
       {/* Create Group Form */}
       {showCreateForm && (
         <Card sx={{ mb: 4 }}>
@@ -238,7 +282,7 @@ const GroupSetup = () => {
             <Typography variant="h6" gutterBottom>
               Create New Group
             </Typography>
-            
+
             <Box sx={{ mb: 3 }}>
               <TextField
                 fullWidth
@@ -249,13 +293,13 @@ const GroupSetup = () => {
                 variant="outlined"
               />
             </Box>
-            
+
             <Divider sx={{ my: 2 }} />
-            
+
             <Typography variant="subtitle1" gutterBottom>
               Add Members (up to 5)
             </Typography>
-            
+
             <Box sx={{ mb: 3 }}>
               <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
                 <TextField
@@ -285,7 +329,14 @@ const GroupSetup = () => {
             </Box>
 
             {memberEmails.length > 0 && (
-              <List sx={{ mb: 4, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
+              <List
+                sx={{
+                  mb: 4,
+                  bgcolor: "background.paper",
+                  borderRadius: 2,
+                  boxShadow: 1,
+                }}
+              >
                 {memberEmails.map((memberEmail) => (
                   <ListItem key={memberEmail} divider>
                     <ListItemText primary={memberEmail} />
@@ -303,7 +354,7 @@ const GroupSetup = () => {
                 ))}
               </List>
             )}
-            
+
             <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
               <Button
                 variant="outlined"
@@ -315,8 +366,14 @@ const GroupSetup = () => {
               <Button
                 variant="contained"
                 onClick={handleCreateGroup}
-                disabled={isSaving || !groupName.trim() || memberEmails.length === 0}
-                startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : null}
+                disabled={
+                  isSaving || !groupName.trim() || memberEmails.length === 0
+                }
+                startIcon={
+                  isSaving ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : null
+                }
               >
                 {isSaving ? "Creating..." : "Create Group"}
               </Button>
@@ -324,23 +381,30 @@ const GroupSetup = () => {
           </CardContent>
         </Card>
       )}
-      
+
       {/* Existing Groups */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
         Your Groups
       </Typography>
-      
+
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
           <CircularProgress />
         </Box>
       ) : groups.length > 0 ? (
         groups.map((group) => (
           <Card key={group.groupId} sx={{ mb: 3 }}>
             <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
                 <Typography variant="h6">{group.groupName}</Typography>
-                <Button 
+                <Button
                   size="small"
                   variant="outlined"
                   color="error"
@@ -349,19 +413,26 @@ const GroupSetup = () => {
                   Delete
                 </Button>
               </Box>
-              
+
               <Divider sx={{ mb: 2 }} />
-              
+
               <Typography variant="subtitle2" gutterBottom>
                 Members:
               </Typography>
-              
+
               <List dense>
                 {group.groupMembers.map((member, index) => (
-                  <ListItem key={index} divider={index < group.groupMembers.length - 1}>
-                    <ListItemText 
+                  <ListItem
+                    key={index}
+                    divider={index < group.groupMembers.length - 1}
+                  >
+                    <ListItemText
                       primary={member.email}
-                      secondary={member.role === "ADMIN" ? "Admin" : `Member (${member.status.toLowerCase()})`}
+                      secondary={
+                        member.role === "ADMIN"
+                          ? "Admin"
+                          : `Member (${member.status.toLowerCase()})`
+                      }
                     />
                     {member.role !== "ADMIN" && (
                       <ListItemSecondaryAction>
@@ -369,8 +440,13 @@ const GroupSetup = () => {
                           edge="end"
                           size="small"
                           onClick={() => {
-                            const updatedMembers = group.groupMembers.filter(m => m.email !== member.email);
-                            handleUpdateGroupMembers(group.groupId, updatedMembers);
+                            const updatedMembers = group.groupMembers.filter(
+                              (m) => m.email !== member.email
+                            );
+                            handleUpdateGroupMembers(
+                              group.groupId,
+                              updatedMembers
+                            );
                           }}
                         >
                           <X size={16} />
@@ -384,9 +460,10 @@ const GroupSetup = () => {
           </Card>
         ))
       ) : (
-        <Paper sx={{ p: 3, textAlign: 'center', bgcolor: 'background.paper' }}>
+        <Paper sx={{ p: 3, textAlign: "center", bgcolor: "background.paper" }}>
           <Typography color="text.secondary">
-            You don't have any groups yet. Create a group to share your subscription.
+            You don't have any groups yet. Create a group to share your
+            subscription.
           </Typography>
         </Paper>
       )}

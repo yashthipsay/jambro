@@ -59,6 +59,7 @@ import {
 import PastBookings from "./components/PastBookings";
 import { useSubscription } from "./context/SubscriptionContext";
 import { SubscriptionProvider } from "./context/SubscriptionContext";
+import GroupSelectionModal from "./components/subscriptionComponents/GroupSelectionModal";
 
 // Add this new styled component for the subscription card
 const SubscriptionCard = styled(Box)(({ theme }) => ({
@@ -81,6 +82,9 @@ function AppContent() {
   } = useAuth0();
   const [anchorEl, setAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [archivedGroups, setArchivedGroups] = useState([]);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
 
@@ -89,21 +93,8 @@ function AppContent() {
     showCancelDialog,
     setShowCancelDialog,
     cancelSubscription,
+    updateSubscription,
   } = useSubscription();
-
-  // Add this mock subscription data (temporary until backend integration)
-  const mockSubscription = useMemo(
-    () => ({
-      tier: "pro",
-      hours: 30,
-      access: "both",
-      frequency: "monthly",
-      nextBilling: new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000
-      ).toLocaleDateString(),
-    }),
-    []
-  );
 
   const menuItems = [
     { text: "Past Bookings", icon: <History />, path: "/bookings" },
@@ -126,6 +117,45 @@ function AppContent() {
       return;
     }
     setDrawerOpen(open);
+  };
+
+  // Add a function to fetch archived groups
+  const fetchArchivedGroups = async () => {
+    if (!user) return;
+
+    try {
+      setIsLoadingGroups(true);
+
+      // First get the database userId
+      const userResponse = await fetch("http://localhost:5000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: user.email }),
+      });
+
+      const userData = await userResponse.json();
+      if (!userData.success) {
+        throw new Error("Failed to get user details");
+      }
+
+      const userId = userData.data._id;
+
+      // Fetch archived groups
+      const response = await fetch(
+        `http://localhost:5000/api/groups/archived/${userId}`
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        setArchivedGroups(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching archived groups:", error);
+    } finally {
+      setIsLoadingGroups(false);
+    }
   };
 
   const handleMenuClick = (event) => {
@@ -170,6 +200,32 @@ function AppContent() {
   const handleLogin = () => {
     loginWithRedirect();
   };
+
+  const fetchActiveGroup = async () => {
+    if (!subscription?._id) return;
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/groups/active/${subscription._id}`
+      );
+      const data = await response.json();
+      if (data.success) {
+        // Option 1: Update your subscription context to add group details
+        updateSubscription((prev) => ({
+          ...prev,
+          groupId: data.data.groupId,
+          groupName: data.data.groupName,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching active group:", error);
+    }
+  };
+  
+  useEffect(() => {
+    if (subscription && subscription._id) {
+      fetchActiveGroup();
+    }
+  }, [subscription]);
 
   const drawerContent = () => (
     <Box
@@ -216,6 +272,34 @@ function AppContent() {
 
           {subscription ? (
             <>
+              {subscription && subscription.groupId ? (
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<Users />}
+                  onClick={() => navigate("/my-groups")}
+                >
+                  {subscription.groupName
+                    ? `Group: ${subscription.groupName}`
+                    : "Group Active"}
+                </Button>
+              ) : subscription ? (
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => setShowGroupModal(true)}
+                  startIcon={<Users />}
+                >
+                  Create/Select Group
+                </Button>
+              ) : null}
+              <GroupSelectionModal
+                open={showGroupModal}
+                onClose={() => setShowGroupModal(false)}
+                archivedGroups={archivedGroups}
+                isLoading={isLoadingGroups}
+                onReload={fetchArchivedGroups}
+              />
               <div className="flex items-center justify-between gap-2 mb-4">
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-indigo-600" />

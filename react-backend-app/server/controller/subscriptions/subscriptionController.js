@@ -300,6 +300,8 @@ const cancelSubscription = async (req, res) => {
       cancel_at_cycle_end: cancelAtCycleEnd,
     };
 
+    const group = await Group.findOne({ subscriptionId: subscription._id });
+
     const razorpayResponse = await razorpay.subscriptions.cancel(
       subscriptionId,
       options
@@ -312,6 +314,12 @@ const cancelSubscription = async (req, res) => {
     } else {
       subscription.status = "CANCELLED";
       subscription.cancelledAt = new Date();
+      if (group) {
+        group.status = "INACTIVE";
+        group.isArchived = true;
+        group.deactivatedAt = new Date();
+        await group.save();
+      }
     }
 
     await subscription.save();
