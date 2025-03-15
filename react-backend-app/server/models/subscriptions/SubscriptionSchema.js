@@ -64,6 +64,13 @@ const subscriptionSchema = new mongoose.Schema(
     cancelledAt: {
       type: Date,
     },
+    planId: {
+      type: String
+    },
+    hasScheduledChanges: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true,

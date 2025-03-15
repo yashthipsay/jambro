@@ -5,7 +5,8 @@ const {
   verifySubscriptionPayment,
   cancelSubscription,
 updateSubscription,
-getUserSubscription
+getUserSubscription,
+createPlan
 } = require('../../controller/subscriptions/subscriptionController');
 
 // Subscription management routes
@@ -14,5 +15,6 @@ router.post('/verify-payment', verifySubscriptionPayment);
 router.post('/cancel', cancelSubscription);
 router.post('/update', updateSubscription);
 router.get('/user/:userId', getUserSubscription);
+router.post('/create-plan', createPlan);
 
 module.exports = router;

@@ -24,13 +24,16 @@ const SubscriptionsPage = () => {
     handleSubscribe,
     activePlan,
     subscription,
+    handleUpdateSubscription,
   } = useSubscriptionLogic();
 
   const handleTierClick = (tier) => {
     handleSubscribe(tier, "INDIVIDUAL");
   };
 
-
+  const handlePlanChange = (newTier) => {
+    handleUpdateSubscription(newTier);
+  };
 
   const isMobile = useMediaQuery("(max-width:600px)");
   const isTablet = useMediaQuery("(max-width:960px)");
@@ -125,6 +128,9 @@ const SubscriptionsPage = () => {
             calculatePrice={calculatePrice}
             onSubscribe={() => handleTierClick("basic")}
             activePlan={activePlan}
+            onUpgrade={handlePlanChange}
+            isCurrentPlan={activePlan === "basic"}
+            subscription={subscription}
           />
 
           <TierCard
@@ -140,6 +146,9 @@ const SubscriptionsPage = () => {
             onSubscribe={() => handleTierClick("pro")}
             showAccessOptions={true}
             activePlan={activePlan}
+            onUpgrade={handlePlanChange}
+            isCurrentPlan={activePlan === "pro"}
+            subscription={subscription}
           />
 
           <TierCard
@@ -155,11 +164,13 @@ const SubscriptionsPage = () => {
             onSubscribe={() => handleTierClick("premium")}
             showAccessOptions={true}
             activePlan={activePlan}
+            onUpgrade={handlePlanChange}
+            isCurrentPlan={activePlan === "premium"}
+            subscription={subscription}
           />
         </Box>
 
         <SubscriptionFAQ />
-
       </Box>
     </Box>
   );

@@ -116,6 +116,9 @@ const TierCard = ({
   onSubscribe,
   showAccessOptions = false,
   activePlan = null,
+  onUpgrade,
+  isCurrentPlan,
+  subscription
 }) => {
   const isMobile = useMediaQuery("(max-width:600px)");
   const isTablet = useMediaQuery("(max-width:960px)");
@@ -142,17 +145,13 @@ const TierCard = ({
 
   // Function to get appropriate button text based on active plan
   const getButtonText = () => {
-    if (isActive) return "Currently Active";
-
-    if (!activePlan) return "Subscribe Now";
-
-    // Compare tiers to determine if this is an upgrade or downgrade
+    if (isCurrentPlan) return "Current Plan";
     const tierRanking = { basic: 1, pro: 2, premium: 3 };
     const currentRank = tierRanking[activePlan];
     const thisRank = tierRanking[tier];
-
-    if (thisRank > currentRank) return isMobile ? "Upgrade" : "Upgrade Plan";
-    return isMobile ? "Downgrade" : "Downgrade Plan";
+    
+    if (thisRank > currentRank) return "Upgrade to This Plan";
+    return "Downgrade to This Plan";
   };
 
   // Get button icon
@@ -325,8 +324,8 @@ const TierCard = ({
             variant="contained"
             fullWidth
             size="large"
-            onClick={() => onSubscribe(tier, selections)}
-            disabled={isActive}
+            onClick={() => subscription ? onUpgrade(tier) : onSubscribe()}
+            disabled={isCurrentPlan}
             startIcon={getButtonIcon()}
             sx={{
               mt: 2,

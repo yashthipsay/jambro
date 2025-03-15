@@ -29,6 +29,34 @@ const purchaseSubscription = async (req, res) => {
       calculatedPrice, // new field from client
     } = req.body;
 
+    // Map frequency to Razorpay interval and total_count
+    let interval = 1;
+    let total_count = 12;
+    let periodAmount = calculatedPrice;
+
+    switch (frequency) {
+      case 1: // Monthly
+        interval = 1;
+        total_count = 12;
+        break;
+      case 6: // Half-yearly
+        interval = 6;
+        total_count = 2;
+        periodAmount = calculatedPrice / 6; // Divide by 6 for monthly amount
+        break;
+      case 12: // Annual
+        interval = 12;
+        total_count = 1;
+        periodAmount = calculatedPrice / 12; // Divide by 12 for monthly amount
+        break;
+      default:
+        interval = 1;
+        total_count = 12;
+    }
+
+    console.log("periodAmount", periodAmount);
+    console.log("interval", interval);
+
     // First check if user exists
     const user = await User.findById(userId);
     if (!user) {
@@ -68,19 +96,19 @@ const purchaseSubscription = async (req, res) => {
     // Create Razorpay plan
     const plan = await razorpay.plans.create({
       period: "monthly",
-      interval: 1,
+      interval: interval,
       item: {
         name: `${tier.toUpperCase()} ${type} Plan`,
-        amount: calculatedPrice * 100, // Convert to paise
+        amount: Math.round(periodAmount * 100), // Convert to paise
         currency: "INR",
-        description: `${hours} hours per month, ${access} access`,
+        description: `${hours} hours per month, ${access} access - ${frequency} billing`,
       },
     });
 
     // Create razorpay subscription
     const razorpaySubscription = await razorpay.subscriptions.create({
       plan_id: plan.id,
-      total_count: 12,
+      total_count: total_count,
       quantity: 1,
       customer_notify: 1,
       notes: {
@@ -88,6 +116,7 @@ const purchaseSubscription = async (req, res) => {
         type: type,
         tier: tier,
         access: access,
+        frequency: frequency,
       },
     });
 
@@ -197,6 +226,58 @@ const verifySubscriptionPayment = async (req, res) => {
   }
 };
 
+// Create a new plan
+const createPlan = async (req, res) => {
+  try {
+    const { tier, hours, access, frequency, amount } = req.body;
+
+    // Map frequency to interval
+    let interval = 1;
+    let period = "monthly";
+    let totalAmount = amount;
+
+    switch (frequency) {
+      case 1: // monthly
+        interval = 1;
+        period = "monthly";
+        break;
+      case 6: // half-yearly
+        interval = 6;
+        period = "monthly";
+        break;
+      case 12: // annual
+        interval = 12;
+        period = "monthly";
+        break;
+    }
+
+    // Create Razorpay plan
+    const plan = await razorpay.plans.create({
+      period: period,
+      interval: interval,
+      item: {
+        name: `${tier} Plan`,
+        amount: Math.round(totalAmount * 100), // Convert to paise
+        currency: "INR",
+        description: `${hours} hours per month, ${access} access`,
+      },
+    });
+
+    res.json({
+      success: true,
+      data: {
+        planId: plan.id,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating plan:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // Cancel subscription
 const cancelSubscription = async (req, res) => {
   try {
@@ -253,75 +334,33 @@ const cancelSubscription = async (req, res) => {
 
 const updateSubscription = async (req, res) => {
   try {
-    const {
-      userId,
-      currentSubscriptionId,
-      newTier,
-      newHours,
-      newAccess,
-      newFrequency,
-    } = req.body;
+    const { subscriptionId, planId, schedule_change_at, customer_notify } =
+      req.body;
 
-    const currentSubscription = await Subscription.findOne({
-      subscriptionId: currentSubscriptionId,
-      primaryUserId: userId,
-      status: "ACTIVE",
-    });
-
-    if (!currentSubscription) {
-      return res.status(404).json({
-        success: false,
-        message: "Active subscription not found",
-      });
-    }
-
-    // Get new SKU details
-    const newSku = await SKU.findOne({
-      name: newTier.toUpperCase(),
-      duration: newFrequency,
-      isActive: true,
-    });
-
-    if (!newSku) {
-      return res.status(404).json({
-        success: false,
-        message: "Invalid plan",
-      });
-    }
-
-    // Determine if this is an upgrade or downgrade
-    const tierRanking = { BASIC: 1, PRO: 2, PREMIUM: 3 };
-    const isUpgrade =
-      tierRanking[newTier.toUpperCase()] >
-      tierRanking[currentSubscription.tier.toUpperCase()];
-
-    // Calculate cost adjustment (positive for upgrade cost, negative for refund)
-    const costAdjustment = isUpgrade
-      ? calculateUpgradeCost(currentSubscription, newSku)
-      : -calculateDowngradeRefund(currentSubscription, newSku);
-
-    // Update subscription
-    const updatedSubscription = {
-      skuId: newSku._id,
-      remainingHours: newHours,
-      jamRoomAccess: newAccess === "jamrooms" || newAccess === "both",
-      studioAccess: newAccess === "studios" || newAccess === "both",
-    };
-
-    await Subscription.findByIdAndUpdate(
-      currentSubscription._id,
-      updatedSubscription
+    // Update subscription in Razorpay
+    const updatedSubscription = await razorpay.subscriptions.update(
+      subscriptionId,
+      {
+        plan_id: planId,
+        schedule_change_at,
+        customer_notify,
+      }
     );
+
+    // Update subscription in database
+    const subscription = await Subscription.findOne({
+      razorpaySubscriptionId: subscriptionId,
+    });
+
+    if (subscription) {
+      subscription.planId = planId;
+      subscription.hasScheduledChanges = true;
+      await subscription.save();
+    }
 
     res.json({
       success: true,
-      message: `Subscription ${
-        isUpgrade ? "upgraded" : "downgraded"
-      } successfully`,
-      data: {
-        costAdjustment,
-        isUpgrade,
-      },
+      data: updatedSubscription,
     });
   } catch (error) {
     console.error("Error updating subscription:", error);
@@ -409,6 +448,7 @@ module.exports = {
   updateSubscription,
   verifySubscriptionPayment,
   getUserSubscription,
+  createPlan,
 };
 
 /*Razorpay subscription integration guide

@@ -143,6 +143,91 @@ export const useSubscriptionLogic = () => {
     }
   };
 
+  // Handle subscription plan change
+  const handleUpdateSubscription = async (newTier) => {
+    if (!isAuthenticated || !subscription) {
+      return;
+    }
+
+    try {
+      const tierSelections = selections[newTier];
+      const { hours, access = "jamrooms", frequency } = tierSelections;
+
+      // Map frontend values to match SKU schema
+      const mappedTier = newTier.toUpperCase();
+      const mappedFrequency =
+        frequency === "monthly" ? 1 : frequency === "half_yearly" ? 6 : 12;
+
+      let mappedAccess;
+      if (newTier === "basic") {
+        mappedAccess = "JAM_ROOM";
+      } else {
+        mappedAccess = access
+          .toUpperCase()
+          .replace("JAMROOMS", "JAM_ROOM")
+          .replace("STUDIOS", "STUDIO");
+      }
+
+      // Calculate new price
+      const calculatedPrice = calculatePrice(newTier, hours, access, frequency);
+
+      // Create new plan first
+      const createPlanResponse = await fetch(
+        "http://localhost:5000/api/subscriptions/create-plan",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tier: mappedTier,
+            hours,
+            access: mappedAccess,
+            frequency: mappedFrequency,
+            amount: calculatedPrice,
+          }),
+        }
+      );
+
+      const planData = await createPlanResponse.json();
+      if (!planData.success) {
+        throw new Error(planData.message);
+      }
+
+      // Update subscription with new plan
+      const response = await fetch(
+        "http://localhost:5000/api/subscriptions/update",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subscriptionId: subscription.razorpaySubscriptionId,
+            planId: planData.data.planId,
+            schedule_change_at: "now", // or 'cycle_end'
+            customer_notify: true,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
+      // Update local subscription context
+      updateSubscription({
+        ...subscription,
+        tier: newTier.toLowerCase(),
+        hours,
+        access: access || "jamrooms",
+        frequency: frequency || "monthly",
+      });
+
+      // Show success message
+    } catch (error) {
+      console.error("Subscription update error:", error);
+      // Show error message
+    }
+  };
+
   // Handle subscription button click
   const handleSubscribe = async (tier, type) => {
     if (!isAuthenticated) {
@@ -283,6 +368,7 @@ export const useSubscriptionLogic = () => {
     handleSelectionChange,
     calculatePrice,
     handleSubscribe,
+    handleUpdateSubscription,
     handleCancelSubscription,
     activePlan: subscription?.tier || null,
     subscription,
