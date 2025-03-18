@@ -334,7 +334,7 @@ function JamRoomFinder() {
               textShadow: "0 1px 2px rgba(0,0,0,0.1)",
             }}
           >
-            Find Your Perfect Jam Room
+            Find Your Perfect Jamming Room
           </Typography>
           <Typography variant="body2" sx={{ color: textColor, opacity: 0.8 }}>
             Discover nearby jam rooms and book your session in minutes
