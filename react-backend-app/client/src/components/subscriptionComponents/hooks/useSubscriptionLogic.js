@@ -158,6 +158,22 @@ export const useSubscriptionLogic = () => {
       const mappedFrequency =
         frequency === "monthly" ? 1 : frequency === "half_yearly" ? 6 : 12;
 
+      // Add remaining_count based on frequency
+      let remainingCount;
+      switch (frequency) {
+        case "monthly":
+          remainingCount = 12;
+          break;
+        case "half_yearly":
+          remainingCount = 2;
+          break;
+        case "annual":
+          remainingCount = 1;
+          break;
+        default:
+          remainingCount = 12;
+      }
+
       let mappedAccess;
       if (newTier === "basic") {
         mappedAccess = "JAM_ROOM";
@@ -203,6 +219,13 @@ export const useSubscriptionLogic = () => {
             planId: planData.data.planId,
             schedule_change_at: "now", // or 'cycle_end'
             customer_notify: true,
+            remaining_count: remainingCount,
+            notes: {
+              tier: mappedTier,
+              type: subscription.type,
+              access: mappedAccess,
+              frequency: mappedFrequency,
+            },
           }),
         }
       );

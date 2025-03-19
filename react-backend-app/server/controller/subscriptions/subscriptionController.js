@@ -342,8 +342,13 @@ const cancelSubscription = async (req, res) => {
 
 const updateSubscription = async (req, res) => {
   try {
-    const { subscriptionId, planId, schedule_change_at, customer_notify } =
-      req.body;
+    const {
+      subscriptionId,
+      planId,
+      schedule_change_at,
+      customer_notify,
+      remaining_count,
+    } = req.body;
 
     // Update subscription in Razorpay
     const updatedSubscription = await razorpay.subscriptions.update(
@@ -352,6 +357,7 @@ const updateSubscription = async (req, res) => {
         plan_id: planId,
         schedule_change_at,
         customer_notify,
+        remaining_count, // Add this line
       }
     );
 

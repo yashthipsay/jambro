@@ -16,7 +16,7 @@ class SubscriptionSyncService {
 
   start() {
     // Run every 5 minutes
-    cron.schedule("*/5 * * * *", async () => {
+    cron.schedule("* * * * *", async () => {
       console.log("Running subscription sync job...");
       await this.syncSubscriptions();
     });
