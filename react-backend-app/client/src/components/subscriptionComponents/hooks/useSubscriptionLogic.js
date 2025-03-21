@@ -81,6 +81,9 @@ export const useSubscriptionLogic = () => {
 
   // Handler for selection changes
   const handleSelectionChange = (tier, field, value) => {
+    if (subscription && tier !== subscription.tier) {
+      return;
+    }
     setSelections((prev) => ({
       ...prev,
       [tier]: {

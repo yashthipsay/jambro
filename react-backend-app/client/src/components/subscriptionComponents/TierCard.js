@@ -118,7 +118,7 @@ const TierCard = ({
   activePlan = null,
   onUpgrade,
   isCurrentPlan,
-  subscription
+  subscription,
 }) => {
   const isMobile = useMediaQuery("(max-width:600px)");
   const isTablet = useMediaQuery("(max-width:960px)");
@@ -145,13 +145,9 @@ const TierCard = ({
 
   // Function to get appropriate button text based on active plan
   const getButtonText = () => {
-    if (isCurrentPlan) return "Current Plan";
-    const tierRanking = { basic: 1, pro: 2, premium: 3 };
-    const currentRank = tierRanking[activePlan];
-    const thisRank = tierRanking[tier];
-    
-    if (thisRank > currentRank) return "Upgrade to This Plan";
-    return "Downgrade to This Plan";
+    if (isCurrentPlan) return "Update Plan";
+    if (subscription && !isCurrentPlan) return "Not Available";
+    return "Select Plan";
   };
 
   // Get button icon
@@ -171,35 +167,26 @@ const TierCard = ({
 
   // Get color scheme for button
   const getButtonColor = () => {
-    if (isActive)
+    if (isCurrentPlan) {
       return {
         bg: "#4CAF50",
         hover: "#45a049",
         shadow: "rgba(76, 175, 80, 0.4)",
       };
+    }
 
-    if (!activePlan)
+    if (subscription && !isCurrentPlan) {
       return {
-        bg: subscriptionColors.primaryColor,
-        hover: subscriptionColors.accentColor,
-        shadow: "rgba(100, 52, 252, 0.4)",
+        bg: "#9e9e9e",
+        hover: "#9e9e9e",
+        shadow: "rgba(158, 158, 158, 0.4)",
       };
-
-    const tierRanking = { basic: 1, pro: 2, premium: 3 };
-    const currentRank = tierRanking[activePlan];
-    const thisRank = tierRanking[tier];
-
-    if (thisRank > currentRank)
-      return {
-        bg: "#2196F3", // Blue for upgrade
-        hover: "#1976D2",
-        shadow: "rgba(33, 150, 243, 0.4)",
-      };
+    }
 
     return {
-      bg: "#FF9800", // Orange for downgrade
-      hover: "#F57C00",
-      shadow: "rgba(255, 152, 0, 0.4)",
+      bg: subscriptionColors.primaryColor,
+      hover: subscriptionColors.accentColor,
+      shadow: "rgba(100, 52, 252, 0.4)",
     };
   };
 
@@ -299,7 +286,7 @@ const TierCard = ({
               onChange={(e) => onChange("frequency", e.target.value)}
               label="Payment Frequency"
               sx={{ color: subscriptionColors.textColor }}
-              disabled={isActive}
+              disabled={subscription && !isCurrentPlan}
             >
               {frequencyOptions.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -313,20 +300,20 @@ const TierCard = ({
         <FeatureList tier={tier} />
 
         <Box mt="auto" textAlign="center">
-        <PriceDisplay 
-          price={price} // Pass the calculated price directly
-          frequency={selections.frequency || "monthly"}
-          size="large"
-          color={subscriptionColors.textColor}
-        />
+          <PriceDisplay
+            price={price} // Pass the calculated price directly
+            frequency={selections.frequency || "monthly"}
+            size="large"
+            color={subscriptionColors.textColor}
+          />
 
           <Button
             variant="contained"
             fullWidth
             size="large"
-            onClick={() => subscription ? onUpgrade(tier) : onSubscribe()}
-            disabled={isCurrentPlan}
-            startIcon={getButtonIcon()}
+            onClick={() => (subscription ? onUpgrade(tier) : onSubscribe())}
+            disabled={subscription && !isCurrentPlan}
+            startIcon={isCurrentPlan ? <Check /> : null}
             sx={{
               mt: 2,
               backgroundColor: buttonColor.bg,
@@ -339,9 +326,9 @@ const TierCard = ({
                 boxShadow: `0 6px 16px ${buttonColor.shadow}`,
               },
               "&:disabled": {
-                backgroundColor: "#4CAF50",
+                backgroundColor: "#9e9e9e",
                 color: "white",
-                opacity: 0.9,
+                opacity: 0.7,
               },
               fontSize: isMobile ? "0.875rem" : "1rem",
             }}

@@ -32,7 +32,9 @@ const SubscriptionsPage = () => {
   };
 
   const handlePlanChange = (newTier) => {
-    handleUpdateSubscription(newTier);
+    if (newTier === activePlan) {
+      handleUpdateSubscription(newTier);
+    }
   };
 
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -98,8 +100,8 @@ const SubscriptionsPage = () => {
               }}
             >
               You currently have the{" "}
-              {activePlan.charAt(0).toUpperCase() + activePlan.slice(1)} plan
-              active
+              {activePlan.charAt(0).toUpperCase() + activePlan.slice(1)} plan.
+              You can modify your current plan's options below.
             </Typography>
           </Box>
         )}
