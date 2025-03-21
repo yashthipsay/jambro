@@ -11,11 +11,17 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const bnkVerification = require("./routes/bnkVerification");
 const payoutRoutes = require("./routes/payoutRoutes");
+const subscriptionRoutes = require('./routes/subscriptions/subscriptionRoutes');
 const authRoutes = require("./routes/authRoutes");
+const skuRoutes = require("./routes/subscriptions/skuAdminRoutes");
+const createReservationRouter = require("./routes/reservationRoutes");
 const Booking = require("./models/BookingSchema");
+const groupRoutes = require('./routes/subscriptions/groupRoutes');
 const User = require("./models/User");
 const SessionMonitor = require("./services/sessionMonitor");
+const SubscriptionSyncService = require('./services/subscriptionSyncService');
 const PayoutMonitor = require("./services/PayoutMonitor");
+const rabbitmqService = require("./services/rabbitmqService");
 const app = express();
 require('dotenv').config();
 const PORT = process.env.PORT || 5000;
@@ -41,7 +47,11 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/bank-verification", bnkVerification);
 app.use("/api/payouts", payoutRoutes);
 app.use('/api/spotify', spotifyRoutes);
+app.use('/api/groups', groupRoutes);
 app.use("/api/auth", authRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/skus', skuRoutes);
+app.use('/api/reservations', createReservationRouter(io));
 app.use("/proxy", async (req, res) => {
   console.log("start");
   const { lat, lon, apiKey } = req.query;
@@ -64,6 +74,17 @@ const callDatabase = async () => {
   await connectDB(); // Connect to MongoDB
 };
 
+// Initialize RabbitMQ before starting the server
+async function startServer() {
+  try {
+    await rabbitmqService.connect();
+
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
 // Call the database when the server starts
 callDatabase();
 
@@ -85,12 +106,20 @@ io.on("connection", (socket) => {
   });
 });
 
+// Start the server
+startServer();
+
+const subscriptionSync = new SubscriptionSyncService();
+subscriptionSync.start();
+
 // After your socket.io setup
 const sessionMonitor = new SessionMonitor(io);
 sessionMonitor.start();
 
 const payoutMonitor = new PayoutMonitor(io);
 payoutMonitor.start();
+
+
 
 // Start the Express server
 server.listen(PORT, () => {

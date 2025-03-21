@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Typography, useMediaQuery } from "@mui/material";
 import TierCard from "./TierCard";
 import SubscriptionFAQ from "./SubscriptionFAQ";
 import { useSubscriptionLogic } from "./hooks/useSubscriptionLogic";
+import SubscriptionTypeModal from "./SubscriptionTypeModal";
 
 // Define color constants used throughout all subscription components
 export const subscriptionColors = {
@@ -22,7 +23,19 @@ const SubscriptionsPage = () => {
     calculatePrice,
     handleSubscribe,
     activePlan,
+    subscription,
+    handleUpdateSubscription,
   } = useSubscriptionLogic();
+
+  const handleTierClick = (tier) => {
+    handleSubscribe(tier, "INDIVIDUAL");
+  };
+
+  const handlePlanChange = (newTier) => {
+    if (newTier === activePlan) {
+      handleUpdateSubscription(newTier);
+    }
+  };
 
   const isMobile = useMediaQuery("(max-width:600px)");
   const isTablet = useMediaQuery("(max-width:960px)");
@@ -87,8 +100,8 @@ const SubscriptionsPage = () => {
               }}
             >
               You currently have the{" "}
-              {activePlan.charAt(0).toUpperCase() + activePlan.slice(1)} plan
-              active
+              {activePlan.charAt(0).toUpperCase() + activePlan.slice(1)} plan.
+              You can modify your current plan's options below.
             </Typography>
           </Box>
         )}
@@ -115,8 +128,11 @@ const SubscriptionsPage = () => {
               handleSelectionChange("basic", field, value)
             }
             calculatePrice={calculatePrice}
-            onSubscribe={handleSubscribe}
+            onSubscribe={() => handleTierClick("basic")}
             activePlan={activePlan}
+            onUpgrade={handlePlanChange}
+            isCurrentPlan={activePlan === "basic"}
+            subscription={subscription}
           />
 
           <TierCard
@@ -129,9 +145,12 @@ const SubscriptionsPage = () => {
               handleSelectionChange("pro", field, value)
             }
             calculatePrice={calculatePrice}
-            onSubscribe={handleSubscribe}
+            onSubscribe={() => handleTierClick("pro")}
             showAccessOptions={true}
             activePlan={activePlan}
+            onUpgrade={handlePlanChange}
+            isCurrentPlan={activePlan === "pro"}
+            subscription={subscription}
           />
 
           <TierCard
@@ -144,9 +163,12 @@ const SubscriptionsPage = () => {
               handleSelectionChange("premium", field, value)
             }
             calculatePrice={calculatePrice}
-            onSubscribe={handleSubscribe}
+            onSubscribe={() => handleTierClick("premium")}
             showAccessOptions={true}
             activePlan={activePlan}
+            onUpgrade={handlePlanChange}
+            isCurrentPlan={activePlan === "premium"}
+            subscription={subscription}
           />
         </Box>
 

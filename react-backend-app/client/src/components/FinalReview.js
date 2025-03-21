@@ -1,17 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Divider,
-  IconButton,
+    Card,
+    CardContent,
+    Typography,
+    Button,
+    Divider,
+    IconButton,
 } from "@mui/material";
 import { ChevronLeft, CreditCard } from "lucide-react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 const FinalReview = () => {
+  const [isLeaving, setIsLeaving] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -26,88 +27,107 @@ const FinalReview = () => {
   } = location.state;
   const { user } = useAuth0();
   console.log(user.sub);
+
+  // Cleanup to release reservation when component unmounts if leaving
+  useEffect(() => {
+    return () => {
+      if (isLeaving) {
+        fetch("http://localhost:5000/api/reservations/release", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jamRoomId: selectedRoomId,
+            date: selectedDate,
+            slots: selectedSlots,
+          }),
+        });
+      }
+    };
+  }, [isLeaving, selectedRoomId, selectedDate, selectedSlots]);
+
+  // Warn user when they try to close or reload the page
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue =
+        "Are you sure you want to leave? Your temporary reservation will be released.";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () =>
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  // Handle back navigation
+  const handleBack = () => {
+    const confirmLeave = window.confirm(
+      "Are you sure you want to go back? Your temporary reservation will be released."
+    );
+    if (confirmLeave) {
+      setIsLeaving(true);
+      navigate(-1);
+    }
+  };
+
   const checkoutHandler = async (amount) => {
     try {
-      const response = await fetch(
-        "https://gigsaw.onrender.com/api/payments/checkout",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ amount }),
-        }
-      );
-
+      const response = await fetch("http://localhost:5000/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
       const data = await response.json();
       console.log(data);
 
       // Open Razorpay Checkout
       const options = {
-        key: process.env.RAZORPAY_API_KEY, // Replace with your Razorpay key_id
-        amount: data.order.amount * 100, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+        key: process.env.RAZORPAY_API_KEY,
+        amount: data.order.amount * 100,
         currency: "INR",
         name: jamRoomName,
         description: "Jam Room Booking",
-        order_id: data.order.id, // This is the order_id created in the backend
-        callback_url: `http://localhost:3000/payment-success`, // Your success URL
+        order_id: data.order.id,
+        callback_url: `http://localhost:3000/payment-success`,
         prefill: {
           name: user.name,
           email: user.email,
           contact: phoneNumber,
         },
-        theme: {
-          color: "#F37254",
-        },
+        theme: { color: "#F37254" },
         handler: async (response) => {
           console.log(response);
-          const verificationResponse = await fetch(
-            "https://gigsaw.onrender.com/api/payments/verify",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                email: user.email,
-                jamRoomId: selectedRoomId,
-                date: selectedDate,
-                slots: selectedSlots,
-                totalAmount,
-                addonsCost,
-                selectedAddons,
-              }),
-            }
-          );
+          const verificationResponse = await fetch("http://localhost:5000/api/payments/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              email: user.email,
+              jamRoomId: selectedRoomId,
+              date: selectedDate,
+              slots: selectedSlots,
+              totalAmount,
+              addonsCost,
+              selectedAddons,
+            }),
+          });
 
           const verificationData = await verificationResponse.json();
           console.log("Verification data:", verificationData);
           if (verificationData.success) {
-            // Fetch user by email to get user ID
-            const userResponse = await fetch(
-              "https://gigsaw.onrender.com/api/users",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email: user.email }),
-              }
-            );
+            const userResponse = await fetch("http://localhost:5000/api/users", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: user.email }),
+            });
             console.log("verificationData", verificationData);
             const userData = await userResponse.json();
             if (userData.success) {
               const userId = userData.data._id;
               console.log("selected date", selectedDate);
-              // Store the booking
-              await fetch("https://gigsaw.onrender.com/api/bookings", {
+              await fetch("http://localhost:5000/api/bookings", {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   userId,
                   jamRoomId: selectedRoomId,
@@ -117,7 +137,6 @@ const FinalReview = () => {
                   paymentId: response.razorpay_payment_id,
                 }),
               });
-
               navigate(`/confirmation/${verificationData.invoiceId}`);
             } else {
               alert("Payment verification failed");
@@ -125,7 +144,6 @@ const FinalReview = () => {
           }
         },
       };
-
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
     } catch (error) {
@@ -138,11 +156,7 @@ const FinalReview = () => {
       <div className="max-w-md mx-auto p-4">
         {/* Back Button at top */}
         <div className="mb-4 flex items-center">
-          <IconButton
-            onClick={() => navigate(-1)}
-            edge="start"
-            color="primary"
-          >
+          <IconButton onClick={handleBack} edge="start" color="primary">
             <ChevronLeft />
           </IconButton>
           <Typography variant="h6" className="ml-2 font-semibold">
@@ -153,21 +167,21 @@ const FinalReview = () => {
         {/* Jam Room Details */}
         <Card className="mb-4 rounded-xl shadow-sm overflow-hidden">
           <div className="bg-indigo-600 p-4 text-white">
-            <Typography variant="h6" className="font-semibold">{jamRoomName}</Typography>
+            <Typography variant="h6" className="font-semibold">
+              {jamRoomName}
+            </Typography>
             <Typography variant="body2" className="opacity-90">
               {selectedDate}
             </Typography>
           </div>
-
           <CardContent className="p-4">
             <Typography variant="subtitle2" className="text-gray-600 mb-3">
               Selected Time Slots
             </Typography>
-            
             <div className="space-y-2">
               {selectedSlots.map((slot, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="bg-gray-50 p-3 rounded-lg flex justify-between items-center"
                 >
                   <div className="flex items-center">
@@ -192,10 +206,12 @@ const FinalReview = () => {
               <Typography variant="subtitle2" className="text-gray-600 mb-3">
                 Selected Add-ons
               </Typography>
-              
               <div className="space-y-2">
                 {selectedAddons.map((addon, index) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"
+                  >
                     <Typography variant="body2">
                       {addon.instrumentType.join(", ")}
                     </Typography>
@@ -205,8 +221,12 @@ const FinalReview = () => {
                   </div>
                 ))}
                 <div className="flex justify-between items-center pt-2">
-                  <Typography variant="body2" className="font-medium">Add-ons Total</Typography>
-                  <Typography variant="body2" className="font-medium">₹{addonsCost}</Typography>
+                  <Typography variant="body2" className="font-medium">
+                    Add-ons Total
+                  </Typography>
+                  <Typography variant="body2" className="font-medium">
+                    ₹{addonsCost}
+                  </Typography>
                 </div>
               </div>
             </CardContent>
@@ -222,7 +242,6 @@ const FinalReview = () => {
             <div className="bg-gray-50 p-3 rounded-lg mb-3 text-center text-gray-500 text-sm">
               No coupons available
             </div>
-            
             <Typography variant="subtitle2" className="text-gray-600 mb-2">
               Use Credits
             </Typography>
@@ -243,20 +262,15 @@ const FinalReview = () => {
                 ₹{totalAmount - addonsCost}
               </Typography>
             </div>
-
             {addonsCost > 0 && (
               <div className="flex justify-between items-center mb-2">
                 <Typography variant="body2" className="text-gray-600">
                   Add-on Instruments
                 </Typography>
-                <Typography variant="body2">
-                  ₹{addonsCost}
-                </Typography>
+                <Typography variant="body2">₹{addonsCost}</Typography>
               </div>
             )}
-
             <Divider className="my-2" />
-
             <div className="flex justify-between items-center">
               <Typography variant="subtitle1" className="font-semibold">
                 Total Amount
