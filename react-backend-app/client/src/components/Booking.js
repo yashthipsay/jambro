@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
@@ -86,25 +86,24 @@ function Booking() {
     };
   }, [selectedRoom]);
 
-  useMemo(() => {
+  useEffect(() => {
     const fetchServices = async () => {
       try {
-        // Add check for _id
         if (!selectedRoom?.id) {
           console.log("No room ID available");
           return;
         }
-
-        console.log("Fetching services for room:", selectedRoom._id);
-
+  
+        console.log("Fetching services for room:", selectedRoom.id);
+  
         const response = await fetch(
           `http://localhost:5000/api/jamrooms/${selectedRoom.id}/services`
         );
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         const data = await response.json();
         if (data.success) {
           console.log("Services fetched:", data.data);
@@ -115,7 +114,7 @@ function Booking() {
         setServices([]);
       }
     };
-
+  
     fetchServices();
   }, [selectedRoom?.id]);
 
@@ -154,6 +153,28 @@ function Booking() {
     };
   }, []);
 
+  // Check reservations for that particular slot
+  const checkReservations = useCallback(async () => {
+    if (!selectedRoom || !selectedDate) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/reservations/check/${
+          selectedRoom.id
+        }/${moment(selectedDate).format("YYYY-MM-DD")}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Reservation check failed");
+      }
+
+      const data = await response.json();
+      setReservedSlots(new Set(data.reservations.slots.map((r) => r.slotId)));
+    } catch (error) {
+      console.error("Error checking reservations:", error);
+    }
+  }, [selectedRoom, selectedDate]);
+
   // Add after existing useEffect hooks
   useEffect(() => {
     if (selectedDate && selectedRoom) {
@@ -175,27 +196,7 @@ function Booking() {
         socket.off("reservationUpdate");
       };
     }
-  }, [selectedDate, selectedRoom]);
-
-  // Add this function to handle reservation checks
-  const checkReservations = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/reservations/check/${
-          selectedRoom.id
-        }/${moment(selectedDate).format("YYYY-MM-DD")}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Reservation check failed");
-      }
-
-      const data = await response.json();
-      setReservedSlots(new Set(data.reservations.slots.map((r) => r.slotId)));
-    } catch (error) {
-      console.error("Error checking reservations:", error);
-    }
-  };
+  }, [selectedDate, selectedRoom, checkReservations]);
 
   const handleAddonToggle = (addonId) => {
     setSelectedAddons((prev) => {
@@ -226,7 +227,6 @@ function Booking() {
   const handleSubPartSelect = (subPart) => {
     setSelectedSubPart(subPart);
   };
-
 
   const calculateTotalCost = () => {
     const slotsCost = selectedSlots.length * (selectedRoom.feesPerSlot || 500);
@@ -386,6 +386,7 @@ function Booking() {
     setIsLoading(true);
 
     try {
+      // Prepare minimal data for API request
       const slotsDetails = selectedSlots.map((slotId) => {
         const slot = selectedRoom.slots.find((s) => s.slotId === slotId);
         return {
@@ -395,6 +396,7 @@ function Booking() {
         };
       });
 
+      // Simplify addon data - only send what's necessary
       const selectedAddonsDetails = selectedAddons.map((addonId) => {
         const addon = addons.find((a) => a._id === addonId);
         return {
@@ -408,7 +410,7 @@ function Booking() {
         };
       });
 
-      // Add service details if selected
+      // Simplify service data
       const serviceDetails =
         selectedService && selectedSubPart
           ? {
@@ -422,54 +424,66 @@ function Booking() {
             }
           : null;
 
-      // Create temporary reservation
-      const reservation = await fetch(
+      // Calculate costs on the front-end to avoid delays
+      const totalAmount = calculateTotalCost();
+      const addonsCost = calculateAddonsCost();
+
+      // Pre-format the date once
+      const formattedDate = moment(selectedDate)
+        .tz("Asia/Kolkata")
+        .format("YYYY-MM-DD");
+
+      // Create the reservation in a separate step - this might be the slow part
+      console.time("reservation-api-call");
+      const reservationResponse = await fetch(
         "http://localhost:5000/api/reservations/create",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             jamRoomId: selectedRoom.id,
-            date: moment(selectedDate).format("YYYY-MM-DD"),
+            date: formattedDate,
             slots: slotsDetails,
             selectedAddons: selectedAddonsDetails,
             userId: user.sub,
-            service: serviceDetails
+            service: serviceDetails,
           }),
         }
-      ).then((res) => res.json());
+      );
+
+      const reservation = await reservationResponse.json();
+      console.timeEnd("reservation-api-call");
 
       if (!reservation.success) {
         alert(reservation.message || "Failed to reserve slots and addons");
         return;
       }
 
-      navigate("/final-review", {
-        state: {
-          jamRoomName: selectedRoom.name,
-          selectedSlots: slotsDetails,
-          totalAmount: calculateTotalCost(),
-          phoneNumber: selectedPhoneNumber,
-          selectedRoomId: selectedRoom.id,
-          selectedDate: moment(selectedDate)
-            .tz("Asia/Kolkata")
-            .format("YYYY-MM-DD"),
-          selectedAddons: selectedAddonsDetails,
-          addonsCost: calculateAddonsCost(),
-          reservationExpiresAt: reservation.expiresAt,
-          selectedService: selectedService
-            ? {
-                name: selectedService.serviceName,
-                subPart: selectedSubPart
-                  ? {
-                      name: selectedSubPart.name,
-                      price: selectedSubPart.price,
-                    }
-                  : null,
-              }
-            : null,
-        },
-      });
+      // Navigate immediately after API call completes
+      const navigationState = {
+        jamRoomName: selectedRoom.name,
+        selectedSlots: slotsDetails,
+        totalAmount,
+        phoneNumber: selectedPhoneNumber,
+        selectedRoomId: selectedRoom.id,
+        selectedDate: formattedDate,
+        selectedAddons: selectedAddonsDetails,
+        addonsCost,
+        reservationExpiresAt: reservation.expiresAt,
+        selectedService: selectedService
+          ? {
+              name: selectedService.serviceName,
+              subPart: selectedSubPart
+                ? {
+                    name: selectedSubPart.name,
+                    price: selectedSubPart.price,
+                  }
+                : null,
+            }
+          : null,
+      };
+
+      navigate("/final-review", { state: navigationState });
     } catch (error) {
       console.error("Error creating reservation:", error);
       alert("Failed to create reservation");
