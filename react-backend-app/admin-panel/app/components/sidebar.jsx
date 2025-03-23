@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Button } from './ui/button'
-import { Home, Receipt, Wallet, Music, UserCircle } from 'lucide-react'
+import { Home, Receipt, Wallet, Music, UserCircle, Package } from 'lucide-react'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import Link from 'next/link'
 import { useDashboard } from '../context/DashboardContext'
@@ -15,6 +15,7 @@ export function Sidebar() {
     { icon: Home, label: 'Dashboard', path: '/' },
     { icon: Receipt, label: 'Booking History', path: `/bookings/${jamRoomId}` },
     { icon: Wallet, label: 'Payout History', path: `/payouts/${fundAccountId}` },
+    { icon: Package, label: 'Plans & Packages', path: `/plans-and-packages/${jamRoomId}` }, // Add new item
     { icon: UserCircle, label: 'Profile', path: `/profile/${jamRoomId}` },
     { icon: Music, label: 'Personal Branding', path: '/branding' },
   ]
