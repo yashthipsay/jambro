@@ -288,6 +288,7 @@ function JamRoomFinder() {
       id: room.id,
       name: room.name,
       description: room.description,
+      type: room.type, // Add type for Studio check
       location: room.location,
       slots: room.slots,
       distance: room.distance,

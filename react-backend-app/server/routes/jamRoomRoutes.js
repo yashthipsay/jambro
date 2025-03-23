@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {createJamRoom, getAllJamRooms, updateJamRoom, getJamRoomNameById, getJamRoomByEmail, getJamRoomById, uploadJamRoomImages, updateAddons, getAddon, deleteAddon} = require('../controller/jamRoomController');
+const {createJamRoom, getAllJamRooms, updateJamRoom, getJamRoomNameById, getJamRoomByEmail, getJamRoomById, uploadJamRoomImages, updateAddons, getAddon, deleteAddon, addStudioService, getStudioServices, deleteStudioService, updateStudioService} = require('../controller/jamRoomController');
 const { verifyToken } = require('../middleware/auth');
 
 router.post('/create', createJamRoom);
@@ -15,5 +15,17 @@ router.get('/:id/addons', getAddon);
 router.delete('/:id/addons/:addonId', deleteAddon);
 router.get('/email/:email', getJamRoomByEmail);
 router.route('/images').post(uploadJamRoomImages).put(uploadJamRoomImages) // New route for image uploads
+
+// Route to get all studio services for a jam room
+router.get("/:jamRoomId/services", getStudioServices);
+
+// Route to add a new studio service
+router.post("/:jamRoomId/services", addStudioService);
+
+// Route to update an existing studio service
+router.put("/:jamRoomId/services/:serviceId", updateStudioService);
+
+// Route to delete a studio service
+router.delete("/:jamRoomId/services/:serviceId", deleteStudioService);
 
 module.exports = router;

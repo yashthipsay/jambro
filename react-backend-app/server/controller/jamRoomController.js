@@ -446,6 +446,180 @@ const deleteAddon = async (req, res) => {
   }
 };
 
+const addStudioService = async (req, res) => {
+  try {
+    const { jamRoomId } = req.params;
+    const { serviceName, description, category, subParts } = req.body;
+
+    // Validate required fields
+    if (!serviceName || !category || !subParts || !subParts.length) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Service name, category and at least one sub-part are required",
+      });
+    }
+
+    const jamRoom = await JamRoom.findById(jamRoomId);
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: "Jam room not found",
+      });
+    }
+
+    // Validate that this is a Studio type venue
+    if (jamRoom.type !== "Studio") {
+      return res.status(400).json({
+        success: false,
+        message: "Services can only be added to Studio type venues",
+      });
+    }
+
+    // Validate sub-parts
+    for (const subPart of subParts) {
+      if (!subPart.name || !subPart.price) {
+        return res.status(400).json({
+          success: false,
+          message: "Each sub-part must have a name and price",
+        });
+      }
+    }
+
+    // Create new service with sub-parts
+    const newService = {
+      serviceName,
+      description,
+      category,
+      subParts,
+    };
+
+    // Initialize studioServices array if it doesn't exist
+    if (!jamRoom.studioServices) {
+      jamRoom.studioServices = [];
+    }
+
+    jamRoom.studioServices.push(newService);
+    await jamRoom.save();
+
+    res.status(201).json({
+      success: true,
+      data: jamRoom.studioServices,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Update existing service and its sub-parts
+const updateStudioService = async (req, res) => {
+  try {
+    const { jamRoomId, serviceId } = req.params;
+    const { serviceName, description, category, subParts } = req.body;
+
+    const jamRoom = await JamRoom.findById(jamRoomId);
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: "Jam room not found",
+      });
+    }
+
+    const serviceIndex = jamRoom.studioServices.findIndex(
+      (service) => service._id.toString() === serviceId
+    );
+
+    if (serviceIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    // Update service with new data
+    jamRoom.studioServices[serviceIndex] = {
+      ...jamRoom.studioServices[serviceIndex],
+      serviceName:
+        serviceName || jamRoom.studioServices[serviceIndex].serviceName,
+      description:
+        description || jamRoom.studioServices[serviceIndex].description,
+      category: category || jamRoom.studioServices[serviceIndex].category,
+      subParts: subParts || jamRoom.studioServices[serviceIndex].subParts,
+    };
+
+    await jamRoom.save();
+
+    res.status(200).json({
+      success: true,
+      data: jamRoom.studioServices[serviceIndex],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Delete a service (including all its sub-parts)
+const deleteStudioService = async (req, res) => {
+  try {
+    const { jamRoomId, serviceId } = req.params;
+
+    const jamRoom = await JamRoom.findById(jamRoomId);
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: "Jam room not found",
+      });
+    }
+
+    jamRoom.studioServices = jamRoom.studioServices.filter(
+      (service) => service._id.toString() !== serviceId
+    );
+
+    await jamRoom.save();
+
+    res.status(200).json({
+      success: true,
+      data: jamRoom.studioServices,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Get all services for a jam room
+const getStudioServices = async (req, res) => {
+  try {
+    const { jamRoomId } = req.params;
+
+    const jamRoom = await JamRoom.findById(jamRoomId);
+    if (!jamRoom) {
+      return res.status(404).json({
+        success: false,
+        message: "Jam room not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: jamRoom.studioServices || [],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createJamRoom,
   getAllJamRooms,
@@ -457,4 +631,8 @@ module.exports = {
   updateAddons,
   deleteAddon,
   getAddon,
+  addStudioService,
+  updateStudioService,
+  deleteStudioService,
+  getStudioServices,
 };

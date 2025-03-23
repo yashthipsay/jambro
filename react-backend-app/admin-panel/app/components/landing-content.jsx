@@ -30,6 +30,258 @@ const fetchWithAuth = async (url, options = {}) => {
   });
 };
 
+// Add this new component after AddonsCard
+const StudioServicesCard = ({ jamRoomId }) => {
+  const [services, setServices] = useState([]);
+  const [newService, setNewService] = useState({
+    serviceName: '',
+    description: '',
+    category: 'RECORDING',
+    subParts: []
+  });
+  const [newSubPart, setNewSubPart] = useState({
+    name: '',
+    description: '',
+    price: 0
+  });
+  const [editingService, setEditingService] = useState(null);
+
+  // Categories for studio services
+  const SERVICE_CATEGORIES = ['RECORDING', 'MIXING', 'MASTERING', 'PRODUCTION', 'VIDEO'];
+
+  useEffect(() => {
+    fetchServices();
+  }, [jamRoomId]);
+
+  const fetchServices = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/jamrooms/${jamRoomId}/services`);
+      const data = await response.json();
+      if (data.success) {
+        setServices(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error);
+      setServices([]);
+    }
+  };
+
+  const handleAddSubPart = () => {
+    if (!newSubPart.name || !newSubPart.price) return;
+    setNewService(prev => ({
+      ...prev,
+      subParts: [...prev.subParts, newSubPart]
+    }));
+    setNewSubPart({ name: '', description: '', price: 0 });
+  };
+
+  const handleAddService = async () => {
+    try {
+      const response = await fetchWithAuth(
+        `http://localhost:5000/api/jamrooms/${jamRoomId}/services`,
+        {
+          method: 'POST',
+          body: JSON.stringify(newService)
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        setServices(data.data);
+        setNewService({
+          serviceName: '',
+          description: '',
+          category: 'RECORDING',
+          subParts: []
+        });
+      }
+    } catch (error) {
+      console.error('Error adding service:', error);
+    }
+  };
+
+  const handleUpdateService = async (serviceId) => {
+    try {
+      const response = await fetchWithAuth(
+        `http://localhost:5000/api/jamrooms/${jamRoomId}/services/${serviceId}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(editingService)
+        }
+      );
+
+      const data = await response.json();
+      if (data.success) {
+        setServices(prev => prev.map(service => 
+          service._id === serviceId ? data.data : service
+        ));
+        setEditingService(null);
+      }
+    } catch (error) {
+      console.error('Error updating service:', error);
+    }
+  };
+
+  const handleDeleteService = async (serviceId) => {
+    try {
+      const response = await fetchWithAuth(
+        `http://localhost:5000/api/jamrooms/${jamRoomId}/services/${serviceId}`,
+        { method: 'DELETE' }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setServices(data.data);
+      }
+    } catch (error) {
+      console.error('Error deleting service:', error);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-[#7DF9FF] mb-4">Studio Services</h2>
+          
+          {/* Add New Service Form */}
+          <div className="space-y-4 mb-6">
+            <div className="flex gap-4">
+              <Input
+                placeholder="Service Name"
+                value={newService.serviceName}
+                onChange={(e) => setNewService({ ...newService, serviceName: e.target.value })}
+                className="bg-black/20 border-[#7DF9FF]/30 text-white"
+              />
+              <select
+                value={newService.category}
+                onChange={(e) => setNewService({ ...newService, category: e.target.value })}
+                className="bg-black/20 border border-[#7DF9FF]/30 rounded p-2 text-white"
+              >
+                {SERVICE_CATEGORIES.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+            
+            <Input
+              placeholder="Service Description"
+              value={newService.description}
+              onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+              className="bg-black/20 border-[#7DF9FF]/30 text-white"
+            />
+
+            {/* Add Sub-parts */}
+            <div className="space-y-2">
+              <Label className="text-[#7DF9FF]">Add Sub-parts</Label>
+              <div className="flex gap-4">
+                <Input
+                  placeholder="Sub-part Name"
+                  value={newSubPart.name}
+                  onChange={(e) => setNewSubPart({ ...newSubPart, name: e.target.value })}
+                  className="bg-black/20 border-[#7DF9FF]/30 text-white"
+                />
+                <Input
+                  type="number"
+                  placeholder="Price"
+                  value={newSubPart.price}
+                  onChange={(e) => setNewSubPart({ ...newSubPart, price: Number(e.target.value) })}
+                  className="bg-black/20 border-[#7DF9FF]/30 text-white w-32"
+                />
+                <Button
+                  onClick={handleAddSubPart}
+                  className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
+                >
+                  Add Sub-part
+                </Button>
+              </div>
+            </div>
+
+            {/* Display added sub-parts */}
+            {newService.subParts.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-[#7DF9FF]">Added Sub-parts:</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {newService.subParts.map((subPart, index) => (
+                    <div key={index} className="flex justify-between items-center p-2 bg-black/20 rounded">
+                      <span className="text-white">{subPart.name} - ₹{subPart.price}</span>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setNewService(prev => ({
+                          ...prev,
+                          subParts: prev.subParts.filter((_, i) => i !== index)
+                        }))}
+                        className="bg-red-500/20 hover:bg-red-500/30"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Button
+              onClick={handleAddService}
+              className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white w-full"
+              disabled={!newService.serviceName || newService.subParts.length === 0}
+            >
+              Add Service
+            </Button>
+          </div>
+
+          {/* Display Services */}
+          <ScrollArea className="max-h-[400px] overflow-y-auto">
+            <div className="space-y-4">
+              {services.map((service) => (
+                <div
+                  key={service._id}
+                  className="p-4 border border-[#7DF9FF]/30 rounded-lg bg-black/20"
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <div>
+                      <h3 className="text-xl font-bold text-[#7DF9FF]">{service.serviceName}</h3>
+                      <p className="text-[#7DF9FF]/70">{service.category}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => setEditingService(service)}
+                        className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => handleDeleteService(service._id)}
+                        className="bg-red-500/20 hover:bg-red-500/30"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {service.subParts.map((subPart, index) => (
+                      <div key={index} className="p-2 bg-black/30 rounded">
+                        <div className="text-[#7DF9FF]">{subPart.name}</div>
+                        <div className="text-[#7DF9FF]/70">₹{subPart.price}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      </Card>
+    </motion.div>
+  );
+};
+
 const AddonsCard = ({ jamRoomId }) => {
   const [addons, setAddons] = useState([]);
   const { user } = useUser();
@@ -258,8 +510,8 @@ export function LandingContent() {
   }, [payouts]);
 
   return (
-    <div className="flex-1 p-8 pl-72 pt-24">
-      <div className="max-w-7xl mx-auto space-y-4">
+    <div className="flex-1 p-8 pl-72 pt-24 h-screen overflow-y-auto">
+      <div className="max-w-7xl mx-auto space-y-4 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Card 1: Today's Earnings */}
           <motion.div
@@ -301,6 +553,9 @@ export function LandingContent() {
 
         {/* Addons Card */}
         {jamRoomId && <AddonsCard jamRoomId={jamRoomId} />}
+
+        {/* Studio Services Card - Replace Recent Activity */}
+        {jamRoomId && <StudioServicesCard jamRoomId={jamRoomId} />}
 
         {/* Card 4: Placeholder for future content */}
         <motion.div

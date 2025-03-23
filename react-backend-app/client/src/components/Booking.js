@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
@@ -58,6 +58,9 @@ function Booking() {
   const [addons, setAddons] = useState([]);
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [reservedSlots, setReservedSlots] = useState(new Set());
+  const [services, setServices] = useState([]);
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedSubPart, setSelectedSubPart] = useState(null);
 
   useEffect(() => {
     if (selectedRoom) {
@@ -82,6 +85,39 @@ function Booking() {
       socket.off("bookings");
     };
   }, [selectedRoom]);
+
+  useMemo(() => {
+    const fetchServices = async () => {
+      try {
+        // Add check for _id
+        if (!selectedRoom?.id) {
+          console.log("No room ID available");
+          return;
+        }
+
+        console.log("Fetching services for room:", selectedRoom._id);
+
+        const response = await fetch(
+          `http://localhost:5000/api/jamrooms/${selectedRoom.id}/services`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          console.log("Services fetched:", data.data);
+          setServices(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching services:", error);
+        setServices([]);
+      }
+    };
+
+    fetchServices();
+  }, [selectedRoom?.id]);
 
   useEffect(() => {
     if (user) {
@@ -181,10 +217,102 @@ function Booking() {
     }, 0);
   };
 
+  // Add service selection handlers
+  const handleServiceSelect = (service) => {
+    setSelectedService(service);
+    setSelectedSubPart(null); // Reset sub-part when changing service
+  };
+
+  const handleSubPartSelect = (subPart) => {
+    setSelectedSubPart(subPart);
+  };
+
+  // Add this new section in your return statement, before the fixed action buttons
+  const renderServicesSection = () => (
+    <Card className="mb-6 rounded-xl shadow-sm">
+      <CardContent className="p-4">
+        <Typography variant="subtitle2" className="text-gray-600 mb-3">
+          Studio Services
+        </Typography>
+
+        {services.length > 0 ? (
+          <div className="space-y-4">
+            {/* Service Selection */}
+            <div className="space-y-2">
+              <Typography variant="body2" className="text-gray-500">
+                Select Service
+              </Typography>
+              <div className="grid grid-cols-2 gap-2">
+                {services.map((service) => (
+                  <div
+                    key={service._id}
+                    onClick={() => handleServiceSelect(service)}
+                    className={`
+                        p-3 rounded-lg cursor-pointer transition-all
+                        ${
+                          selectedService?._id === service._id
+                            ? "bg-indigo-100 border-2 border-indigo-500"
+                            : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                        }
+                      `}
+                  >
+                    <Typography variant="body2" className="font-medium">
+                      {service.serviceName}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {service.category}
+                    </Typography>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Sub-parts Selection */}
+            {selectedService && (
+              <div className="space-y-2">
+                <Typography variant="body2" className="text-gray-500">
+                  Select Option
+                </Typography>
+                <div className="grid grid-cols-2 gap-2">
+                  {selectedService.subParts.map((subPart, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSubPartSelect(subPart)}
+                      className={`
+                          p-3 rounded-lg cursor-pointer transition-all
+                          ${
+                            selectedSubPart?._id === subPart._id
+                              ? "bg-indigo-100 border-2 border-indigo-500"
+                              : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                          }
+                        `}
+                    >
+                      <Typography variant="body2" className="font-medium">
+                        {subPart.name}
+                      </Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        ₹{subPart.price}
+                      </Typography>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Typography variant="body2" color="textSecondary">
+            No services available for this studio
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   const calculateTotalCost = () => {
     const slotsCost = selectedSlots.length * (selectedRoom.feesPerSlot || 500);
     const addonsCost = calculateAddonsCost();
-    return slotsCost + addonsCost;
+    const serviceCost = selectedSubPart ? selectedSubPart.price : 0;
+    return slotsCost + addonsCost + serviceCost;
   };
 
   if (!selectedRoom || selectedRoom.id !== id) {
@@ -394,6 +522,17 @@ function Booking() {
           selectedAddons: selectedAddonsDetails,
           addonsCost: calculateAddonsCost(),
           reservationExpiresAt: reservation.expiresAt,
+          selectedService: selectedService
+            ? {
+                name: selectedService.serviceName,
+                subPart: selectedSubPart
+                  ? {
+                      name: selectedSubPart.name,
+                      price: selectedSubPart.price,
+                    }
+                  : null,
+              }
+            : null,
         },
       });
     } catch (error) {
@@ -540,6 +679,87 @@ function Booking() {
           </CardContent>
         </Card>
 
+        {/* Studio Services Section */}
+        {selectedRoom.type === "Studio" && (
+          <Card className="mb-6 rounded-xl shadow-sm">
+            <CardContent className="p-4">
+              <Typography variant="subtitle2" className="text-gray-600 mb-3">
+                Studio Services
+              </Typography>
+
+              {services.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Service Selection */}
+                  <div className="space-y-2">
+                    <Typography variant="body2" className="text-gray-500">
+                      Select Service
+                    </Typography>
+                    <div className="grid grid-cols-2 gap-2">
+                      {services.map((service) => (
+                        <div
+                          key={service._id}
+                          onClick={() => handleServiceSelect(service)}
+                          className={`
+                            p-3 rounded-lg cursor-pointer transition-all
+                            ${
+                              selectedService?._id === service._id
+                                ? "bg-indigo-100 border-2 border-indigo-500"
+                                : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                            }
+                          `}
+                        >
+                          <Typography variant="body2" className="font-medium">
+                            {service.serviceName}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            {service.category}
+                          </Typography>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sub-parts Selection */}
+                  {selectedService && (
+                    <div className="space-y-2">
+                      <Typography variant="body2" className="text-gray-500">
+                        Select Option
+                      </Typography>
+                      <div className="grid grid-cols-2 gap-2">
+                        {selectedService.subParts.map((subPart, index) => (
+                          <div
+                            key={index}
+                            onClick={() => handleSubPartSelect(subPart)}
+                            className={`
+                              p-3 rounded-lg cursor-pointer transition-all
+                              ${
+                                selectedSubPart?._id === subPart._id
+                                  ? "bg-indigo-100 border-2 border-indigo-500"
+                                  : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                              }
+                            `}
+                          >
+                            <Typography variant="body2" className="font-medium">
+                              {subPart.name}
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary">
+                              ₹{subPart.price}
+                            </Typography>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Typography variant="body2" color="textSecondary">
+                  No services available for this studio
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* New Addons Section */}
         <Card className="mb-4 rounded-xl shadow-sm">
           <CardContent className="p-4">
@@ -685,6 +905,18 @@ function Booking() {
                 </Typography>
                 <Typography variant="body2">
                   ₹{calculateAddonsCost()}
+                </Typography>
+              </div>
+            )}
+
+            {selectedSubPart && (
+              <div className="flex justify-between items-center mb-2">
+                <Typography variant="body2" className="text-gray-600">
+                  Studio Service ({selectedService.serviceName} -{" "}
+                  {selectedSubPart.name})
+                </Typography>
+                <Typography variant="body2">
+                  ₹{selectedSubPart.price}
                 </Typography>
               </div>
             )}

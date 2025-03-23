@@ -32,6 +32,9 @@ function JamRoomDetails() {
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [artistAlbums, setArtistAlbums] = useState([]);
+  const [services, setServices] = useState([]);
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedSubPart, setSelectedSubPart] = useState(null);
   // Add handleModalToggle function
   const handleModalToggle = () => setModalOpen(!modalOpen);
 
@@ -55,6 +58,7 @@ function JamRoomDetails() {
       fetchArtistAlbums(selectedRoom.ownerDetails.spotify.username);
     }
   }, [selectedRoom]);
+
 
   if (!selectedRoom) {
     return (
@@ -426,29 +430,7 @@ function JamRoomDetails() {
               </Collapse>
             </div>
 
-            {/* Other Services */}
-            <div>
-              <Typography variant="subtitle2" className="text-gray-600 mb-2">
-                Other Services
-              </Typography>
-              <div className="grid grid-cols-2 gap-2">
-                {selectedRoom.otherServices?.map((service, index) => (
-                  <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                    <Typography variant="body2" className="font-medium">
-                      {service.name}
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      ₹{service.price}
-                    </Typography>
-                  </div>
-                )) || (
-                  <Typography variant="body2" color="textSecondary" className="col-span-2">
-                    No additional services available
-                  </Typography>
-                )}
-              </div>
-            </div>
-            <Divider className="my-4" />
+
           </CardContent>
         </Card>
 

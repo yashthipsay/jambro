@@ -23,6 +23,31 @@ const addonSchema = new mongoose.Schema({
   },
 });
 
+// Create a schema for service sub-parts
+const serviceSubPartSchema = new mongoose.Schema({
+  name: {
+    type: String,
+  },
+  description: String,
+  price: {
+    type: Number,
+  },
+});
+
+// Create a schema for studio services
+const studioServiceSchema = new mongoose.Schema({
+  serviceName: {
+    type: String,
+    required: true,
+  },
+  description: String,
+  category: {
+    type: String,
+    required: true,
+  },
+  subParts: [serviceSubPartSchema],
+});
+
 const jamRoomSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -105,6 +130,10 @@ const jamRoomSchema = new mongoose.Schema({
   },
   // Add one more feature, addons, where the owner can display equipments for rent for a live jamming session.
   addons: [addonSchema],
+  studioServices: {
+    type: [studioServiceSchema],
+    default: [],
+  },
 });
 
 const JamRoom = mongoose.model("JamRoom", jamRoomSchema);
