@@ -29,6 +29,7 @@ export function findClosestJamRooms() {
           // Calculate distance for each room
           const jamRoomsWithDistance = data.data.map((room) => ({
             id: room._id,
+            type: room.type,
             name: room.jamRoomDetails.name,
             description: room.jamRoomDetails.description,
             location: room.location,

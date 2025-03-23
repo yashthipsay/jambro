@@ -13,6 +13,7 @@ const s3 = new Aws.S3({
 const createJamRoom = async (req, res) => {
   try {
     const {
+      type,
       jamRoomDetails,
       ownerDetails,
       location,
@@ -25,6 +26,7 @@ const createJamRoom = async (req, res) => {
 
     // Validate required fields
     if (
+      !type ||
       !jamRoomDetails ||
       !jamRoomDetails.name ||
       !jamRoomDetails.description ||
@@ -71,6 +73,7 @@ const createJamRoom = async (req, res) => {
 
     // Create new jam room
     const jamRoom = new JamRoom({
+      type,
       jamRoomDetails,
       ownerDetails,
       location,
@@ -276,16 +279,16 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
-    files: 10 // Maximum number of files
+    files: 10, // Maximum number of files
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    if (file.mimetype.startsWith("image/")) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed!'), false);
+      cb(new Error("Only image files are allowed!"), false);
     }
-  }
-}).array('images'); // Use 'images' consistently here
+  },
+}).array("images"); // Use 'images' consistently here
 
 const uploadJamRoomImages = async (req, res) => {
   try {
@@ -293,57 +296,59 @@ const uploadJamRoomImages = async (req, res) => {
       if (err instanceof multer.MulterError) {
         return res.status(400).json({
           success: false,
-          message: 'File upload error',
-          error: err.message
+          message: "File upload error",
+          error: err.message,
         });
       } else if (err) {
         return res.status(500).json({
           success: false,
-          message: 'Server error',
-          error: err.message
+          message: "Server error",
+          error: err.message,
         });
       }
 
       if (!req.files || req.files.length === 0) {
         return res.status(400).json({
           success: false,
-          message: 'No images provided'
+          message: "No images provided",
         });
       }
 
       try {
-        const imageUrls = await Promise.all(req.files.map(async (file) => {
-          const params = {
-            Bucket: process.env.S3_BUCKET_NAME,
-            Key: `jamrooms/${Date.now()}-${file.originalname}`,
-            Body: file.buffer,
-            ContentType: file.mimetype,
-            ACL: 'public-read'
-          };
+        const imageUrls = await Promise.all(
+          req.files.map(async (file) => {
+            const params = {
+              Bucket: process.env.S3_BUCKET_NAME,
+              Key: `jamrooms/${Date.now()}-${file.originalname}`,
+              Body: file.buffer,
+              ContentType: file.mimetype,
+              ACL: "public-read",
+            };
 
-          const uploadResult = await s3.upload(params).promise();
-          return uploadResult.Location;
-        }));
+            const uploadResult = await s3.upload(params).promise();
+            return uploadResult.Location;
+          })
+        );
 
         res.status(200).json({
           success: true,
-          imageUrls
+          imageUrls,
         });
       } catch (uploadError) {
-        console.error('S3 upload error:', uploadError);
+        console.error("S3 upload error:", uploadError);
         res.status(500).json({
           success: false,
-          message: 'Error uploading to S3',
-          error: uploadError.message
+          message: "Error uploading to S3",
+          error: uploadError.message,
         });
       }
     });
   } catch (error) {
-    console.error('Error uploading images:', error);
+    console.error("Error uploading images:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: "Server error",
+      error: error.message,
     });
   }
 };

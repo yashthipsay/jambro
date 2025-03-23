@@ -24,6 +24,10 @@ const addonSchema = new mongoose.Schema({
 });
 
 const jamRoomSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ["Jamroom", "Studio"],
+  },
   jamRoomDetails: {
     name: { type: String, required: true },
     description: { type: String, required: true },

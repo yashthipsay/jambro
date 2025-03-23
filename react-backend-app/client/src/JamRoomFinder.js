@@ -5,10 +5,8 @@ import {
   Button,
   Card,
   CardContent,
-  CardMedia,
   Typography,
   CircularProgress,
-  Divider,
 } from "@mui/material";
 import {
   ChevronLeft,
@@ -24,7 +22,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { findClosestJamRooms } from "./utils/jamRoomUtils";
-import { Mic, Guitar } from "lucide-react";
+import { Guitar } from "lucide-react";
 
 function JamRoomCard({ room, onClick, colors }) {
   const [currentImage, setCurrentImage] = useState(0);
@@ -185,6 +183,7 @@ function JamRoomFinder() {
   const [jamRooms, setJamRooms] = useState([]);
   const [userLatitude, setUserLatitude] = useState(null);
   const [userLongitude, setUserLongitude] = useState(null);
+  const [filteredJamRooms, setFilteredJamRooms] = useState([]);
   const navigate = useNavigate();
 
   // Main service categories (superset)
@@ -258,7 +257,26 @@ function JamRoomFinder() {
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
     // You can add filtering logic here based on the selected category
+
+      // Filter rooms based on category
+  switch(category) {
+    case "All":
+      setFilteredJamRooms(jamRooms);
+      break;
+    case "Jamrooms":
+      setFilteredJamRooms(jamRooms.filter(room => room.type === "Jamroom"));
+      break;
+    case "Recording Studios":
+      setFilteredJamRooms(jamRooms.filter(room => room.type === "Studio"));
+      break;
+    default:
+      setFilteredJamRooms(jamRooms);
+  }
   };
+
+  useEffect(() => {
+    setFilteredJamRooms(jamRooms);
+  }, [jamRooms]);
 
   const handleCardClick = (room) => {
     if (!isAuthenticated) {
@@ -491,19 +509,19 @@ function JamRoomFinder() {
               </Card>
             ) : (
               <div className="space-y-3">
-                {jamRooms.map((room) => (
-                  <JamRoomCard
-                    key={room.id}
-                    room={room}
-                    onClick={() => handleCardClick(room)}
-                    colors={{
-                      primaryColor,
-                      secondaryColor,
-                      accentColor,
-                      textColor,
-                    }}
-                  />
-                ))}
+                  {filteredJamRooms.map((room) => (
+                    <JamRoomCard
+                      key={room.id}
+                      room={room}
+                      onClick={() => handleCardClick(room)}
+                      colors={{
+                        primaryColor,
+                        secondaryColor,
+                        accentColor,
+                        textColor,
+                      }}
+                    />
+                  ))}
               </div>
             )}
           </div>

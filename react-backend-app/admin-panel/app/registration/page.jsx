@@ -8,6 +8,7 @@ import { Input } from "@/app/components/ui/input";
 import { Button } from "@/app/components/ui/button";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Label } from "@/app/components/ui/label";
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { AlertDescription } from "@/app/components/ui/alert";
 import { motion } from 'framer-motion';
@@ -52,6 +53,7 @@ const JamRoomRegistration = () => {
 
   const { register, handleSubmit, formState: { errors }, watch, setValue, resetField } = useForm({
     defaultValues: {
+      type: "Jamroom",
       jamRoomDetails: {
         name: "",
         description: ""
@@ -184,6 +186,7 @@ const JamRoomRegistration = () => {
       
       const formData = {
         ...data,
+        feesPerSlot: parseInt(data.feesPerSlot),
         images: uploadedImageUrls.length > 0 ? uploadedImageUrls : images,
         bankDetails: {
           validationType: "UPI"
@@ -280,6 +283,44 @@ const JamRoomRegistration = () => {
 
                 <TabsContent value="basic" className="mt-6 space-y-8">
                   <div className="space-y-6">
+                        <Label className="text-white text-lg mb-4 block">Venue Type</Label>
+                        <RadioGroup
+                          {...register("type", { required: true })}
+                          className="flex gap-6"
+                          defaultValue="Jamroom"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem 
+                              value="Jamroom" 
+                              id="jamroom"
+                              className="border-[#7DF9FF]/20"
+                            />
+                            <Label 
+                              htmlFor="jamroom" 
+                              className="text-white"
+                            >
+                              Jam Room
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem 
+                              value="Studio" 
+                              id="studio"
+                              className="border-[#7DF9FF]/20"
+                            />
+                            <Label 
+                              htmlFor="studio" 
+                              className="text-white"
+                            >
+                              Studio
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                        {errors.type && (
+                          <AlertDescription className="text-red-400 mt-1">
+                            Please select a venue type
+                          </AlertDescription>
+                        )}
                     <div>
                       <Label htmlFor="name" className="text-white text-lg mb-2 block">Jam Room Name</Label>
                       <Input
