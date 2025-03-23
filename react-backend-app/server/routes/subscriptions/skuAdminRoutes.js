@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { createSKU, updateSKU, deleteSKU, getSKUs } = require("../../controller/adminFunctions/skuController");
+const { createSKU, updateSKU, deleteSKU, getSKUs } = require("../../controller/additionalFunctions/skuController");
 
 // Route to create a new SKU
 router.post("/", createSKU);
