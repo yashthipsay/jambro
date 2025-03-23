@@ -93,13 +93,14 @@ class RabbitMQService {
     }
   }
 
-  async createReservation(jamRoomId, date, slots, addons, userId) {
+  async createReservation(jamRoomId, date, slots, addons, userId, service = null) {
     const key = `${jamRoomId}-${date}`;
     const reservation = {
       userId,
       slots,
-      addons, // Add addons to the reservation
-      expiresAt: Date.now() + 5 * 60 * 1000, // 10 minutes
+      addons,
+      service, // Add service to reservation
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
     };
 
     // Store in memory
@@ -108,7 +109,7 @@ class RabbitMQService {
     }
     const roomReservations = this.tempReservations.get(key);
 
-    // Check for slot and addon conflicts
+    // Check for slot conflicts
     for (const slot of slots) {
       if (this.isSlotReserved(jamRoomId, date, slot.slotId)) {
         return { success: false, message: "Some slots are already reserved" };
@@ -132,8 +133,13 @@ class RabbitMQService {
       roomReservations.set(`addon-${addon.addonId}`, reservation);
     }
 
-    // Schedule expiration
-    const expiryMsg = { jamRoomId, date, slots, addons };
+    // Store service reservation if present
+    if (service) {
+      roomReservations.set(`service-${service.id}`, reservation);
+    }
+
+    // Schedule expiration with updated message including service
+    const expiryMsg = { jamRoomId, date, slots, addons, service };
     this.channel.publish(
       this.mainExchange,
       "new.reservation",
@@ -145,6 +151,19 @@ class RabbitMQService {
     );
 
     return { success: true, expiresAt: reservation.expiresAt };
+  }
+
+  // Add method to check service availability
+  isServiceReserved(jamRoomId, date, serviceId) {
+    const key = `${jamRoomId}-${date}`;
+    const roomReservations = this.tempReservations.get(key);
+    if (!roomReservations) return false;
+
+    const serviceKey = `service-${serviceId}`;
+    const reservation = roomReservations.get(serviceKey);
+    if (!reservation) return false;
+
+    return reservation.expiresAt > Date.now();
   }
 
   getReservedAddonCount(jamRoomId, date, addonId) {
@@ -198,15 +217,18 @@ class RabbitMQService {
     return reservation.expiresAt > Date.now();
   }
 
-  releaseReservation(jamRoomId, date, slots) {
+  releaseReservation(jamRoomId, date, slots, service = null) {
     const key = `${jamRoomId}-${date}`;
     const roomReservations = this.tempReservations.get(key);
     if (roomReservations) {
-      if (roomReservations) {
-        slots.forEach((slot) => {
-          // Use the same key format as in createReservation
-          roomReservations.delete(`slot-${slot.slotId}`);
-        });
+      // Release slots
+      slots.forEach((slot) => {
+        roomReservations.delete(`slot-${slot.slotId}`);
+      });
+
+      // Release service if present
+      if (service) {
+        roomReservations.delete(`service-${service.id}`);
       }
     }
   }
