@@ -82,37 +82,39 @@ const skuSchema = new mongoose.Schema(
   {
     skuId: {
       type: String,
-      required: true,
       unique: true,
+    },
+    jamroomId: {
+      type: String,
     },
     name: {
       type: String,
-      required: true,
     },
     description: {
       type: String,
-      required: true,
+    },
+    features: {
+      type: [String],
     },
     price: {
       type: Number,
-      required: true,
     },
     duration: {
       type: Number, // in months
-      required: true,
+    },
+    durationType: {
+      type: String,
+      enum: ["MONTHLY", "YEARLY"],
     },
     hoursPerMonth: {
       type: Number,
-      required: true,
     },
     accessType: {
       type: String,
       enum: ["JAM_ROOM", "STUDIO", "BOTH"],
-      required: true,
     },
     isActive: {
       type: Boolean,
-      default: true,
     },
   },
   {

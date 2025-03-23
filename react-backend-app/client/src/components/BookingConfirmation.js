@@ -180,6 +180,23 @@ const BookingConfirmation = () => {
                       </div>
                     )}
                     
+                        {/* Studio Services Section */}
+                          {invoiceData.service && (
+                            <div className="flex justify-between items-center py-1">
+                              <div>
+                                <Typography variant="body2" className="text-gray-600">
+                                  {invoiceData.service.name}
+                                </Typography>
+                                <Typography variant="caption" className="text-gray-500">
+                                  {invoiceData.service.subPart.name}
+                                </Typography>
+                              </div>
+                              <Typography variant="body2" className="font-medium">
+                                ₹{invoiceData.service.subPart.price}
+                              </Typography>
+                            </div>
+                          )}
+                    
                     {invoiceData.taxAmount > 0 && (
                       <div className="flex justify-between">
                         <Typography variant="body2">Tax</Typography>
@@ -207,7 +224,7 @@ const BookingConfirmation = () => {
                 {/* Footer with QR code placeholder */}
                 <div className="mt-6 pt-4 border-t text-center">
                   <Typography variant="caption" className="text-gray-500">
-                    Thank you for booking with GigSaw! For support, contact support@gigsaw.com
+                    Thank you for booking with GigSaw! For support, contact gigsawservices@.com
                   </Typography>
                 </div>
               </Paper>

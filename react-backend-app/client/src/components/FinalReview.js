@@ -24,6 +24,7 @@ const FinalReview = () => {
     selectedDate,
     addonsCost,
     selectedAddons,
+    selectedService,
   } = location.state;
   const { user } = useAuth0();
   console.log(user.sub);
@@ -109,6 +110,7 @@ const FinalReview = () => {
               totalAmount,
               addonsCost,
               selectedAddons,
+              selectedService, 
             }),
           });
 
@@ -135,6 +137,7 @@ const FinalReview = () => {
                   slots: selectedSlots,
                   totalAmount: totalAmount,
                   paymentId: response.razorpay_payment_id,
+                  service: selectedService,
                 }),
               });
               navigate(`/confirmation/${verificationData.invoiceId}`);
@@ -233,6 +236,34 @@ const FinalReview = () => {
           </Card>
         )}
 
+        {/* Studio Services Section */}
+          {selectedService && selectedService.subPart && (
+            <Card className="mb-4 rounded-xl shadow-sm">
+              <CardContent className="p-4">
+                <Typography variant="subtitle2" className="text-gray-600 mb-3">
+                  Selected Studio Service
+                </Typography>
+                <div className="space-y-2">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex justify-between items-center mb-1">
+                      <Typography variant="body2" className="text-gray-700 font-medium">
+                        {selectedService.name}
+                      </Typography>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <Typography variant="body2" className="text-gray-600">
+                        {selectedService.subPart.name}
+                      </Typography>
+                      <Typography variant="body2" className="font-medium">
+                        ₹{selectedService.subPart.price}
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
         {/* Coupons and Credits */}
         <Card className="mb-4 rounded-xl shadow-sm">
           <CardContent className="p-4">
@@ -259,7 +290,7 @@ const FinalReview = () => {
                 Jam Room Fee ({selectedSlots.length} slots)
               </Typography>
               <Typography variant="body2">
-                ₹{totalAmount - addonsCost}
+                ₹{totalAmount - addonsCost - (selectedService?.subPart?.price || 0)}
               </Typography>
             </div>
             {addonsCost > 0 && (
@@ -268,6 +299,14 @@ const FinalReview = () => {
                   Add-on Instruments
                 </Typography>
                 <Typography variant="body2">₹{addonsCost}</Typography>
+              </div>
+            )}
+            {selectedService?.subPart && (
+              <div className="flex justify-between items-center mb-2">
+                <Typography variant="body2" className="text-gray-600">
+                  Studio Service ({selectedService.name})
+                </Typography>
+                <Typography variant="body2">₹{selectedService.subPart.price}</Typography>
               </div>
             )}
             <Divider className="my-2" />
