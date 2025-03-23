@@ -13,7 +13,7 @@ class RabbitMQService {
 
   async connect() {
     try {
-      this.connection = await amqp.connect("amqp://localhost");
+      this.connection = await amqp.connect("amqps://uecrezcy:ViD6tHdW7fZPUa-w6RMMZ5d_94mHgkDJ@puffin.rmq2.cloudamqp.com/uecrezcy");
       this.channel = await this.connection.createChannel();
 
       // Assert Exchanges
