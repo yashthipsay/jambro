@@ -121,6 +121,10 @@ const handleSectionSave = async (section) => {
     
     if (section === 'additional') {
       // Handle images separately if there are any new uploads
+      const existingImages = formData.images?.filter(
+        image => !image.startsWith('blob:')
+      ) || [];
+
       if (imageFiles.length > 0) {
         const uploadFormData = new FormData();
         formData.images?.forEach(image => {
@@ -129,12 +133,14 @@ const handleSectionSave = async (section) => {
         imageFiles.forEach(file => uploadFormData.append('images', file));
 
         const imageUploadResponse = await fetch(
-          `http://localhost:5000/api/jamrooms/${jamRoomData._id}/images`,
-          { method: 'PUT', body: uploadFormData }
+          `http://localhost:5000/api/jamrooms/images`,
+          { method: 'POST', body: uploadFormData }
         );
         const imageData = await imageUploadResponse.json();
         if (!imageData.success) throw new Error('Failed to upload images');
-        formData.images = imageData.imageUrls;
+
+       // Merge existing images with the new image URLs
+        formData.images = [...existingImages, ...imageData.imageUrls];
       }
       console.log(`Formdata for ${section} update:`, formData);
 
@@ -144,7 +150,8 @@ const handleSectionSave = async (section) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           feesPerSlot: parseInt(formData.feesPerSlot),
-          slots: formData.slots
+          slots: formData.slots,
+          images: formData.images
         }),
       });
 
@@ -400,6 +407,8 @@ const handleSectionSave = async (section) => {
             <button
               onClick={() => {
                 const newImages = jamRoomData.images.filter((_, i) => i !== index);
+                        // Update both the jamRoomData state and the form value
+                setJamRoomData(prev => ({ ...prev, images: newImages }));
                 setValue('images', newImages);
               }}
               className="absolute top-2 right-2 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"

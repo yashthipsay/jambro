@@ -12,6 +12,7 @@ export function DashboardProvider({ children }) {
     const [jamRoomId, setJamRoomId] = useState(null);
     const [fundAccountId, setFundAccountId] = useState(null);
     const [loading, setLoading] = useState(true);
+
   
     useEffect(() => {
       const verifyRegistration = async () => {
@@ -87,7 +88,7 @@ export function DashboardProvider({ children }) {
           jamRoomId, 
           fundAccountId,
           loading,
-          user 
+          user,
         }}
       >
         {children}

@@ -74,6 +74,27 @@ body.registration-page main {
   overflow-y: visible !important;
 }
 
+body.custom-background {
+  background-image: var(--custom-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  transition: background-image 0.3s ease-in-out;
+}
+
+/* Add stronger overlay for better text readability */
+body.custom-background::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8));
+  z-index: -1;
+}
+
 /* Typography */
 h1, h2, h3 {
   font-family: "Audiowide", cursive;
