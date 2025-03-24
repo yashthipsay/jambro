@@ -112,7 +112,16 @@ export default function BookingsPage(){
           const data = await response.json();
           console.log(data)
           if (data.success) {
-            setUserInfo(data.data);
+            const bookingDetails = bookings.find(booking => booking.id === bookingId);
+            setUserInfo({
+              ...data.data,
+              bookingInfo: {
+                id: bookingDetails.id,
+                date: bookingDetails.start,
+                status: bookingDetails.extendedProps.status,
+                slots: bookingDetails.extendedProps.slots,
+              }
+            });
             setIsModalOpen(true);
           }
         } catch (error) {

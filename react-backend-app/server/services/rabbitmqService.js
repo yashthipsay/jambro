@@ -117,26 +117,6 @@ class RabbitMQService {
       roomReservations.set(`slot-${slot.slotId}`, reservation);
     }
 
-    // Check addon availability
-    for (const addon of addons) {
-      const reservedCount = this.getReservedAddonCount(
-        jamRoomId,
-        date,
-        addon.addonId
-      );
-      if (reservedCount >= addon.quantity) {
-        return {
-          success: false,
-          message: "Selected addon is no longer available",
-        };
-      }
-      roomReservations.set(`addon-${addon.addonId}`, reservation);
-    }
-
-    // Store service reservation if present
-    if (service) {
-      roomReservations.set(`service-${service.id}`, reservation);
-    }
 
     // Schedule expiration with updated message including service
     const expiryMsg = { jamRoomId, date, slots, addons, service };
@@ -153,36 +133,6 @@ class RabbitMQService {
     return { success: true, expiresAt: reservation.expiresAt };
   }
 
-  // Add method to check service availability
-  isServiceReserved(jamRoomId, date, serviceId) {
-    const key = `${jamRoomId}-${date}`;
-    const roomReservations = this.tempReservations.get(key);
-    if (!roomReservations) return false;
-
-    const serviceKey = `service-${serviceId}`;
-    const reservation = roomReservations.get(serviceKey);
-    if (!reservation) return false;
-
-    return reservation.expiresAt > Date.now();
-  }
-
-  getReservedAddonCount(jamRoomId, date, addonId) {
-    const key = `${jamRoomId}-${date}`;
-    const roomReservations = this.tempReservations.get(key);
-    if (!roomReservations) return 0;
-
-    let count = 0;
-    for (const [key, reservation] of roomReservations.entries()) {
-      if (
-        key.startsWith("addon-") &&
-        key.includes(addonId) &&
-        reservation.expiresAt > Date.now()
-      ) {
-        count++;
-      }
-    }
-    return count;
-  }
 
   // Add method to handle failed reservations
   async handleFailedReservation(reservation) {
