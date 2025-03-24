@@ -237,41 +237,147 @@ const StudioServicesCard = ({ jamRoomId }) => {
           {/* Display Services */}
           <ScrollArea className="max-h-[400px] overflow-y-auto">
             <div className="space-y-4">
-              {services.map((service) => (
+            {services.map((service) => (
                 <div
                   key={service._id}
                   className="p-4 border border-[#7DF9FF]/30 rounded-lg bg-black/20"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <div>
-                      <h3 className="text-xl font-bold text-[#7DF9FF]">{service.serviceName}</h3>
-                      <p className="text-[#7DF9FF]/70">{service.category}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => setEditingService(service)}
-                        className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={() => handleDeleteService(service._id)}
-                        className="bg-red-500/20 hover:bg-red-500/30"
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {service.subParts.map((subPart, index) => (
-                      <div key={index} className="p-2 bg-black/30 rounded">
-                        <div className="text-[#7DF9FF]">{subPart.name}</div>
-                        <div className="text-[#7DF9FF]/70">₹{subPart.price}</div>
+                  {editingService && editingService._id === service._id ? (
+                    // Edit form
+                    <div className="space-y-4">
+                      <div className="flex gap-4">
+                        <Input
+                          value={editingService.serviceName}
+                          onChange={(e) => setEditingService(prev => ({
+                            ...prev,
+                            serviceName: e.target.value
+                          }))}
+                          className="bg-black/20 border-[#7DF9FF]/30 text-white"
+                        />
+                        <select
+                          value={editingService.category}
+                          onChange={(e) => setEditingService(prev => ({
+                            ...prev,
+                            category: e.target.value
+                          }))}
+                          className="bg-black/20 border border-[#7DF9FF]/30 rounded p-2 text-white"
+                        >
+                          {SERVICE_CATEGORIES.map(category => (
+                            <option key={category} value={category}>{category}</option>
+                          ))}
+                        </select>
                       </div>
-                    ))}
-                  </div>
+                      
+                      <Input
+                        value={editingService.description}
+                        onChange={(e) => setEditingService(prev => ({
+                          ...prev,
+                          description: e.target.value
+                        }))}
+                        className="bg-black/20 border-[#7DF9FF]/30 text-white"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {editingService.subParts.map((subPart, index) => (
+                          <div key={index} className="flex gap-2 items-center p-2 bg-black/30 rounded">
+                            <Input
+                              value={subPart.name}
+                              onChange={(e) => {
+                                const updatedSubParts = [...editingService.subParts];
+                                updatedSubParts[index] = {
+                                  ...updatedSubParts[index],
+                                  name: e.target.value
+                                };
+                                setEditingService(prev => ({
+                                  ...prev,
+                                  subParts: updatedSubParts
+                                }));
+                              }}
+                              className="bg-black/20 border-[#7DF9FF]/30 text-white flex-1"
+                            />
+                            <Input
+                              type="number"
+                              value={subPart.price}
+                              onChange={(e) => {
+                                const updatedSubParts = [...editingService.subParts];
+                                updatedSubParts[index] = {
+                                  ...updatedSubParts[index],
+                                  price: Number(e.target.value)
+                                };
+                                setEditingService(prev => ({
+                                  ...prev,
+                                  subParts: updatedSubParts
+                                }));
+                              }}
+                              className="bg-black/20 border-[#7DF9FF]/30 text-white w-24"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                setEditingService(prev => ({
+                                  ...prev,
+                                  subParts: prev.subParts.filter((_, i) => i !== index)
+                                }));
+                              }}
+                              className="bg-red-500/20 hover:bg-red-500/30"
+                            >
+                              X
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleUpdateService(service._id)}
+                          className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
+                        >
+                          Save Changes
+                        </Button>
+                        <Button
+                          onClick={() => setEditingService(null)}
+                          variant="outline"
+                          className="bg-black/40 hover:bg-black/50 text-white"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Display mode (existing code)
+                    <>
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <h3 className="text-xl font-bold text-[#7DF9FF]">{service.serviceName}</h3>
+                          <p className="text-[#7DF9FF]/70">{service.category}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => setEditingService({...service})}
+                            className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => handleDeleteService(service._id)}
+                            className="bg-red-500/20 hover:bg-red-500/30"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {service.subParts.map((subPart, index) => (
+                          <div key={index} className="p-2 bg-black/30 rounded">
+                            <div className="text-[#7DF9FF]">{subPart.name}</div>
+                            <div className="text-[#7DF9FF]/70">₹{subPart.price}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
