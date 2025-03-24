@@ -38,11 +38,11 @@ const ProfileSection = ({ title, children, onEdit, isEditing, onSave, onCancel }
           )}
           {isEditing && (
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={onSave} className="btn-primary">
+              <Button size="sm" variant="outline" onClick={onSave} className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white border-[#7DF9FF]/30">
                 <Save className="h-4 w-4 mr-1" />
                 Save
               </Button>
-              <Button size="sm" variant="ghost" onClick={onCancel} className="btn-secondary">
+              <Button size="sm" variant="ghost" onClick={onCancel} className="bg-black/40 hover:bg-black/50 text-white border-[#7DF9FF]/30">
                 <X className="h-4 w-4 mr-1" />
                 Cancel
               </Button>

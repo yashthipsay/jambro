@@ -113,7 +113,7 @@ const PayoutHistory = () => {
     <div className="flex-1 p-6 mt-16 ml-64 overflow-y-auto h-[calc(100vh-4rem)]">
       <div className="max-w-7xl mx-auto space-y-6">
 
-      <div className="sticky top-0 z-10 bg-black/60 backdrop-blur-sm pb-4">
+      <div className="sticky top-0 z-10 backdrop-blur-sm pb-4">
         <h1 className="text-3xl font-audiowide text-[#7DF9FF] mb-6">Payout History</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">

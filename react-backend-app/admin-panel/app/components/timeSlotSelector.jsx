@@ -46,7 +46,11 @@ export function TimeSlotSelector({ selectedSlots, setSlots }) {
             <Button
               key={time}
               variant="outline"
-              className="text-sm"
+              className={`text-sm ${
+                selectedTimes.has(time) 
+                ? 'bg-[#7DF9FF]/30 text-white border-[#7DF9FF]/50' 
+                : 'bg-black/40 text-white border-[#7DF9FF]/30 hover:bg-[#7DF9FF]/20'
+              }`}
               disabled={selectedTimes.has(time)}
               onClick={() => handleSlotClick(time)}
             >
@@ -56,20 +60,21 @@ export function TimeSlotSelector({ selectedSlots, setSlots }) {
         </div>
       </ScrollArea>
 
-      <div className="space-y-2">
-        <h3 className="font-medium">Selected Slots</h3>
+      <div className="space-y-2 bg-black/60 p-4 rounded-lg border border-[#7DF9FF]/30">
+        <h3 className="font-medium text-[#7DF9FF]">Selected Slots</h3>
         {selectedSlots.map((slot) => (
           <div
             key={slot.slotId}
-            className="flex items-center justify-between p-2 border rounded-md"
+            className="flex items-center justify-between p-2 bg-black/40 border border-[#7DF9FF]/20 rounded-md"
           >
-            <span>
+            <span className="text-white">
               {slot.startTime} - {slot.endTime}
             </span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => handleDeleteSlot(slot.slotId)}
+              className="hover:bg-red-500/20 text-white"
             >
               <X className="h-4 w-4" />
             </Button>

@@ -93,7 +93,7 @@ h4, h5, h6 {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.glass-card {
+[data-editing="true"] .glass-card {
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -102,6 +102,7 @@ h4, h5, h6 {
   border-radius: 0.5rem; /* Consistent with rounded-lg */
   overflow: hidden; /* Ensures content doesn't break radius */
 }
+
 
 .glass-card:hover {
   background: rgba(255, 255, 255, 0.15);
