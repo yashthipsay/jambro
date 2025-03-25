@@ -9,7 +9,6 @@ import { Button } from '@/app/components/ui/button';
 import { Textarea } from '@/app/components/ui/textarea';
 import { Label } from '@/app/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
-import { useDashboard } from '../context/DashboardContext';
 import {
   Tabs,
   TabsContent,
@@ -53,7 +52,6 @@ const JamRoomRegistration = () => {
   const [isUpiValidated, setIsUpiValidated] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
-  const { setIsRegistered, setJamRoomId } = useDashboard();
 
   // Add useEffect to hide sidebar and navbar and ensure scrolling works
   useEffect(() => {
@@ -245,8 +243,7 @@ const JamRoomRegistration = () => {
 
       const result = await response.json();
       if (result.success) {
-        setIsRegistered(true);
-        setJamRoomId(result.jamRoomId); 
+
         router.push('/'); // This revalidates and reloads the current route's data
       }
     } catch (error) {
