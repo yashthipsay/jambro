@@ -11,29 +11,29 @@ import { Popup } from 'maplibre-gl';
 import { PopupOptions } from 'maplibre-gl';
 
 declare interface olaMapProps {
-    apiKey: string;
-    mode?: string;
-    threedTileset?: string;
+  apiKey: string;
+  mode?: string;
+  threedTileset?: string;
 }
 
 export declare class OlaMaps {
-    private mapInstance;
-    private olaMaps;
-    private apiKey;
-    mode: string;
-    private threedTileset;
-    constructor({ apiKey, mode, threedTileset }: olaMapProps);
-    private addOlaLogo;
-    private addAttribution;
-    private fetchStaticMap;
-    private add3dLayer;
-    init(options?: MapOptions): Map_2;
-    addNavigationControls(options?: NavigationControlOptions): NavigationControl;
-    addGeolocateControls(options: GeolocateControlOptions): GeolocateControl;
-    getMercatorCoordinate(): typeof MercatorCoordinate;
-    addMarker(options?: MarkerOptions): Marker;
-    addPopup(options?: PopupOptions): Popup;
-    getStaticMap(url: string, elementID: string): void;
+  private mapInstance;
+  private olaMaps;
+  private apiKey;
+  mode: string;
+  private threedTileset;
+  constructor({ apiKey, mode, threedTileset }: olaMapProps);
+  private addOlaLogo;
+  private addAttribution;
+  private fetchStaticMap;
+  private add3dLayer;
+  init(options?: MapOptions): Map_2;
+  addNavigationControls(options?: NavigationControlOptions): NavigationControl;
+  addGeolocateControls(options: GeolocateControlOptions): GeolocateControl;
+  getMercatorCoordinate(): typeof MercatorCoordinate;
+  addMarker(options?: MarkerOptions): Marker;
+  addPopup(options?: PopupOptions): Popup;
+  getStaticMap(url: string, elementID: string): void;
 }
 
-export { }
+export {};

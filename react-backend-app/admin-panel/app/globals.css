@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Audiowide&family=Syncopate:wght@400;700&family=Montserrat:wght@300;400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Syncopate:wght@400;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 @tailwind base;
 @tailwind components;
@@ -10,23 +10,35 @@
   --secondary-purple: #6434fc;
   --light-purple: #dcd5ff;
   --accent-pink: #ffccf2;
-  
+
   /* Gradient Systems */
-  --gradient-primary: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
-  --gradient-secondary: linear-gradient(135deg, var(--secondary-purple), #011450);
-  --gradient-accent: linear-gradient(135deg, var(--primary-purple), var(--accent-pink));
-  
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--primary-purple),
+    var(--secondary-purple)
+  );
+  --gradient-secondary: linear-gradient(
+    135deg,
+    var(--secondary-purple),
+    #011450
+  );
+  --gradient-accent: linear-gradient(
+    135deg,
+    var(--primary-purple),
+    var(--accent-pink)
+  );
+
   /* System Colors */
   --background: #000000;
   --foreground: #ffffff;
   --surface-1: rgba(255, 255, 255, 0.05);
   --surface-2: rgba(255, 255, 255, 0.08);
-  
+
   /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
-  
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
@@ -35,8 +47,8 @@
 
 /* Base Styles */
 body {
-  font-family: "Montserrat", sans-serif;
-  background-image: url("https://images.pexels.com/photos/3784221/pexels-photo-3784221.jpeg?cs=srgb&dl=pexels-dmitry-demidov-515774-3784221.jpg&fm=jpg");
+  font-family: 'Montserrat', sans-serif;
+  background-image: url('https://images.pexels.com/photos/3784221/pexels-photo-3784221.jpeg?cs=srgb&dl=pexels-dmitry-demidov-515774-3784221.jpg&fm=jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -50,7 +62,7 @@ body {
 /* Registration page specific styles */
 body.registration-page {
   background-color: #000;
-  background-image: url("https://gigsaw.s3.eu-north-1.amazonaws.com/3d-music-related-scene.jpg");
+  background-image: url('https://gigsaw.s3.eu-north-1.amazonaws.com/3d-music-related-scene.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -91,18 +103,22 @@ body.custom-background::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8));
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8));
   z-index: -1;
 }
 
 /* Typography */
-h1, h2, h3 {
-  font-family: "Audiowide", cursive;
+h1,
+h2,
+h3 {
+  font-family: 'Audiowide', cursive;
   letter-spacing: -0.02em;
 }
 
-h4, h5, h6 {
-  font-family: "Syncopate", sans-serif;
+h4,
+h5,
+h6 {
+  font-family: 'Syncopate', sans-serif;
   letter-spacing: 0.02em;
 }
 
@@ -114,7 +130,7 @@ h4, h5, h6 {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-[data-editing="true"] .glass-card {
+[data-editing='true'] .glass-card {
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -123,7 +139,6 @@ h4, h5, h6 {
   border-radius: 0.5rem; /* Consistent with rounded-lg */
   overflow: hidden; /* Ensures content doesn't break radius */
 }
-
 
 .glass-card:hover {
   background: rgba(255, 255, 255, 0.15);
@@ -150,11 +165,11 @@ h4, h5, h6 {
 }
 
 /* Text readability improvements */
-.glass-card h1, 
-.glass-card h2, 
-.glass-card h3, 
-.glass-card h4, 
-.glass-card h5, 
+.glass-card h1,
+.glass-card h2,
+.glass-card h3,
+.glass-card h4,
+.glass-card h5,
 .glass-card h6 {
   color: white;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
@@ -169,7 +184,7 @@ h4, h5, h6 {
 
 /* Special styling for accent text that uses the cyan color (#7DF9FF) */
 .text-\[\#7DF9FF\] {
-  color: #7DF9FF;
+  color: #7df9ff;
   text-shadow: 0 0 10px rgba(125, 249, 255, 0.3); /* Add glow for cyan text */
   font-weight: 500; /* Make slightly bolder */
 }
@@ -196,7 +211,11 @@ h4, h5, h6 {
   color: white !important; /* Make text white */
 }
 
-.card, .button, .input, .select, .tabs {
+.card,
+.button,
+.input,
+.select,
+.tabs {
   border-radius: 0.5rem;
   overflow: hidden;
 }

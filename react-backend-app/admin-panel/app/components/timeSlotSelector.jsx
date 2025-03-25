@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { ScrollArea } from "./ui/scroll-area";
-import { Button } from "./ui/button";
-import { X } from "lucide-react";
+import { ScrollArea } from './ui/scroll-area';
+import { Button } from './ui/button';
+import { X } from 'lucide-react';
 
 export function TimeSlotSelector({ selectedSlots, setSlots }) {
   // Generate 24 hour slots
@@ -10,32 +10,32 @@ export function TimeSlotSelector({ selectedSlots, setSlots }) {
     return `${hour}:00`;
   });
 
-    // Create a Set of selected times for O(1) lookup
-    const selectedTimes = useMemo(() => 
-        new Set(selectedSlots.map(slot => slot.startTime)),
-        [selectedSlots]
-      );
-      console.log(selectedTimes);
+  // Create a Set of selected times for O(1) lookup
+  const selectedTimes = useMemo(
+    () => new Set(selectedSlots.map((slot) => slot.startTime)),
+    [selectedSlots]
+  );
+  console.log(selectedTimes);
 
   const handleSlotClick = (startTime) => {
     if (selectedTimes.has(startTime)) return;
     // Convert time string to 24h format
     const endHour = (parseInt(startTime) + 1) % 24;
     const endTime = `${endHour.toString().padStart(2, '0')}:00`;
-    
+
     const newSlot = {
       slotId: selectedSlots.length + 1,
       startTime,
       endTime,
       isBooked: false,
-      bookedBy: null
+      bookedBy: null,
     };
-    
+
     setSlots([...selectedSlots, newSlot]);
   };
 
   const handleDeleteSlot = (slotId) => {
-    setSlots(selectedSlots.filter(slot => slot.slotId !== slotId));
+    setSlots(selectedSlots.filter((slot) => slot.slotId !== slotId));
   };
 
   return (
@@ -47,9 +47,9 @@ export function TimeSlotSelector({ selectedSlots, setSlots }) {
               key={time}
               variant="outline"
               className={`text-sm ${
-                selectedTimes.has(time) 
-                ? 'bg-[#7DF9FF]/30 text-white border-[#7DF9FF]/50' 
-                : 'bg-black/40 text-white border-[#7DF9FF]/30 hover:bg-[#7DF9FF]/20'
+                selectedTimes.has(time)
+                  ? 'bg-[#7DF9FF]/30 text-white border-[#7DF9FF]/50'
+                  : 'bg-black/40 text-white border-[#7DF9FF]/30 hover:bg-[#7DF9FF]/20'
               }`}
               disabled={selectedTimes.has(time)}
               onClick={() => handleSlotClick(time)}
