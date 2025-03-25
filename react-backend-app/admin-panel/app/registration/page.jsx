@@ -206,7 +206,8 @@ const JamRoomRegistration = () => {
 
       const result = await response.json();
       if (result.success) {
-        router.push('/');
+        router.push('/'); // This revalidates and reloads the current route's data
+        router.refresh();
       }
     } catch (error) {
       console.error('Error submitting form:', error);
