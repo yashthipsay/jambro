@@ -90,6 +90,8 @@ export function DashboardProvider({ children }) {
       value={{
         isRegistered,
         jamRoomId,
+        setIsRegistered,
+        setJamRoomId,
         fundAccountId,
         loading,
         user,
