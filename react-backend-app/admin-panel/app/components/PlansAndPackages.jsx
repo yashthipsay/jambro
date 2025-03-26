@@ -1,18 +1,24 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Card, CardContent } from "./ui/card"
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
-import { Label } from "./ui/label"
-import { Plus, Package, Trash2 } from 'lucide-react'
-import { ScrollArea } from './ui/scroll-area'
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from './ui/select'
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Plus, Package, Trash2 } from 'lucide-react';
+import { ScrollArea } from './ui/scroll-area';
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from './ui/select';
 
 export function PlansAndPackages() {
-  const [plans, setPlans] = useState([])
-  const [packages, setPackages] = useState([])
+  const [plans, setPlans] = useState([]);
+  const [packages, setPackages] = useState([]);
   const [newPlan, setNewPlan] = useState({
     name: '',
     description: '',
@@ -20,20 +26,20 @@ export function PlansAndPackages() {
     duration: 1,
     durationType: 'month',
     features: [],
-    skuId: ''
-  })
+    skuId: '',
+  });
   const [newPackage, setNewPackage] = useState({
     name: '',
     description: '',
     plans: [],
     discount: 0,
-    skuId: ''
-  })
-  const [newFeature, setNewFeature] = useState('')
+    skuId: '',
+  });
+  const [newFeature, setNewFeature] = useState('');
 
   const handleAddPlan = () => {
-    if (!newPlan.name || !newPlan.price) return
-    setPlans([...plans, { ...newPlan, id: Date.now() }])
+    if (!newPlan.name || !newPlan.price) return;
+    setPlans([...plans, { ...newPlan, id: Date.now() }]);
     setNewPlan({
       name: '',
       description: '',
@@ -41,37 +47,37 @@ export function PlansAndPackages() {
       duration: 1,
       durationType: 'month',
       features: [],
-      skuId: ''
-    })
-  }
+      skuId: '',
+    });
+  };
 
   const handleAddFeature = () => {
-    if (!newFeature) return
+    if (!newFeature) return;
     setNewPlan({
       ...newPlan,
-      features: [...newPlan.features, newFeature]
-    })
-    setNewFeature('')
-  }
+      features: [...newPlan.features, newFeature],
+    });
+    setNewFeature('');
+  };
 
   const handleRemoveFeature = (index) => {
     setNewPlan({
       ...newPlan,
-      features: newPlan.features.filter((_, i) => i !== index)
-    })
-  }
+      features: newPlan.features.filter((_, i) => i !== index),
+    });
+  };
 
   const handleAddPackage = () => {
-    if (!newPackage.name || newPackage.plans.length === 0) return
-    setPackages([...packages, { ...newPackage, id: Date.now() }])
+    if (!newPackage.name || newPackage.plans.length === 0) return;
+    setPackages([...packages, { ...newPackage, id: Date.now() }]);
     setNewPackage({
       name: '',
       description: '',
       plans: [],
       discount: 0,
-      skuId: ''
-    })
-  }
+      skuId: '',
+    });
+  };
 
   return (
     <div className="flex-1 p-8 pl-72 pt-24 h-screen overflow-y-auto">
@@ -84,14 +90,18 @@ export function PlansAndPackages() {
         >
           <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
             <CardContent className="p-6">
-              <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">Create Individual Plan</h2>
-              
+              <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">
+                Create Individual Plan
+              </h2>
+
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <Label className="text-[#7DF9FF]/80">Plan Name</Label>
                   <Input
                     value={newPlan.name}
-                    onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewPlan({ ...newPlan, name: e.target.value })
+                    }
                     className="bg-black/20 border-[#7DF9FF]/30 text-white"
                     placeholder="e.g., Basic Plan"
                   />
@@ -101,7 +111,12 @@ export function PlansAndPackages() {
                   <Input
                     type="number"
                     value={newPlan.price}
-                    onChange={(e) => setNewPlan({ ...newPlan, price: parseFloat(e.target.value) })}
+                    onChange={(e) =>
+                      setNewPlan({
+                        ...newPlan,
+                        price: parseFloat(e.target.value),
+                      })
+                    }
                     className="bg-black/20 border-[#7DF9FF]/30 text-white"
                     placeholder="0.00"
                   />
@@ -114,7 +129,12 @@ export function PlansAndPackages() {
                   <Input
                     type="number"
                     value={newPlan.duration}
-                    onChange={(e) => setNewPlan({ ...newPlan, duration: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setNewPlan({
+                        ...newPlan,
+                        duration: parseInt(e.target.value),
+                      })
+                    }
                     className="bg-black/20 border-[#7DF9FF]/30 text-white"
                     min="1"
                   />
@@ -123,7 +143,9 @@ export function PlansAndPackages() {
                   <Label className="text-[#7DF9FF]/80">Duration Type</Label>
                   <Select
                     value={newPlan.durationType}
-                    onValueChange={(value) => setNewPlan({ ...newPlan, durationType: value })}
+                    onValueChange={(value) =>
+                      setNewPlan({ ...newPlan, durationType: value })
+                    }
                   >
                     <SelectTrigger className="bg-black/20 border-[#7DF9FF]/30 text-white">
                       <SelectValue />
@@ -141,7 +163,9 @@ export function PlansAndPackages() {
                 <Label className="text-[#7DF9FF]/80">Description</Label>
                 <Input
                   value={newPlan.description}
-                  onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewPlan({ ...newPlan, description: e.target.value })
+                  }
                   className="bg-black/20 border-[#7DF9FF]/30 text-white"
                   placeholder="Plan description"
                 />
@@ -211,7 +235,9 @@ export function PlansAndPackages() {
                   <Label className="text-[#7DF9FF]/80">Package Name</Label>
                   <Input
                     value={newPackage.name}
-                    onChange={(e) => setNewPackage({ ...newPackage, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewPackage({ ...newPackage, name: e.target.value })
+                    }
                     className="bg-black/20 border-[#7DF9FF]/30 text-white"
                     placeholder="e.g., Premium Bundle"
                   />
@@ -221,7 +247,12 @@ export function PlansAndPackages() {
                   <Input
                     type="number"
                     value={newPackage.discount}
-                    onChange={(e) => setNewPackage({ ...newPackage, discount: parseFloat(e.target.value) })}
+                    onChange={(e) =>
+                      setNewPackage({
+                        ...newPackage,
+                        discount: parseFloat(e.target.value),
+                      })
+                    }
                     className="bg-black/20 border-[#7DF9FF]/30 text-white"
                     placeholder="0"
                     min="0"
@@ -234,7 +265,12 @@ export function PlansAndPackages() {
                 <Label className="text-[#7DF9FF]/80">Description</Label>
                 <Input
                   value={newPackage.description}
-                  onChange={(e) => setNewPackage({ ...newPackage, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewPackage({
+                      ...newPackage,
+                      description: e.target.value,
+                    })
+                  }
                   className="bg-black/20 border-[#7DF9FF]/30 text-white"
                   placeholder="Package description"
                 />
@@ -256,13 +292,13 @@ export function PlansAndPackages() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          const isSelected = newPackage.plans.includes(plan.id)
+                          const isSelected = newPackage.plans.includes(plan.id);
                           setNewPackage({
                             ...newPackage,
                             plans: isSelected
-                              ? newPackage.plans.filter(id => id !== plan.id)
-                              : [...newPackage.plans, plan.id]
-                          })
+                              ? newPackage.plans.filter((id) => id !== plan.id)
+                              : [...newPackage.plans, plan.id],
+                          });
                         }}
                         className={`${
                           newPackage.plans.includes(plan.id)
@@ -270,7 +306,9 @@ export function PlansAndPackages() {
                             : 'bg-transparent text-[#7DF9FF]'
                         }`}
                       >
-                        {newPackage.plans.includes(plan.id) ? 'Selected' : 'Select'}
+                        {newPackage.plans.includes(plan.id)
+                          ? 'Selected'
+                          : 'Select'}
                       </Button>
                     </div>
                   ))}
@@ -289,7 +327,7 @@ export function PlansAndPackages() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
 
-export default PlansAndPackages
+export default PlansAndPackages;

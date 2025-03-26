@@ -1,21 +1,21 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { Button } from './ui/button'
-import { useEffect, useState, useMemo } from 'react'
-import { Card } from './ui/card'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
-import { useUser } from '@auth0/nextjs-auth0/client'
-import { ScrollArea } from '@radix-ui/react-scroll-area'
-import { useDashboard } from '../context/DashboardContext'
+import { motion } from 'framer-motion';
+import { Button } from './ui/button';
+import { useEffect, useState, useMemo } from 'react';
+import { Card } from './ui/card';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import { ScrollArea } from '@radix-ui/react-scroll-area';
+import { useDashboard } from '../context/DashboardContext';
 
 const INSTRUMENT_TYPES = [
   'Electric Guitar',
   'Ukelele',
   'Bass Guitar',
   'Keyboard',
-  'Djembe'
+  'Djembe',
 ];
 
 const fetchWithAuth = async (url, options = {}) => {
@@ -24,9 +24,9 @@ const fetchWithAuth = async (url, options = {}) => {
     ...options,
     headers: {
       ...options.headers,
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
   });
 };
 
@@ -37,17 +37,23 @@ const StudioServicesCard = ({ jamRoomId }) => {
     serviceName: '',
     description: '',
     category: 'RECORDING',
-    subParts: []
+    subParts: [],
   });
   const [newSubPart, setNewSubPart] = useState({
     name: '',
     description: '',
-    price: 0
+    price: 0,
   });
   const [editingService, setEditingService] = useState(null);
 
   // Categories for studio services
-  const SERVICE_CATEGORIES = ['RECORDING', 'MIXING', 'MASTERING', 'PRODUCTION', 'VIDEO'];
+  const SERVICE_CATEGORIES = [
+    'RECORDING',
+    'MIXING',
+    'MASTERING',
+    'PRODUCTION',
+    'VIDEO',
+  ];
 
   useEffect(() => {
     fetchServices();
@@ -55,7 +61,9 @@ const StudioServicesCard = ({ jamRoomId }) => {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/jamrooms/${jamRoomId}/services`);
+      const response = await fetch(
+        `http://localhost:5000/api/jamrooms/${jamRoomId}/services`
+      );
       const data = await response.json();
       if (data.success) {
         setServices(data.data || []);
@@ -68,9 +76,9 @@ const StudioServicesCard = ({ jamRoomId }) => {
 
   const handleAddSubPart = () => {
     if (!newSubPart.name || !newSubPart.price) return;
-    setNewService(prev => ({
+    setNewService((prev) => ({
       ...prev,
-      subParts: [...prev.subParts, newSubPart]
+      subParts: [...prev.subParts, newSubPart],
     }));
     setNewSubPart({ name: '', description: '', price: 0 });
   };
@@ -81,7 +89,7 @@ const StudioServicesCard = ({ jamRoomId }) => {
         `http://localhost:5000/api/jamrooms/${jamRoomId}/services`,
         {
           method: 'POST',
-          body: JSON.stringify(newService)
+          body: JSON.stringify(newService),
         }
       );
 
@@ -92,7 +100,7 @@ const StudioServicesCard = ({ jamRoomId }) => {
           serviceName: '',
           description: '',
           category: 'RECORDING',
-          subParts: []
+          subParts: [],
         });
       }
     } catch (error) {
@@ -106,15 +114,17 @@ const StudioServicesCard = ({ jamRoomId }) => {
         `http://localhost:5000/api/jamrooms/${jamRoomId}/services/${serviceId}`,
         {
           method: 'PUT',
-          body: JSON.stringify(editingService)
+          body: JSON.stringify(editingService),
         }
       );
 
       const data = await response.json();
       if (data.success) {
-        setServices(prev => prev.map(service => 
-          service._id === serviceId ? data.data : service
-        ));
+        setServices((prev) =>
+          prev.map((service) =>
+            service._id === serviceId ? data.data : service
+          )
+        );
         setEditingService(null);
       }
     } catch (error) {
@@ -145,32 +155,42 @@ const StudioServicesCard = ({ jamRoomId }) => {
     >
       <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-[#7DF9FF] mb-4">Studio Services</h2>
-          
+          <h2 className="text-2xl font-bold text-[#7DF9FF] mb-4">
+            Studio Services
+          </h2>
+
           {/* Add New Service Form */}
           <div className="space-y-4 mb-6">
             <div className="flex gap-4">
               <Input
                 placeholder="Service Name"
                 value={newService.serviceName}
-                onChange={(e) => setNewService({ ...newService, serviceName: e.target.value })}
+                onChange={(e) =>
+                  setNewService({ ...newService, serviceName: e.target.value })
+                }
                 className="bg-black/20 border-[#7DF9FF]/30 text-white"
               />
               <select
                 value={newService.category}
-                onChange={(e) => setNewService({ ...newService, category: e.target.value })}
+                onChange={(e) =>
+                  setNewService({ ...newService, category: e.target.value })
+                }
                 className="bg-black/20 border border-[#7DF9FF]/30 rounded p-2 text-white"
               >
-                {SERVICE_CATEGORIES.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                {SERVICE_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
                 ))}
               </select>
             </div>
-            
+
             <Input
               placeholder="Service Description"
               value={newService.description}
-              onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+              onChange={(e) =>
+                setNewService({ ...newService, description: e.target.value })
+              }
               className="bg-black/20 border-[#7DF9FF]/30 text-white"
             />
 
@@ -181,14 +201,21 @@ const StudioServicesCard = ({ jamRoomId }) => {
                 <Input
                   placeholder="Sub-part Name"
                   value={newSubPart.name}
-                  onChange={(e) => setNewSubPart({ ...newSubPart, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewSubPart({ ...newSubPart, name: e.target.value })
+                  }
                   className="bg-black/20 border-[#7DF9FF]/30 text-white"
                 />
                 <Input
                   type="number"
                   placeholder="Price"
                   value={newSubPart.price}
-                  onChange={(e) => setNewSubPart({ ...newSubPart, price: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setNewSubPart({
+                      ...newSubPart,
+                      price: Number(e.target.value),
+                    })
+                  }
                   className="bg-black/20 border-[#7DF9FF]/30 text-white w-32"
                 />
                 <Button
@@ -206,15 +233,24 @@ const StudioServicesCard = ({ jamRoomId }) => {
                 <Label className="text-[#7DF9FF]">Added Sub-parts:</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {newService.subParts.map((subPart, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-black/20 rounded">
-                      <span className="text-white">{subPart.name} - ₹{subPart.price}</span>
+                    <div
+                      key={index}
+                      className="flex justify-between items-center p-2 bg-black/20 rounded"
+                    >
+                      <span className="text-white">
+                        {subPart.name} - ₹{subPart.price}
+                      </span>
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => setNewService(prev => ({
-                          ...prev,
-                          subParts: prev.subParts.filter((_, i) => i !== index)
-                        }))}
+                        onClick={() =>
+                          setNewService((prev) => ({
+                            ...prev,
+                            subParts: prev.subParts.filter(
+                              (_, i) => i !== index
+                            ),
+                          }))
+                        }
                         className="bg-red-500/20 hover:bg-red-500/30"
                       >
                         Remove
@@ -228,7 +264,9 @@ const StudioServicesCard = ({ jamRoomId }) => {
             <Button
               onClick={handleAddService}
               className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white w-full"
-              disabled={!newService.serviceName || newService.subParts.length === 0}
+              disabled={
+                !newService.serviceName || newService.subParts.length === 0
+              }
             >
               Add Service
             </Button>
@@ -242,36 +280,165 @@ const StudioServicesCard = ({ jamRoomId }) => {
                   key={service._id}
                   className="p-4 border border-[#7DF9FF]/30 rounded-lg bg-black/20"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <div>
-                      <h3 className="text-xl font-bold text-[#7DF9FF]">{service.serviceName}</h3>
-                      <p className="text-[#7DF9FF]/70">{service.category}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => setEditingService(service)}
-                        className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={() => handleDeleteService(service._id)}
-                        className="bg-red-500/20 hover:bg-red-500/30"
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {service.subParts.map((subPart, index) => (
-                      <div key={index} className="p-2 bg-black/30 rounded">
-                        <div className="text-[#7DF9FF]">{subPart.name}</div>
-                        <div className="text-[#7DF9FF]/70">₹{subPart.price}</div>
+                  {editingService && editingService._id === service._id ? (
+                    // Edit form
+                    <div className="space-y-4">
+                      <div className="flex gap-4">
+                        <Input
+                          value={editingService.serviceName}
+                          onChange={(e) =>
+                            setEditingService((prev) => ({
+                              ...prev,
+                              serviceName: e.target.value,
+                            }))
+                          }
+                          className="bg-black/20 border-[#7DF9FF]/30 text-white"
+                        />
+                        <select
+                          value={editingService.category}
+                          onChange={(e) =>
+                            setEditingService((prev) => ({
+                              ...prev,
+                              category: e.target.value,
+                            }))
+                          }
+                          className="bg-black/20 border border-[#7DF9FF]/30 rounded p-2 text-white"
+                        >
+                          {SERVICE_CATEGORIES.map((category) => (
+                            <option key={category} value={category}>
+                              {category}
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                    ))}
-                  </div>
+
+                      <Input
+                        value={editingService.description}
+                        onChange={(e) =>
+                          setEditingService((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
+                        className="bg-black/20 border-[#7DF9FF]/30 text-white"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {editingService.subParts.map((subPart, index) => (
+                          <div
+                            key={index}
+                            className="flex gap-2 items-center p-2 bg-black/30 rounded"
+                          >
+                            <Input
+                              value={subPart.name}
+                              onChange={(e) => {
+                                const updatedSubParts = [
+                                  ...editingService.subParts,
+                                ];
+                                updatedSubParts[index] = {
+                                  ...updatedSubParts[index],
+                                  name: e.target.value,
+                                };
+                                setEditingService((prev) => ({
+                                  ...prev,
+                                  subParts: updatedSubParts,
+                                }));
+                              }}
+                              className="bg-black/20 border-[#7DF9FF]/30 text-white flex-1"
+                            />
+                            <Input
+                              type="number"
+                              value={subPart.price}
+                              onChange={(e) => {
+                                const updatedSubParts = [
+                                  ...editingService.subParts,
+                                ];
+                                updatedSubParts[index] = {
+                                  ...updatedSubParts[index],
+                                  price: Number(e.target.value),
+                                };
+                                setEditingService((prev) => ({
+                                  ...prev,
+                                  subParts: updatedSubParts,
+                                }));
+                              }}
+                              className="bg-black/20 border-[#7DF9FF]/30 text-white w-24"
+                            />
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                setEditingService((prev) => ({
+                                  ...prev,
+                                  subParts: prev.subParts.filter(
+                                    (_, i) => i !== index
+                                  ),
+                                }));
+                              }}
+                              className="bg-red-500/20 hover:bg-red-500/30"
+                            >
+                              X
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleUpdateService(service._id)}
+                          className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
+                        >
+                          Save Changes
+                        </Button>
+                        <Button
+                          onClick={() => setEditingService(null)}
+                          variant="outline"
+                          className="bg-black/40 hover:bg-black/50 text-white"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Display mode (existing code)
+                    <>
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <h3 className="text-xl font-bold text-[#7DF9FF]">
+                            {service.serviceName}
+                          </h3>
+                          <p className="text-[#7DF9FF]/70">
+                            {service.category}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => setEditingService({ ...service })}
+                            className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => handleDeleteService(service._id)}
+                            className="bg-red-500/20 hover:bg-red-500/30"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {service.subParts.map((subPart, index) => (
+                          <div key={index} className="p-2 bg-black/30 rounded">
+                            <div className="text-[#7DF9FF]">{subPart.name}</div>
+                            <div className="text-[#7DF9FF]/70">
+                              ₹{subPart.price}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -289,7 +456,7 @@ const AddonsCard = ({ jamRoomId }) => {
     instrumentType: '',
     quantity: 1,
     pricePerHour: 0,
-    isAvailable: true
+    isAvailable: true,
   });
 
   useEffect(() => {
@@ -298,7 +465,9 @@ const AddonsCard = ({ jamRoomId }) => {
 
   const fetchAddons = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/jamrooms/email/${user.email}`);
+      const response = await fetch(
+        `http://localhost:5000/api/jamrooms/email/${user.email}`
+      );
       const data = await response.json();
       if (data.success && data.data) {
         setAddons(data.data.addons || []);
@@ -316,8 +485,8 @@ const AddonsCard = ({ jamRoomId }) => {
         {
           method: 'PUT',
           body: JSON.stringify({
-            addons: [...addons, newAddon]
-          })
+            addons: [...addons, newAddon],
+          }),
         }
       );
 
@@ -328,7 +497,7 @@ const AddonsCard = ({ jamRoomId }) => {
           instrumentType: '',
           quantity: 1,
           pricePerHour: 0,
-          isAvailable: true
+          isAvailable: true,
         });
       }
     } catch (error) {
@@ -359,17 +528,23 @@ const AddonsCard = ({ jamRoomId }) => {
     >
       <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
         <div className="p-6 ">
-          <h2 className="text-2xl font-bold text-[#7DF9FF]">Equipment for Rent</h2>
+          <h2 className="text-2xl font-bold text-[#7DF9FF]">
+            Equipment for Rent
+          </h2>
           <div className="space-y-4">
             <div className="flex gap-4">
               <select
                 value={newAddon.instrumentType}
-                onChange={(e) => setNewAddon({ ...newAddon, instrumentType: e.target.value })}
+                onChange={(e) =>
+                  setNewAddon({ ...newAddon, instrumentType: e.target.value })
+                }
                 className="bg-black/20 border border-[#7DF9FF]/30 rounded p-2 text-white flex-1"
               >
                 <option value="">Select Instrument</option>
-                {INSTRUMENT_TYPES.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                {INSTRUMENT_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
                 ))}
               </select>
 
@@ -377,7 +552,12 @@ const AddonsCard = ({ jamRoomId }) => {
                 type="number"
                 placeholder="Qty"
                 value={newAddon.quantity}
-                onChange={(e) => setNewAddon({ ...newAddon, quantity: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setNewAddon({
+                    ...newAddon,
+                    quantity: parseInt(e.target.value),
+                  })
+                }
                 min="1"
                 className="w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
               />
@@ -386,7 +566,12 @@ const AddonsCard = ({ jamRoomId }) => {
                 type="number"
                 placeholder="₹/hr"
                 value={newAddon.pricePerHour}
-                onChange={(e) => setNewAddon({ ...newAddon, pricePerHour: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setNewAddon({
+                    ...newAddon,
+                    pricePerHour: parseInt(e.target.value),
+                  })
+                }
                 min="0"
                 className="w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
               />
@@ -399,31 +584,33 @@ const AddonsCard = ({ jamRoomId }) => {
               </Button>
             </div>
             <ScrollArea className="max-h-[120px] overflow-y-auto">
-  <div className="space-y-3">
-    {addons.map((addon) => (
-      <div
-        key={addon._id}
-        className="flex justify-between items-center p-3 border-b border-[#7DF9FF]/20 hover:bg-black/20 transition-colors"
-      >
-        <div className="text-[#7DF9FF] font-medium">
-          <span className="font-semibold">{addon.instrumentType}</span>
-          <span className="mx-2">|</span>
-          <span>Qty: {addon.quantity}</span>
-          <span className="mx-2">|</span>
-          <span>₹{addon.pricePerHour}/hr</span>
-        </div>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => handleDeleteAddon(addon._id)}
-          className="bg-red-500/20 hover:bg-red-500/30"
-        >
-          Remove
-        </Button>
-      </div>
-    ))}
-  </div>
-</ScrollArea>
+              <div className="space-y-3">
+                {addons.map((addon) => (
+                  <div
+                    key={addon._id}
+                    className="flex justify-between items-center p-3 border-b border-[#7DF9FF]/20 hover:bg-black/20 transition-colors"
+                  >
+                    <div className="text-[#7DF9FF] font-medium">
+                      <span className="font-semibold">
+                        {addon.instrumentType}
+                      </span>
+                      <span className="mx-2">|</span>
+                      <span>Qty: {addon.quantity}</span>
+                      <span className="mx-2">|</span>
+                      <span>₹{addon.pricePerHour}/hr</span>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteAddon(addon._id)}
+                      className="bg-red-500/20 hover:bg-red-500/30"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </Card>
@@ -433,13 +620,13 @@ const AddonsCard = ({ jamRoomId }) => {
 
 export function LandingContent() {
   const { user } = useUser();
-  const {jamRoomId} = useDashboard()
+  const { jamRoomId } = useDashboard();
   const [payouts, setPayouts] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [stats, setStats] = useState([
     { id: 1, name: 'Booked ahead', count: 0 },
     { id: 2, name: 'Pending Payouts', count: 0 },
-    { id: 3, name: 'Completed Sessions', count: 0 }
+    { id: 3, name: 'Completed Sessions', count: 0 },
   ]);
 
   // Fetch bookings and payouts
@@ -449,13 +636,17 @@ export function LandingContent() {
       try {
         const tokenStr = localStorage.getItem('jamroom_token');
         fundAccountId = JSON.parse(atob(tokenStr.split('.')[1])).fundAccountId;
-        
+
         // Fetch payouts
-        const payoutsResponse = await fetchWithAuth(`http://localhost:5000/api/payouts/${fundAccountId}`);
+        const payoutsResponse = await fetchWithAuth(
+          `http://localhost:5000/api/payouts/${fundAccountId}`
+        );
         const payoutsData = await payoutsResponse.json();
 
         // Fetch bookings
-        const bookingsResponse = await fetchWithAuth(`http://localhost:5000/api/bookings/jamroom/${jamRoomId}`);
+        const bookingsResponse = await fetchWithAuth(
+          `http://localhost:5000/api/bookings/jamroom/${jamRoomId}`
+        );
         const bookingsData = await bookingsResponse.json();
 
         if (payoutsData.success && bookingsData.success) {
@@ -463,29 +654,29 @@ export function LandingContent() {
           setBookings(bookingsData.data);
 
           // Calculate stats
-          const pendingPayouts = payoutsData.data.filter(payout => 
+          const pendingPayouts = payoutsData.data.filter((payout) =>
             ['PENDING', 'processing', 'queued'].includes(payout.status)
           ).length;
 
-          const bookedAhead = bookingsData.data.filter(booking => 
-            booking.status === 'NOT_STARTED'
+          const bookedAhead = bookingsData.data.filter(
+            (booking) => booking.status === 'NOT_STARTED'
           ).length;
 
-          const completedSessions = bookingsData.data.filter(booking => 
-            booking.status === 'COMPLETED'
+          const completedSessions = bookingsData.data.filter(
+            (booking) => booking.status === 'COMPLETED'
           ).length;
 
           setStats([
             { id: 1, name: 'Booked ahead', count: bookedAhead },
             { id: 2, name: 'Pending Payouts', count: pendingPayouts },
-            { id: 3, name: 'Completed Sessions', count: completedSessions }
+            { id: 3, name: 'Completed Sessions', count: completedSessions },
           ]);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     }
-    
+
     if (jamRoomId) {
       fetchData();
     }
@@ -494,19 +685,36 @@ export function LandingContent() {
   // Compute today's earnings with useMemo based on fetched payouts
   const netTotal = useMemo(() => {
     const now = new Date();
-    const startOfToday = Math.floor(new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()/1000);
-    const endOfToday = Math.floor(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,59,59,999).getTime()/1000);
-    const todaysPayouts = payouts.filter(item => item.created_at >= startOfToday && item.created_at <= endOfToday);
-    const total = payouts.reduce((sum, item) => {
-      if (item.status === 'processed') {
-        console.log(item.amount)
+    const startOfToday = Math.floor(
+      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000
+    );
+    console.log("startOfToday", startOfToday);
+    const endOfToday = Math.floor(
+      new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime() / 1000
+    );
+    console.log("endOfToday", endOfToday);
+    console.log("payouts", payouts);
+    const todaysPayouts = payouts.filter(item => {
+      // Use either created_at or createdAt
+      const created = item.created_at || item.createdAt;
+      // Ensure we have a Unix timestamp
+      const createdTimestamp = typeof created === 'number'
+        ? created
+        : Math.floor(new Date(created).getTime() / 1000);
+      return createdTimestamp >= startOfToday && createdTimestamp <= endOfToday;
+    });
+    const total = todaysPayouts.reduce((sum, item) => {
+      if (["processed", "COMPLETED"].includes(item.status)) {
+        console.log(item.amount);
         // Deduct fees and tax if provided, then sum
         return sum + (item.amount - (item.fees || 0) - (item.tax || 0));
       }
       return sum;
     }, 0);
-
-    return total
+  
+    console.log('Todays payouts:', total);
+  
+    return total;
   }, [payouts]);
 
   return (
@@ -521,7 +729,9 @@ export function LandingContent() {
           >
             <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
               <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">Today's Earnings</h2>
+                <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">
+                  Today's Earnings
+                </h2>
                 <div className="text-4xl font-bold text-[#7DF9FF]">
                   ₹{netTotal.toLocaleString()}
                 </div>
@@ -537,12 +747,18 @@ export function LandingContent() {
           >
             <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
               <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">Quick Stats</h2>
+                <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">
+                  Quick Stats
+                </h2>
                 <div className="grid grid-cols-3 gap-4">
-                  {stats.map(stat => (
+                  {stats.map((stat) => (
                     <div key={stat.id} className="text-center">
-                      <div className="text-3xl font-bold text-[#7DF9FF]">{stat.count}</div>
-                      <div className="text-sm text-[#7DF9FF]/80">{stat.name}</div>
+                      <div className="text-3xl font-bold text-[#7DF9FF]">
+                        {stat.count}
+                      </div>
+                      <div className="text-sm text-[#7DF9FF]/80">
+                        {stat.name}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -565,10 +781,10 @@ export function LandingContent() {
         >
           <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">Recent Activity</h2>
-              <div className="text-[#7DF9FF]/80">
-                Coming soon...
-              </div>
+              <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">
+                Recent Activity
+              </h2>
+              <div className="text-[#7DF9FF]/80">Coming soon...</div>
             </div>
           </Card>
         </motion.div>

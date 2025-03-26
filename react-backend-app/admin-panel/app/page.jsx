@@ -1,33 +1,32 @@
-'use client'
-import { Navbar } from './components/navbar'
-import { Sidebar } from './components/sidebar'
-import { LandingContent } from './components/landing-content'
-import { DashboardLayout } from './components/DashboardLayout'
-import { DashboardProvider } from './context/DashboardContext'
-import OneSignal from "react-onesignal";
-import {useState, useEffect} from 'react'
+'use client';
+import { Navbar } from './components/navbar';
+import { Sidebar } from './components/sidebar';
+import { LandingContent } from './components/landing-content';
+import { DashboardLayout } from './components/DashboardLayout';
+import { DashboardProvider } from './context/DashboardContext';
+import OneSignal from 'react-onesignal';
+import { useState, useEffect } from 'react';
 
 export default function HomePage() {
   useEffect(() => {
     const initOneSignal = async () => {
       try {
-        
         await OneSignal.init({
-          appId: "c5c4fe85-5fe4-42e8-aaf4-c8edbfe967a9",
+          appId: 'c5c4fe85-5fe4-42e8-aaf4-c8edbfe967a9',
           notifyButton: {
             enable: true,
           },
-          allowLocalhostAsSecureOrigin: true,    
+          allowLocalhostAsSecureOrigin: true,
         });
-        const deviceState = OneSignal.User.PushSubscription
-        console.log("Device State:", deviceState);
+        const deviceState = OneSignal.User.PushSubscription;
+        console.log('Device State:', deviceState);
         const isEnabled = window.OneSignal.Notifications.isPushSupported();
-        console.log("Push notifications enabled:", isEnabled);
+        console.log('Push notifications enabled:', isEnabled);
 
-        const userId =  OneSignal.User.PushSubscription.id;
-        console.log("User ID:", userId);
+        const userId = OneSignal.User.PushSubscription.id;
+        console.log('User ID:', userId);
       } catch (error) {
-        console.error("Error initializing OneSignal:", error);
+        console.error('Error initializing OneSignal:', error);
       }
     };
 
@@ -39,9 +38,5 @@ export default function HomePage() {
     };
   }, []);
 
-  return (
-
-        <LandingContent />
-
-  )
+  return <LandingContent />;
 }

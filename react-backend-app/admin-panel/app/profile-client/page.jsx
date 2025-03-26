@@ -9,12 +9,12 @@ export default function ProfileClient() {
   if (error) return <div>{error.message}</div>;
 
   return (
-      user && (
-          <div>
-            <img src={user.picture} alt={user.name} />
-            <h2>{user.name}</h2>
-            <p>{user.email}</p>
-          </div>
-      )
+    user && (
+      <div>
+        <img src={user.picture} alt={user.name} />
+        <h2>{user.name}</h2>
+        <p>{user.email}</p>
+      </div>
+    )
   );
 }

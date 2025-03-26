@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-    Card,
-    CardContent,
-    Typography,
-    Button,
-    Divider,
-    IconButton,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Divider,
+  IconButton,
 } from "@mui/material";
 import { ChevronLeft, CreditCard } from "lucide-react";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -15,6 +15,8 @@ const FinalReview = () => {
   const [isLeaving, setIsLeaving] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [timeRemaining, setTimeRemaining] = useState(null);
+  const [isExpired, setIsExpired] = useState(false);
   const {
     jamRoomName,
     selectedSlots,
@@ -25,9 +27,9 @@ const FinalReview = () => {
     addonsCost,
     selectedAddons,
     selectedService,
+    reservationExpiresAt,
   } = location.state;
   const { user } = useAuth0();
-  console.log(user.sub);
 
   // Cleanup to release reservation when component unmounts if leaving
   useEffect(() => {
@@ -54,8 +56,7 @@ const FinalReview = () => {
         "Are you sure you want to leave? Your temporary reservation will be released.";
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
-    return () =>
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
   // Handle back navigation
@@ -69,13 +70,44 @@ const FinalReview = () => {
     }
   };
 
+  useEffect(() => {
+    if (!reservationExpiresAt) return;
+
+    const timer = setInterval(() => {
+      const now = Date.now();
+      const remaining = reservationExpiresAt - now;
+
+      if (remaining <= 0) {
+        setIsExpired(true);
+        clearInterval(timer);
+        // Redirect after showing message for 3 seconds
+        setTimeout(() => {
+          setIsLeaving(true);
+          navigate(-1, {
+            state: {
+              expired: true,
+              message:
+                "Your slot reservation has expired. Please select slots again.",
+            },
+          });
+        }, 2000);
+      } else {
+        setTimeRemaining(Math.floor(remaining / 1000));
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [reservationExpiresAt, navigate]);
+
   const checkoutHandler = async (amount) => {
     try {
-      const response = await fetch("http://localhost:5000/api/payments/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount }),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/payments/checkout",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount }),
+        }
+      );
       const data = await response.json();
       console.log(data);
 
@@ -96,32 +128,38 @@ const FinalReview = () => {
         theme: { color: "#F37254" },
         handler: async (response) => {
           console.log(response);
-          const verificationResponse = await fetch("http://localhost:5000/api/payments/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              email: user.email,
-              jamRoomId: selectedRoomId,
-              date: selectedDate,
-              slots: selectedSlots,
-              totalAmount,
-              addonsCost,
-              selectedAddons,
-              selectedService, 
-            }),
-          });
+          const verificationResponse = await fetch(
+            "http://localhost:5000/api/payments/verify",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                email: user.email,
+                jamRoomId: selectedRoomId,
+                date: selectedDate,
+                slots: selectedSlots,
+                totalAmount,
+                addonsCost,
+                selectedAddons,
+                selectedService,
+              }),
+            }
+          );
 
           const verificationData = await verificationResponse.json();
           console.log("Verification data:", verificationData);
           if (verificationData.success) {
-            const userResponse = await fetch("http://localhost:5000/api/users", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: user.email }),
-            });
+            const userResponse = await fetch(
+              "http://localhost:5000/api/users",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: user.email }),
+              }
+            );
             console.log("verificationData", verificationData);
             const userData = await userResponse.json();
             if (userData.success) {
@@ -154,6 +192,35 @@ const FinalReview = () => {
     }
   };
 
+  // Add this JSX right after the Review Your Booking Typography
+  const renderExpiryWarning = () => {
+    if (isExpired) {
+      return (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative mb-4">
+          <strong className="font-bold">Reservation Expired!</strong>
+          <p className="text-sm">Redirecting you back to slot selection...</p>
+        </div>
+      );
+    }
+
+    if (timeRemaining) {
+      const minutes = Math.floor(timeRemaining / 60);
+      const seconds = timeRemaining % 60;
+      return (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded relative mb-4">
+          <strong className="font-bold">Reservation expires in: </strong>
+          <span className="text-sm">
+            {minutes}:{seconds.toString().padStart(2, "0")}
+          </span>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Disable payment button when expired
+  const isPaymentDisabled = isExpired;
+
   return (
     <div className="min-h-screen bg-gray-50 pb-28">
       <div className="max-w-md mx-auto p-4">
@@ -166,6 +233,8 @@ const FinalReview = () => {
             Review Your Booking
           </Typography>
         </div>
+
+        {renderExpiryWarning()}
 
         {/* Jam Room Details */}
         <Card className="mb-4 rounded-xl shadow-sm overflow-hidden">
@@ -193,7 +262,10 @@ const FinalReview = () => {
                       {slot.startTime} - {slot.endTime}
                     </Typography>
                   </div>
-                  <Typography variant="body2" className="text-gray-700 font-medium">
+                  <Typography
+                    variant="body2"
+                    className="text-gray-700 font-medium"
+                  >
                     Slot {slot.slotId}
                   </Typography>
                 </div>
@@ -237,32 +309,35 @@ const FinalReview = () => {
         )}
 
         {/* Studio Services Section */}
-          {selectedService && selectedService.subPart && (
-            <Card className="mb-4 rounded-xl shadow-sm">
-              <CardContent className="p-4">
-                <Typography variant="subtitle2" className="text-gray-600 mb-3">
-                  Selected Studio Service
-                </Typography>
-                <div className="space-y-2">
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <div className="flex justify-between items-center mb-1">
-                      <Typography variant="body2" className="text-gray-700 font-medium">
-                        {selectedService.name}
-                      </Typography>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <Typography variant="body2" className="text-gray-600">
-                        {selectedService.subPart.name}
-                      </Typography>
-                      <Typography variant="body2" className="font-medium">
-                        ₹{selectedService.subPart.price}
-                      </Typography>
-                    </div>
+        {selectedService && selectedService.subPart && (
+          <Card className="mb-4 rounded-xl shadow-sm">
+            <CardContent className="p-4">
+              <Typography variant="subtitle2" className="text-gray-600 mb-3">
+                Selected Studio Service
+              </Typography>
+              <div className="space-y-2">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <div className="flex justify-between items-center mb-1">
+                    <Typography
+                      variant="body2"
+                      className="text-gray-700 font-medium"
+                    >
+                      {selectedService.name}
+                    </Typography>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <Typography variant="body2" className="text-gray-600">
+                      {selectedService.subPart.name}
+                    </Typography>
+                    <Typography variant="body2" className="font-medium">
+                      ₹{selectedService.subPart.price}
+                    </Typography>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Coupons and Credits */}
         <Card className="mb-4 rounded-xl shadow-sm">
@@ -290,7 +365,10 @@ const FinalReview = () => {
                 Jam Room Fee ({selectedSlots.length} slots)
               </Typography>
               <Typography variant="body2">
-                ₹{totalAmount - addonsCost - (selectedService?.subPart?.price || 0)}
+                ₹
+                {totalAmount -
+                  addonsCost -
+                  (selectedService?.subPart?.price || 0)}
               </Typography>
             </div>
             {addonsCost > 0 && (
@@ -306,7 +384,9 @@ const FinalReview = () => {
                 <Typography variant="body2" className="text-gray-600">
                   Studio Service ({selectedService.name})
                 </Typography>
-                <Typography variant="body2">₹{selectedService.subPart.price}</Typography>
+                <Typography variant="body2">
+                  ₹{selectedService.subPart.price}
+                </Typography>
               </div>
             )}
             <Divider className="my-2" />
@@ -333,8 +413,9 @@ const FinalReview = () => {
             className="rounded-lg py-3"
             onClick={() => checkoutHandler(totalAmount)}
             startIcon={<CreditCard className="w-5 h-5" />}
+            disabled={isPaymentDisabled}
           >
-            Proceed to Payment
+            {isExpired ? "Reservation Expired" : "Proceed to Payment"}
           </Button>
         </div>
       </div>

@@ -93,17 +93,17 @@ function Booking() {
           console.log("No room ID available");
           return;
         }
-  
+
         console.log("Fetching services for room:", selectedRoom.id);
-  
+
         const response = await fetch(
           `http://localhost:5000/api/jamrooms/${selectedRoom.id}/services`
         );
-  
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-  
+
         const data = await response.json();
         if (data.success) {
           console.log("Services fetched:", data.data);
@@ -114,7 +114,7 @@ function Booking() {
         setServices([]);
       }
     };
-  
+
     fetchServices();
   }, [selectedRoom?.id]);
 
@@ -185,9 +185,20 @@ function Booking() {
           data.jamRoomId === selectedRoom.id &&
           data.date === moment(selectedDate).format("YYYY-MM-DD")
         ) {
-          setReservedSlots(
-            new Set(data.reservations.slots.map((r) => r.slotId))
-          );
+          setReservedSlots((prevReservedSlots) => {
+            const newReservedSlots = new Set(
+              data.reservations.slots.map((r) => r.slotId)
+            );
+
+            // Uncheck any slots that have become reserved
+            setSelectedSlots((prevSelectedSlots) =>
+              prevSelectedSlots.filter(
+                (slotId) => !newReservedSlots.has(String(slotId))
+              )
+            );
+
+            return newReservedSlots;
+          });
         }
       });
 
@@ -275,7 +286,13 @@ function Booking() {
     if (isPermanentlyBooked) return "PERMANENT";
 
     // Then check for temporary reservations
-    if (reservedSlots.has(String(slotId))) return "TEMPORARY";
+    if (reservedSlots.has(String(slotId))) {
+      // If this slot was selected but is now reserved by someone else, uncheck it
+      if (selectedSlots.includes(slotId)) {
+        setSelectedSlots((prev) => prev.filter((id) => id !== slotId));
+      }
+      return "TEMPORARY";
+    }
 
     return false;
   };
@@ -297,12 +314,52 @@ function Booking() {
     return currentTime.isAfter(slotTime);
   };
 
-  const handleSlotChange = (slotId) => {
-    setSelectedSlots((prev) =>
-      prev.includes(slotId)
-        ? prev.filter((id) => id !== slotId)
-        : [...prev, slotId]
+  const areSlotsContinuous = (slots, newSlotId, roomSlots) => {
+    const allSlots = [...slots, newSlotId].sort();
+
+    // Convert slot IDs to actual slot objects
+    const slotObjects = allSlots.map((id) =>
+      roomSlots.find((s) => s.slotId === id)
     );
+
+    // Sort by start time
+    slotObjects.sort((a, b) => {
+      const timeA = parseInt(a.startTime.split(":")[0]);
+      const timeB = parseInt(b.startTime.split(":")[0]);
+      return timeA - timeB;
+    });
+
+    // Check if slots are consecutive
+    for (let i = 0; i < slotObjects.length - 1; i++) {
+      const currentEnd = parseInt(slotObjects[i].endTime.split(":")[0]);
+      const nextStart = parseInt(slotObjects[i + 1].startTime.split(":")[0]);
+      if (currentEnd !== nextStart) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleSlotChange = (slotId) => {
+    setSelectedSlots((prev) => {
+      if (prev.includes(slotId)) {
+        // Allow removing any slot
+        return prev.filter((id) => id !== slotId);
+      } else {
+        // Check if adding this slot would maintain continuity
+        const newSlots = [...prev, slotId];
+        if (
+          newSlots.length === 1 ||
+          areSlotsContinuous(prev, slotId, selectedRoom.slots)
+        ) {
+          return newSlots;
+        } else {
+          // Show error message to user
+          alert("Please select consecutive time slots only");
+          return prev;
+        }
+      }
+    });
   };
 
   const handleSaveNumber = async () => {

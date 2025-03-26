@@ -1,24 +1,39 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { Button } from './ui/button'
-import { Home, Receipt, Wallet, Music, UserCircle, Package } from 'lucide-react'
-import { useUser } from '@auth0/nextjs-auth0/client'
-import Link from 'next/link'
-import { useDashboard } from '../context/DashboardContext'
+import { motion } from 'framer-motion';
+import { Button } from './ui/button';
+import {
+  Home,
+  Receipt,
+  Wallet,
+  Music,
+  UserCircle,
+  Package,
+} from 'lucide-react';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import Link from 'next/link';
+import { useDashboard } from '../context/DashboardContext';
 
 export function Sidebar() {
-  const { user } = useUser()
-  const { isRegistered, jamRoomId, fundAccountId, loading } = useDashboard()
+  const { user } = useUser();
+  const { isRegistered, jamRoomId, fundAccountId, loading } = useDashboard();
 
   const sidebarItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
     { icon: Receipt, label: 'Booking History', path: `/bookings/${jamRoomId}` },
-    { icon: Wallet, label: 'Payout History', path: `/payouts/${fundAccountId}` },
-    { icon: Package, label: 'Plans & Packages', path: `/plans-and-packages/${jamRoomId}` }, // Add new item
+    {
+      icon: Wallet,
+      label: 'Payout History',
+      path: `/payouts/${fundAccountId}`,
+    },
+    {
+      icon: Package,
+      label: 'Plans & Packages',
+      path: `/plans-and-packages/${jamRoomId}`,
+    }, // Add new item
     { icon: UserCircle, label: 'Profile', path: `/profile/${jamRoomId}` },
     { icon: Music, label: 'Personal Branding', path: '/branding' },
-  ]
+  ];
 
   if (loading) {
     return (
@@ -34,7 +49,7 @@ export function Sidebar() {
           ))}
         </div>
       </motion.div>
-    )
+    );
   }
 
   return (
@@ -44,8 +59,9 @@ export function Sidebar() {
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 120 }}
     >
-
-      <div className={`flex flex-col gap-6 ${(!user || !isRegistered) && 'blur-sm'}`}>
+      <div
+        className={`flex flex-col gap-6 ${(!user || !isRegistered) && 'blur-sm'}`}
+      >
         {sidebarItems.map((item, index) => (
           <div key={index} className="relative">
             <Link href={item.path}>
@@ -63,11 +79,11 @@ export function Sidebar() {
           </div>
         ))}
       </div>
-      
+
       {!user && (
         <div className="mt-4">
-          <Button 
-            onClick={() => window.location.href = '/api/auth/login'} 
+          <Button
+            onClick={() => (window.location.href = '/api/auth/login')}
             className="w-full btn-primary"
           >
             Log In to Access
@@ -77,15 +93,14 @@ export function Sidebar() {
 
       {user && !isRegistered && (
         <div className="mt-4">
-          <Button 
-            onClick={() => window.location.href = '/registration'} 
+          <Button
+            onClick={() => (window.location.href = '/registration')}
             className="w-full btn-secondary"
           >
             Complete Registration
           </Button>
         </div>
       )}
-
     </motion.div>
-  )
+  );
 }
