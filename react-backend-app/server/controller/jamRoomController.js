@@ -468,13 +468,6 @@ const addStudioService = async (req, res) => {
       });
     }
 
-    // Validate that this is a Studio type venue
-    if (jamRoom.type !== "Studio") {
-      return res.status(400).json({
-        success: false,
-        message: "Services can only be added to Studio type venues",
-      });
-    }
 
     // Validate sub-parts
     for (const subPart of subParts) {
