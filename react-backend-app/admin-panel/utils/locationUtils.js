@@ -1,3 +1,4 @@
+// Fetching coordinates with olamaps
 export const fetchLocationCoordinates = async (placeId) => {
   try {
     const response = await fetch(
