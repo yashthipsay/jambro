@@ -1,4 +1,5 @@
 const amqp = require("amqplib");
+require("dotenv").config();
 
 class RabbitMQService {
   constructor() {
@@ -13,7 +14,7 @@ class RabbitMQService {
 
   async connect() {
     try {
-      this.connection = await amqp.connect("amqps://uecrezcy:ViD6tHdW7fZPUa-w6RMMZ5d_94mHgkDJ@puffin.rmq2.cloudamqp.com/uecrezcy");
+      this.connection = await amqp.connect(process.env.RABBITMQ_URL);
       this.channel = await this.connection.createChannel();
 
       // Assert Exchanges
