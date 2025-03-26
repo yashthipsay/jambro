@@ -114,7 +114,7 @@ const JamRoomRegistration = () => {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/api/bank-verification/verify',
+        'http://43.205.169.90/api/bank-verification/verify',
         {
           method: 'POST',
           headers: {
@@ -177,7 +177,7 @@ const JamRoomRegistration = () => {
       });
 
       const response = await fetch(
-        'http://localhost:5000/api/jamrooms/images',
+        'http://43.205.169.90/api/jamrooms/images',
         {
           method: 'POST', // Use POST for initial upload
           body: formData,
@@ -223,7 +223,7 @@ const JamRoomRegistration = () => {
       };
 
       const response = await fetch(
-        'http://localhost:5000/api/jamrooms/create',
+        'http://43.205.169.90/api/jamrooms/create',
         {
           method: 'POST',
           headers: {
