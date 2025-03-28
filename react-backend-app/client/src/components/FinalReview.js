@@ -59,6 +59,29 @@ const FinalReview = () => {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
+  // Add new effect to handle mobile navigation
+  useEffect(() => {
+    const handlePopState = (e) => {
+      e.preventDefault();
+      setIsLeaving(true);
+      fetch("http://43.205.169.90/api/reservations/release", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jamRoomId: selectedRoomId,
+          date: selectedDate,
+          slots: selectedSlots,
+        }),
+      });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [selectedRoomId, selectedDate, selectedSlots]);
+
   // Handle back navigation
   const handleBack = () => {
     const confirmLeave = window.confirm(
@@ -152,14 +175,11 @@ const FinalReview = () => {
           const verificationData = await verificationResponse.json();
           console.log("Verification data:", verificationData);
           if (verificationData.success) {
-            const userResponse = await fetch(
-              "http://43.205.169.90/api/users",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: user.email }),
-              }
-            );
+            const userResponse = await fetch("http://43.205.169.90/api/users", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: user.email }),
+            });
             console.log("verificationData", verificationData);
             const userData = await userResponse.json();
             if (userData.success) {
