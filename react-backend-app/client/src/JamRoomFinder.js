@@ -474,7 +474,7 @@ function JamRoomFinder() {
               textShadow: "0 1px 2px rgba(0,0,0,0.1)",
             }}
           >
-            Find Your Perfect Jam Room
+            Find Your Perfect Music Space
           </Typography>
           <Typography variant="body1" sx={{ color: textColor, opacity: 0.8 }}>
             Discover nearby jam rooms and book your session in minutes
@@ -557,7 +557,7 @@ function JamRoomFinder() {
                 )
               }
             >
-              {loading ? "Searching..." : "Find Nearby Jam Rooms"}
+              {loading ? "Searching..." : "Find Nearby Music Spaces"}
             </Button>
 
             {/* Jam Room Listing */}
