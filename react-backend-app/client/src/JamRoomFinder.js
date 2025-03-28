@@ -24,6 +24,125 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { findClosestJamRooms } from "./utils/jamRoomUtils";
 import { Guitar } from "lucide-react";
 
+// Event data - in a real app this would come from an API
+const events = [
+  {
+    id: 1,
+    title: "Jazz Night at Hard Rock Cafe",
+    date: "March 15, 2024",
+    image: "https://i.ytimg.com/vi/hwcWIzlQiyw/maxresdefault.jpg",
+    category: "Jazz",
+  },
+  {
+    id: 2,
+    title: "Crescendo VIT Pune 2025",
+    date: "March 20, 2024",
+    image:
+      "https://viberate-upload.ams3.cdn.digitaloceanspaces.com/prod/entity/festival/crescendo-festival-HOUAE",
+    category: "Rock",
+  },
+  {
+    id: 3,
+    title: "Classical Symphony",
+    date: "March 25, 2024",
+    image:
+      "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=800&auto=format&fit=crop",
+    category: "Classical",
+  },
+];
+
+function EventCarousel() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % events.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextSlide = (e) => {
+    e.stopPropagation();
+    setCurrentSlide((prev) => (prev + 1) % events.length);
+  };
+
+  const prevSlide = (e) => {
+    e.stopPropagation();
+    setCurrentSlide((prev) => (prev - 1 + events.length) % events.length);
+  };
+
+  return (
+    <Card
+      className="rounded-xl overflow-hidden shadow-lg"
+      sx={{
+        backgroundColor: "transparent",
+        boxShadow: "0 4px 16px rgba(100, 52, 252, 0.15)",
+        border: "1px solid rgba(160, 133, 235, 0.2)",
+      }}
+    >
+      <div className="relative h-56 sm:h-64">
+        {" "}
+        {/* Increased height for better visibility */}
+        <img
+          src={events[currentSlide].image}
+          alt={events[currentSlide].title}
+          className="w-full h-full object-cover"
+        />
+        {/* Enhanced gradient overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.85) 100%)",
+            pointerEvents: "none",
+          }}
+        />
+        {/* Navigation buttons */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+        >
+          <ChevronLeft />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+        >
+          <ChevronRight />
+        </button>
+        {/* Event info */}
+        <div className="absolute bottom-4 left-4 right-4 text-white">
+          <div className="flex items-center space-x-2 mb-1">
+            <Event sx={{ fontSize: 16 }} />
+            <Typography variant="caption">
+              {events[currentSlide].date}
+            </Typography>
+          </div>
+          <Typography variant="h6" className="font-bold">
+            {events[currentSlide].title}
+          </Typography>
+          <div className="mt-1">
+            <span className="px-2 py-1 rounded-full bg-purple-500/80 text-xs font-medium">
+              {events[currentSlide].category}
+            </span>
+          </div>
+        </div>
+        {/* Dots indicator */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          {events.map((_, index) => (
+            <div
+              key={index}
+              className={`h-1.5 w-1.5 rounded-full transition-all ${
+                index === currentSlide ? "bg-white w-3" : "bg-white/50"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function JamRoomCard({ room, onClick, colors }) {
   const [currentImage, setCurrentImage] = useState(0);
   const { primaryColor, accentColor, secondaryColor, textColor } = colors;
@@ -258,20 +377,20 @@ function JamRoomFinder() {
     setSelectedCategory(category);
     // You can add filtering logic here based on the selected category
 
-      // Filter rooms based on category
-  switch(category) {
-    case "All":
-      setFilteredJamRooms(jamRooms);
-      break;
-    case "Jamrooms":
-      setFilteredJamRooms(jamRooms.filter(room => room.type === "Jamroom"));
-      break;
-    case "Recording Studios":
-      setFilteredJamRooms(jamRooms.filter(room => room.type === "Studio"));
-      break;
-    default:
-      setFilteredJamRooms(jamRooms);
-  }
+    // Filter rooms based on category
+    switch (category) {
+      case "All":
+        setFilteredJamRooms(jamRooms);
+        break;
+      case "Jamrooms":
+        setFilteredJamRooms(jamRooms.filter((room) => room.type === "Jamroom"));
+        break;
+      case "Recording Studios":
+        setFilteredJamRooms(jamRooms.filter((room) => room.type === "Studio"));
+        break;
+      default:
+        setFilteredJamRooms(jamRooms);
+    }
   };
 
   useEffect(() => {
@@ -326,26 +445,28 @@ function JamRoomFinder() {
 
   return (
     <div
-      className="min-h-screen p-4"
+      className="min-h-screen"
       style={{
         backgroundColor,
         backgroundImage: `radial-gradient(circle at 50% 0%, #e9e4ff 0%, ${backgroundColor} 70%)`,
       }}
     >
-      <div className="max-w-md mx-auto">
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {" "}
+        {/* Increased max width and adjusted padding */}
         {/* Header */}
-        <div className="text-center mb-8 mt-4">
+        <div className="text-center mb-8">
           <img
             src="/Gigsaw_Color.png"
             alt="GigSaw Logo"
-            className="h-20 mx-auto mb-3 filter drop-shadow-lg transition-all duration-300 hover:scale-105"
+            className="h-16 mx-auto mb-4 filter drop-shadow-lg transition-all duration-300 hover:scale-105"
             style={{
-              width: "440px", // Set a specific width
+              maxWidth: "320px",
               objectFit: "contain",
             }}
           />
           <Typography
-            variant="h5"
+            variant="h4"
             sx={{
               fontWeight: "bold",
               mb: 1,
@@ -355,63 +476,61 @@ function JamRoomFinder() {
           >
             Find Your Perfect Jam Room
           </Typography>
-          <Typography variant="body2" sx={{ color: textColor, opacity: 0.8 }}>
+          <Typography variant="body1" sx={{ color: textColor, opacity: 0.8 }}>
             Discover nearby jam rooms and book your session in minutes
           </Typography>
         </div>
+        {/* Two column layout for larger screens */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+          {/* Event Carousel - Takes up 2 columns */}
+          <div className="lg:col-span-2">
+            <EventCarousel />
+          </div>
 
-        {/* NEW: Main Service Categories (superset) */}
-        <div className="mb-6">
-          <Card
-            className="rounded-xl overflow-hidden"
-            sx={{
-              backgroundColor: cardBackground,
-              boxShadow: "0 4px 16px rgba(100, 52, 252, 0.15)",
-              border: "1px solid rgba(160, 133, 235, 0.2)",
-            }}
-          >
-            <div className="relative">
-              {/* Horizontal scrollable service categories */}
-              <div className="flex overflow-x-auto scrollbar-hide py-3 px-4">
-                {mainServices.map((service) => (
-                  <button
-                    key={service.id}
-                    onClick={() => handleServiceClick(service.id)}
-                    className={`
-                      flex items-center space-x-2 whitespace-nowrap px-4 py-2 mx-1 rounded-full
-                      transition-all duration-200 first:ml-0 last:mr-0
-                      ${
-                        activeService === service.id
-                          ? `bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium`
-                          : `bg-white text-gray-700 border border-gray-200 hover:border-indigo-200 hover:bg-indigo-50`
-                      }
-                    `}
-                  >
-                    <span className="flex items-center justify-center">
-                      {service.icon}
-                    </span>
-                    <span>{service.name}</span>
-                  </button>
-                ))}
+          {/* Main content - Takes up 3 columns */}
+          <div className="lg:col-span-3">
+            {/* Main Service Categories */}
+            <Card
+              className="rounded-xl overflow-hidden mb-6"
+              sx={{
+                backgroundColor: cardBackground,
+                boxShadow: "0 4px 16px rgba(100, 52, 252, 0.15)",
+                border: "1px solid rgba(160, 133, 235, 0.2)",
+                mx: -2, // Negative margin to extend to edges
+              }}
+            >
+              <div className="relative">
+                {/* Horizontal scrollable service categories */}
+                <div className="flex overflow-x-auto scrollbar-hide py-3">
+                  {mainServices.map((service) => (
+                    <button
+                      key={service.id}
+                      onClick={() => handleServiceClick(service.id)}
+                      className={`
+                        flex items-center space-x-2 whitespace-nowrap px-4 py-2 mx-1 rounded-full
+                        transition-all duration-200 first:ml-0 last:mr-0
+                        ${
+                          activeService === service.id
+                            ? `bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium`
+                            : `bg-white text-gray-700 border border-gray-200 hover:border-indigo-200 hover:bg-indigo-50`
+                        }
+                      `}
+                    >
+                      <span className="flex items-center justify-center">
+                        {service.icon}
+                      </span>
+                      <span>{service.name}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Gradient fade indicators for scrolling */}
+                <div className="absolute pointer-events-none left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10" />
+                <div className="absolute pointer-events-none right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent z-10" />
               </div>
+            </Card>
 
-              {/* Gradient fade indicators for scrolling */}
-              <div className="absolute pointer-events-none left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10" />
-              <div className="absolute pointer-events-none right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent z-10" />
-            </div>
-          </Card>
-        </div>
-
-        {/* Find Button */}
-        <Card
-          className="mb-6 rounded-xl shadow-sm"
-          sx={{
-            backgroundColor: cardBackground,
-            boxShadow: "0 4px 16px rgba(100, 52, 252, 0.15)",
-            border: "1px solid rgba(160, 133, 235, 0.2)",
-          }}
-        >
-          <CardContent className="p-5 text-center">
+            {/* Find Button */}
             <Button
               variant="contained"
               fullWidth
@@ -421,7 +540,8 @@ function JamRoomFinder() {
               sx={{
                 backgroundColor: primaryColor,
                 color: "#ffffff",
-                py: 1.5,
+                py: 2, // Increased vertical padding
+                mb: 4, // Increased bottom margin from 3 to 4
                 borderRadius: 2,
                 boxShadow: "0 4px 12px rgba(100, 52, 252, 0.3)",
                 "&:hover": {
@@ -439,94 +559,99 @@ function JamRoomFinder() {
             >
               {loading ? "Searching..." : "Find Nearby Jam Rooms"}
             </Button>
-          </CardContent>
-        </Card>
 
-        {/* Jam Room Listing */}
-        {jamRooms.length > 0 && (
-          <div className="space-y-4">
-            {/* Horizontal scrollable categories */}
-            <div className="flex space-x-2 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  className={`
-                px-4 py-2 rounded-full border border-gray-200 text-sm flex-shrink-0
-                ${
-                  selectedCategory === category
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-white text-gray-700 hover:bg-gray-50"
-                }
-                transition-colors duration-200
-              `}
-                  onClick={() => handleCategoryClick(category)}
+            {/* Jam Room Listing */}
+            {jamRooms.length > 0 && (
+              <div className="space-y-4">
+                {/* Horizontal scrollable categories */}
+                <div className="flex space-x-3 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-6">
+                  {" "}
+                  {/* Increased space-x from 2 to 3, and px from 4 to 6 */}
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      className={`
+                    px-6 py-2 rounded-full border border-gray-200 text-sm flex-shrink-0 mx-1 
+                    ${
+                      selectedCategory === category
+                        ? "bg-indigo-600 text-white border-indigo-600"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }
+                    transition-colors duration-200
+                  `}
+                      onClick={() => handleCategoryClick(category)}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    mb: 2,
+                    color: textColor,
+                    textShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                  }}
                 >
-                  {category}
-                </button>
-              ))}
-            </div>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 600,
-                mb: 2,
-                color: textColor,
-                textShadow: "0 1px 2px rgba(0,0,0,0.1)",
-              }}
-            >
-              Nearby Jam Rooms
-            </Typography>
+                  Nearby Jam Rooms
+                </Typography>
 
-            {!isAuthenticated ? (
-              <Card
-                className="rounded-xl shadow-sm"
-                sx={{
-                  backgroundColor: cardBackground,
-                  boxShadow: "0 4px 16px rgba(100, 52, 252, 0.15)",
-                  border: "1px solid rgba(160, 133, 235, 0.2)",
-                }}
-              >
-                <CardContent className="p-5 text-center">
-                  <Typography variant="body2" sx={{ mb: 2, color: textColor }}>
-                    Sign in to view and book jam rooms
-                  </Typography>
-                  <Button
-                    onClick={() => loginWithRedirect()}
-                    variant="contained"
-                    fullWidth
+                {!isAuthenticated ? (
+                  <Card
+                    className="rounded-xl shadow-sm"
                     sx={{
-                      backgroundColor: primaryColor,
-                      color: "#ffffff",
-                      boxShadow: "0 4px 12px rgba(100, 52, 252, 0.3)",
-                      "&:hover": {
-                        backgroundColor: accentColor,
-                        boxShadow: "0 6px 16px rgba(100, 52, 252, 0.4)",
-                      },
+                      backgroundColor: cardBackground,
+                      boxShadow: "0 4px 16px rgba(100, 52, 252, 0.15)",
+                      border: "1px solid rgba(160, 133, 235, 0.2)",
                     }}
                   >
-                    Sign In
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                  {filteredJamRooms.map((room) => (
-                    <JamRoomCard
-                      key={room.id}
-                      room={room}
-                      onClick={() => handleCardClick(room)}
-                      colors={{
-                        primaryColor,
-                        secondaryColor,
-                        accentColor,
-                        textColor,
-                      }}
-                    />
-                  ))}
+                    <CardContent className="p-5 text-center">
+                      <Typography
+                        variant="body2"
+                        sx={{ mb: 2, color: textColor }}
+                      >
+                        Sign in to view and book jam rooms
+                      </Typography>
+                      <Button
+                        onClick={() => loginWithRedirect()}
+                        variant="contained"
+                        fullWidth
+                        sx={{
+                          backgroundColor: primaryColor,
+                          color: "#ffffff",
+                          boxShadow: "0 4px 12px rgba(100, 52, 252, 0.3)",
+                          "&:hover": {
+                            backgroundColor: accentColor,
+                            boxShadow: "0 6px 16px rgba(100, 52, 252, 0.4)",
+                          },
+                        }}
+                      >
+                        Sign In
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredJamRooms.map((room) => (
+                      <JamRoomCard
+                        key={room.id}
+                        room={room}
+                        onClick={() => handleCardClick(room)}
+                        colors={{
+                          primaryColor,
+                          secondaryColor,
+                          accentColor,
+                          textColor,
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

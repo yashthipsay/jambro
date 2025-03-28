@@ -550,7 +550,13 @@ function Booking() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
+    <div
+      className="min-h-screen bg-gray-50 pb-28"
+      style={{
+        backgroundColor: "#f8f6ff",
+        backgroundImage: `radial-gradient(circle at 50% 0%, #e9e4ff 0%, #f8f6ff 70%)`,
+      }}
+    >
       <div className="max-w-md mx-auto p-4">
         <div className="mb-4 flex items-center">
           <IconButton

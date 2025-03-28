@@ -1,9 +1,5 @@
 'use client';
-import { Navbar } from './components/navbar';
-import { Sidebar } from './components/sidebar';
 import { LandingContent } from './components/landing-content';
-import { DashboardLayout } from './components/DashboardLayout';
-import { DashboardProvider } from './context/DashboardContext';
 import OneSignal from 'react-onesignal';
 import { useState, useEffect } from 'react';
 
