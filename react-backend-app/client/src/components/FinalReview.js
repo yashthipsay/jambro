@@ -149,6 +149,20 @@ const FinalReview = () => {
           contact: phoneNumber,
         },
         theme: { color: "#F37254" },
+        modal: {
+          ondismiss: function () {
+            // Handle modal dismissal gracefully
+            const confirmCancel = window.confirm(
+              "Are you sure you want to cancel the payment?"
+            );
+            if (confirmCancel) {
+              setIsLeaving(true);
+              navigate(-1);
+            }
+          },
+          escape: false, // Prevent closing on escape key
+          animation: true, // Enable animations
+        },
         handler: async (response) => {
           console.log(response);
           const verificationResponse = await fetch(
@@ -207,6 +221,23 @@ const FinalReview = () => {
       };
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
+
+      // Add event listener for back button
+      const handleBackButton = (e) => {
+        e.preventDefault();
+        rzp1.close();
+      };
+
+      window.addEventListener("popstate", handleBackButton);
+
+      // Cleanup listener when payment completes or fails
+      rzp1.on("payment.failed", () => {
+        window.removeEventListener("popstate", handleBackButton);
+      });
+
+      rzp1.on("payment.success", () => {
+        window.removeEventListener("popstate", handleBackButton);
+      });
     } catch (error) {
       console.error("Error creating order:", error);
     }
