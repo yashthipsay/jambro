@@ -16,6 +16,7 @@ const FinalReview = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [timeRemaining, setTimeRemaining] = useState(null);
+  const [isPaymentInProgress, setIsPaymentInProgress] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
   const {
     jamRoomName,
@@ -62,7 +63,13 @@ const FinalReview = () => {
   // Add new effect to handle mobile navigation
   useEffect(() => {
     const handlePopState = (e) => {
-      e.preventDefault();
+      if (isPaymentInProgress) {
+        e.preventDefault();
+        window.history.pushState(null, document.title, window.location.href);
+        return;
+      }
+      // Instead of just calling preventDefault, push state again
+      window.history.pushState(null, document.title, window.location.href);
       setIsLeaving(true);
       fetch("http://43.205.169.90/api/reservations/release", {
         method: "POST",
@@ -80,7 +87,7 @@ const FinalReview = () => {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [selectedRoomId, selectedDate, selectedSlots]);
+  }, [selectedRoomId, selectedDate, selectedSlots, isPaymentInProgress]);
 
   // Handle back navigation
   const handleBack = () => {
@@ -123,6 +130,7 @@ const FinalReview = () => {
 
   const checkoutHandler = async (amount) => {
     try {
+      setIsPaymentInProgress(true);
       const response = await fetch(
         "http://43.205.169.90/api/payments/checkout",
         {
@@ -151,7 +159,8 @@ const FinalReview = () => {
         theme: { color: "#F37254" },
         modal: {
           ondismiss: function () {
-            // Handle modal dismissal gracefully
+            // Re-enable your custom navigation handling once the modal is dismissed
+            setIsPaymentInProgress(false);
             const confirmCancel = window.confirm(
               "Are you sure you want to cancel the payment?"
             );
@@ -160,11 +169,12 @@ const FinalReview = () => {
               navigate(-1);
             }
           },
-          escape: false, // Prevent closing on escape key
-          animation: true, // Enable animations
+          escape: false,
+          animation: true,
         },
         handler: async (response) => {
           console.log(response);
+          setIsPaymentInProgress(false);
           const verificationResponse = await fetch(
             "http://43.205.169.90/api/payments/verify",
             {
@@ -222,23 +232,26 @@ const FinalReview = () => {
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
 
-      // Add event listener for back button
+      // Optionally, remove any additional popstate listeners that might interfere
       const handleBackButton = (e) => {
-        e.preventDefault();
-        rzp1.close();
+        if (isPaymentInProgress) {
+          e.preventDefault();
+          rzp1.close();
+        }
       };
-
       window.addEventListener("popstate", handleBackButton);
 
-      // Cleanup listener when payment completes or fails
       rzp1.on("payment.failed", () => {
         window.removeEventListener("popstate", handleBackButton);
+        setIsPaymentInProgress(false);
       });
 
       rzp1.on("payment.success", () => {
         window.removeEventListener("popstate", handleBackButton);
+        setIsPaymentInProgress(false);
       });
     } catch (error) {
+      setIsPaymentInProgress(false);
       console.error("Error creating order:", error);
     }
   };
