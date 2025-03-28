@@ -161,6 +161,7 @@ const FinalReview = () => {
           ondismiss: function () {
             // Re-enable your custom navigation handling once the modal is dismissed
             setIsPaymentInProgress(false);
+            window.removeEventListener("popstate", handleBackButton);
             const confirmCancel = window.confirm(
               "Are you sure you want to cancel the payment?"
             );
@@ -171,6 +172,8 @@ const FinalReview = () => {
           },
           escape: false,
           animation: true,
+          backdropClose: false, // Prevent closing on backdrop click
+          handleBackButton: true, // Enable back button handling
         },
         handler: async (response) => {
           console.log(response);
