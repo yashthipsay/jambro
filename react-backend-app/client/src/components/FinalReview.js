@@ -33,42 +33,20 @@ const FinalReview = () => {
 
   // Cleanup to release reservation when component unmounts if leaving
   useEffect(() => {
-    // Handle both browser/mobile back navigation
-    const handlePopState = (event) => {
-      event.preventDefault();
-      setIsLeaving(true);
-      // Release the reservation
-      fetch("http://43.205.169.90/api/reservations/release", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jamRoomId: selectedRoomId,
-          date: selectedDate,
-          slots: selectedSlots,
-        }),
-      });
-    };
-
-    // Handle page refresh/close
-    const handleBeforeUnload = (e) => {
-      e.preventDefault();
-      e.returnValue =
-        "Are you sure you want to leave? Your temporary reservation will be released.";
-    };
-
-    // Add both event listeners
-    window.addEventListener("popstate", handlePopState);
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    // Push a new entry to handle the first back action
-    window.history.pushState({ fromFinalReview: true }, "");
-
-    // Cleanup
     return () => {
-      window.removeEventListener("popstate", handlePopState);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (isLeaving) {
+        fetch("http://43.205.169.90/api/reservations/release", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jamRoomId: selectedRoomId,
+            date: selectedDate,
+            slots: selectedSlots,
+          }),
+        });
+      }
     };
-  }, [selectedRoomId, selectedDate, selectedSlots]);
+  }, [isLeaving, selectedRoomId, selectedDate, selectedSlots]);
 
   // Warn user when they try to close or reload the page
   useEffect(() => {
@@ -174,11 +152,14 @@ const FinalReview = () => {
           const verificationData = await verificationResponse.json();
           console.log("Verification data:", verificationData);
           if (verificationData.success) {
-            const userResponse = await fetch("http://43.205.169.90/api/users", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: user.email }),
-            });
+            const userResponse = await fetch(
+              "http://43.205.169.90/api/users",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: user.email }),
+              }
+            );
             console.log("verificationData", verificationData);
             const userData = await userResponse.json();
             if (userData.success) {
