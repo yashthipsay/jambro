@@ -104,8 +104,6 @@ const FinalReview = () => {
     if (!reservationExpiresAt) return;
 
     const timer = setInterval(() => {
-      // Freeze timer when payment is in progress
-      if (isPaymentInProgress) return;
 
       const now = Date.now();
       const remaining = reservationExpiresAt - now;
