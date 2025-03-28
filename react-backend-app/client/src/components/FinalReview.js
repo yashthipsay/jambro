@@ -161,22 +161,9 @@ const FinalReview = () => {
         },
         theme: { color: "#F37254" },
         modal: {
-          ondismiss: function () {
-            // Re-enable your custom navigation handling once the modal is dismissed
-            setIsPaymentInProgress(false);
-            window.removeEventListener("popstate", handleBackButton);
-            const confirmCancel = window.confirm(
-              "Are you sure you want to cancel the payment?"
-            );
-            if (confirmCancel) {
-              setIsLeaving(true);
-              navigate(-1);
-            }
-          },
           escape: false,
           animation: true,
           backdropClose: false, // Prevent closing on backdrop click
-          handleBackButton: true, // Enable back button handling
         },
         handler: async (response) => {
           console.log(response);
@@ -237,25 +224,6 @@ const FinalReview = () => {
       };
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
-
-      // Optionally, remove any additional popstate listeners that might interfere
-      const handleBackButton = (e) => {
-        if (isPaymentInProgress) {
-          e.preventDefault();
-          rzp1.close();
-        }
-      };
-      window.addEventListener("popstate", handleBackButton);
-
-      rzp1.on("payment.failed", () => {
-        window.removeEventListener("popstate", handleBackButton);
-        setIsPaymentInProgress(false);
-      });
-
-      rzp1.on("payment.success", () => {
-        window.removeEventListener("popstate", handleBackButton);
-        setIsPaymentInProgress(false);
-      });
     } catch (error) {
       setIsPaymentInProgress(false);
       console.error("Error creating order:", error);
