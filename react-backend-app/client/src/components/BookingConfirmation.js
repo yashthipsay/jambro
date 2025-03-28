@@ -66,7 +66,12 @@ const BookingConfirmation = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-indigo-100 p-4 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-indigo-100 p-4 flex flex-col items-center justify-center"
+      style={{
+          backgroundColor: "#f8f6ff",
+          backgroundImage: `radial-gradient(circle at 50% 0%, #e9e4ff 0%, #f8f6ff 70%)`,
+      }}
+    >
       <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-8">

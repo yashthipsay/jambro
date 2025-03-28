@@ -59,11 +59,10 @@ function JamRoomDetails() {
     }
   }, [selectedRoom]);
 
-
   if (!selectedRoom) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-md p-6 w-full max-w-md text-center">
+        <div className="rounded-xl shadow-md p-6 w-full max-w-md text-center">
           <Music className="w-16 h-16 text-indigo-400 mx-auto mb-4" />
           <h1 className="text-xl font-bold text-gray-800 mb-4">
             No Jam Room selected
@@ -96,7 +95,13 @@ function JamRoomDetails() {
   const hasInstagramProfile = selectedRoom.socialMedia?.instagram;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
+    <div
+      className="min-h-screen bg-gray-50 pb-28"
+      style={{
+        backgroundColor: "#f8f6ff",
+        backgroundImage: `radial-gradient(circle at 50% 0%, #e9e4ff 0%, #f8f6ff 70%)`,
+      }}
+    >
       <div className="max-w-md mx-auto">
         <div className="mb-4 flex items-center">
           <Button
@@ -116,7 +121,13 @@ function JamRoomDetails() {
               {selectedRoom.name}
             </Typography>
           </div>
-          <CardContent className="p-4">
+          <CardContent
+            className="p-4"
+            style={{
+              backgroundColor: "#f8f6ff",
+              backgroundImage: `radial-gradient(circle at 50% 0%, #e9e4ff 0%, #f8f6ff 70%)`,
+            }}
+          >
             <div className="flex items-center mb-4">
               <MapPin className="w-5 h-5 text-indigo-500 mr-2" />
               <Typography variant="body2" color="textSecondary">
@@ -429,8 +440,6 @@ function JamRoomDetails() {
                 </div>
               </Collapse>
             </div>
-
-
           </CardContent>
         </Card>
 
