@@ -40,7 +40,7 @@ import moment from "moment-timezone";
 import io from "socket.io-client";
 import { useAuth0 } from "@auth0/auth0-react";
 
-const socket = io("http://localhost:5000");
+const socket = io("http://43.205.169.90");
 
 function Booking() {
   const { id } = useParams();
@@ -67,7 +67,7 @@ function Booking() {
       socket.emit("getBookings", selectedRoom.id);
 
       // Fetch addons for this jamroom
-      fetch(`http://localhost:5000/api/jamrooms/${selectedRoom.id}/addons`)
+      fetch(`http://43.205.169.90/api/jamrooms/${selectedRoom.id}/addons`)
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
@@ -97,7 +97,7 @@ function Booking() {
         console.log("Fetching services for room:", selectedRoom.id);
 
         const response = await fetch(
-          `http://localhost:5000/api/jamrooms/${selectedRoom.id}/services`
+          `http://43.205.169.90/api/jamrooms/${selectedRoom.id}/services`
         );
 
         if (!response.ok) {
@@ -120,7 +120,7 @@ function Booking() {
 
   useEffect(() => {
     if (user) {
-      fetch("http://localhost:5000/api/users", {
+      fetch("http://43.205.169.90/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +159,7 @@ function Booking() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reservations/check/${
+        `http://43.205.169.90/api/reservations/check/${
           selectedRoom.id
         }/${moment(selectedDate).format("YYYY-MM-DD")}`
       );
@@ -371,7 +371,7 @@ function Booking() {
     try {
       setIsSaving(true);
       const response = await fetch(
-        "http://localhost:5000/api/users/save-number",
+        "http://43.205.169.90/api/users/save-number",
         {
           method: "POST",
           headers: {
@@ -398,7 +398,7 @@ function Booking() {
   const handleDeleteNumber = async (number) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/users/delete-number",
+        "http://43.205.169.90/api/users/delete-number",
         {
           method: "POST",
           headers: {
@@ -493,7 +493,7 @@ function Booking() {
       // Create the reservation in a separate step - this might be the slow part
       console.time("reservation-api-call");
       const reservationResponse = await fetch(
-        "http://localhost:5000/api/reservations/create",
+        "http://43.205.169.90/api/reservations/create",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -29,7 +29,7 @@ export const useSubscriptionLogic = () => {
   useEffect(() => {
     const fetchSKUs = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/skus/skus");
+        const response = await fetch("http://43.205.169.90/api/skus/skus");
         const data = await response.json();
 
         if (data.success) {
@@ -192,7 +192,7 @@ export const useSubscriptionLogic = () => {
 
       // Create new plan first
       const createPlanResponse = await fetch(
-        "http://localhost:5000/api/subscriptions/create-plan",
+        "http://43.205.169.90/api/subscriptions/create-plan",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -213,7 +213,7 @@ export const useSubscriptionLogic = () => {
 
       // Update subscription with new plan
       const response = await fetch(
-        "http://localhost:5000/api/subscriptions/update",
+        "http://43.205.169.90/api/subscriptions/update",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -283,7 +283,7 @@ export const useSubscriptionLogic = () => {
       }
 
       // First get the database userId
-      const userResponse = await fetch("http://localhost:5000/api/users", {
+      const userResponse = await fetch("http://43.205.169.90/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -303,7 +303,7 @@ export const useSubscriptionLogic = () => {
 
       // Create subscription through backend
       const response = await fetch(
-        "http://localhost:5000/api/subscriptions/purchase",
+        "http://43.205.169.90/api/subscriptions/purchase",
         {
           method: "POST",
           headers: {
@@ -346,7 +346,7 @@ export const useSubscriptionLogic = () => {
           try {
             // Verify payment
             const verifyResponse = await fetch(
-              "http://localhost:5000/api/subscriptions/verify-payment",
+              "http://43.205.169.90/api/subscriptions/verify-payment",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

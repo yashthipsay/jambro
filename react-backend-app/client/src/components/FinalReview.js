@@ -35,7 +35,7 @@ const FinalReview = () => {
   useEffect(() => {
     return () => {
       if (isLeaving) {
-        fetch("http://localhost:5000/api/reservations/release", {
+        fetch("http://43.205.169.90/api/reservations/release", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -101,7 +101,7 @@ const FinalReview = () => {
   const checkoutHandler = async (amount) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/payments/checkout",
+        "http://43.205.169.90/api/payments/checkout",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -129,7 +129,7 @@ const FinalReview = () => {
         handler: async (response) => {
           console.log(response);
           const verificationResponse = await fetch(
-            "http://localhost:5000/api/payments/verify",
+            "http://43.205.169.90/api/payments/verify",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -153,7 +153,7 @@ const FinalReview = () => {
           console.log("Verification data:", verificationData);
           if (verificationData.success) {
             const userResponse = await fetch(
-              "http://localhost:5000/api/users",
+              "http://43.205.169.90/api/users",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -165,7 +165,7 @@ const FinalReview = () => {
             if (userData.success) {
               const userId = userData.data._id;
               console.log("selected date", selectedDate);
-              await fetch("http://localhost:5000/api/bookings", {
+              await fetch("http://43.205.169.90/api/bookings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
