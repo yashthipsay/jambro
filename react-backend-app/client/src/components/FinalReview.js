@@ -107,10 +107,10 @@ const FinalReview = () => {
       const now = Date.now();
       const remaining = reservationExpiresAt - now;
 
-      if (remaining <= 0) {
+      if (remaining <= 0 && !isPaymentInProgress) {
         setIsExpired(true);
         clearInterval(timer);
-        // Redirect after showing message for 3 seconds
+        // Redirect after showing message for 2 seconds
         setTimeout(() => {
           setIsLeaving(true);
           navigate(-1, {
@@ -121,12 +121,12 @@ const FinalReview = () => {
             },
           });
         }, 2000);
-      } else {
+      } else if (remaining > 0) {
         setTimeRemaining(Math.floor(remaining / 1000));
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [reservationExpiresAt, navigate]);
+  }, [reservationExpiresAt, navigate, isPaymentInProgress]);
 
   const checkoutHandler = async (amount) => {
     try {
