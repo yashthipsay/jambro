@@ -63,40 +63,23 @@ const FinalReview = () => {
   // Add new effect to handle mobile navigation
   useEffect(() => {
     const handlePopState = (e) => {
-      // Check if we're in the payment flow from the history state
-      const isInPaymentFlow = e.state && e.state.isInPaymentFlow;
-
-      if (isPaymentInProgress || isInPaymentFlow) {
+      if (isPaymentInProgress) {
         e.preventDefault();
-        // Push state again to prevent navigation
-        window.history.pushState(
-          { isInPaymentFlow: true },
-          document.title,
-          window.location.href
-        );
+        window.history.pushState(null, document.title, window.location.href);
         return;
       }
-
-      // Handle normal back navigation (not during payment)
-      const confirmLeave = window.confirm(
-        "Are you sure you want to go back? Your temporary reservation will be released."
-      );
-
-      if (confirmLeave) {
-        setIsLeaving(true);
-        fetch("http://43.205.169.90/api/reservations/release", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jamRoomId: selectedRoomId,
-            date: selectedDate,
-            slots: selectedSlots,
-          }),
-        });
-      } else {
-        // If user cancels, prevent navigation by pushing state again
-        window.history.pushState(null, document.title, window.location.href);
-      }
+      // Instead of just calling preventDefault, push state again
+      window.history.pushState(null, document.title, window.location.href);
+      setIsLeaving(true);
+      fetch("http://43.205.169.90/api/reservations/release", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jamRoomId: selectedRoomId,
+          date: selectedDate,
+          slots: selectedSlots,
+        }),
+      });
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -159,14 +142,6 @@ const FinalReview = () => {
       const data = await response.json();
       console.log(data);
 
-      const paymentState = { isInPaymentFlow: true };
-      // Push this state to history before opening Razorpay
-      window.history.pushState(
-        paymentState,
-        document.title,
-        window.location.href
-      );
-
       // Open Razorpay Checkout
       const options = {
         key: process.env.RAZORPAY_API_KEY,
@@ -186,6 +161,7 @@ const FinalReview = () => {
           ondismiss: function () {
             // Re-enable your custom navigation handling once the modal is dismissed
             setIsPaymentInProgress(false);
+            window.removeEventListener("popstate", handleBackButton);
             const confirmCancel = window.confirm(
               "Are you sure you want to cancel the payment?"
             );
@@ -196,7 +172,8 @@ const FinalReview = () => {
           },
           escape: false,
           animation: true,
-          backdropclose: false, // Prevent closing on backdrop click
+          backdropClose: false, // Prevent closing on backdrop click
+          handleBackButton: true, // Enable back button handling
         },
         handler: async (response) => {
           console.log(response);
@@ -260,52 +237,19 @@ const FinalReview = () => {
 
       // Optionally, remove any additional popstate listeners that might interfere
       const handleBackButton = (e) => {
-        // Check if payment is in progress
         if (isPaymentInProgress) {
           e.preventDefault();
-          e.stopPropagation();
-
-          // Stop default back behavior
-          window.history.pushState(
-            paymentState,
-            document.title,
-            window.location.href
-          );
-
-          // Optional: Show a small toast notification
-          const toast = document.createElement("div");
-          toast.textContent = "Please complete or cancel payment";
-          toast.style.cssText = `
-          position: fixed;
-          bottom: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(0,0,0,0.7);
-          color: white;
-          padding: 10px 20px;
-          border-radius: 4px;
-          z-index: 10000;
-        `;
-          document.body.appendChild(toast);
-          setTimeout(() => document.body.removeChild(toast), 3000);
-
-          return false;
+          rzp1.close();
         }
       };
       window.addEventListener("popstate", handleBackButton);
 
-      // Make sure to remove all event listeners when payment ends
       rzp1.on("payment.failed", () => {
         window.removeEventListener("popstate", handleBackButton);
         setIsPaymentInProgress(false);
       });
 
       rzp1.on("payment.success", () => {
-        window.removeEventListener("popstate", handleBackButton);
-        setIsPaymentInProgress(false);
-      });
-
-      rzp1.on("payment.cancel", () => {
         window.removeEventListener("popstate", handleBackButton);
         setIsPaymentInProgress(false);
       });
