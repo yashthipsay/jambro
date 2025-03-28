@@ -101,7 +101,7 @@ class RabbitMQService {
       slots,
       addons,
       service, // Add service to reservation
-      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
+      expiresAt: Date.now() + 3 * 60 * 1000, // 3 minutes
     };
 
     // Store in memory

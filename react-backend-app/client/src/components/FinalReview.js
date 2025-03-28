@@ -104,10 +104,13 @@ const FinalReview = () => {
     if (!reservationExpiresAt) return;
 
     const timer = setInterval(() => {
+      // Freeze timer when payment is in progress
+      if (isPaymentInProgress) return;
+
       const now = Date.now();
       const remaining = reservationExpiresAt - now;
 
-      if (remaining <= 0 && !isPaymentInProgress) {
+      if (remaining <= 0) {
         setIsExpired(true);
         clearInterval(timer);
         // Redirect after showing message for 2 seconds
