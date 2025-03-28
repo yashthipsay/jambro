@@ -32,9 +32,6 @@ function JamRoomDetails() {
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [artistAlbums, setArtistAlbums] = useState([]);
-  const [services, setServices] = useState([]);
-  const [selectedService, setSelectedService] = useState(null);
-  const [selectedSubPart, setSelectedSubPart] = useState(null);
   // Add handleModalToggle function
   const handleModalToggle = () => setModalOpen(!modalOpen);
 
