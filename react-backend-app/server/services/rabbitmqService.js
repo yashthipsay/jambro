@@ -94,7 +94,14 @@ class RabbitMQService {
     }
   }
 
-  async createReservation(jamRoomId, date, slots, addons, userId, service = null) {
+  async createReservation(
+    jamRoomId,
+    date,
+    slots,
+    addons,
+    userId,
+    service = null
+  ) {
     const key = `${jamRoomId}-${date}`;
     const reservation = {
       userId,
@@ -118,7 +125,6 @@ class RabbitMQService {
       roomReservations.set(`slot-${slot.slotId}`, reservation);
     }
 
-
     // Schedule expiration with updated message including service
     const expiryMsg = { jamRoomId, date, slots, addons, service };
     this.channel.publish(
@@ -134,6 +140,42 @@ class RabbitMQService {
     return { success: true, expiresAt: reservation.expiresAt };
   }
 
+  async extendReservation(jamRoomId, date, slots, additionalMinutes) {
+    const key = `${jamRoomId}-${date}`;
+    const roomReservations = this.tempReservations.get(key);
+
+    if (!roomReservations)
+      return { success: false, message: "No reservation found" };
+
+    // Extend expiration for all slots
+    for (const slot of slots) {
+      const slotKey = `slot-${slot.slotId}`;
+      const reservation = roomReservations.get(slotKey);
+
+      if (reservation) {
+        const newExpiryTime = Date.now() + additionalMinutes * 60 * 1000;
+        reservation.expiresAt = newExpiryTime;
+        roomReservations.set(slotKey, reservation);
+      }
+    }
+
+    // Publish new message to RabbitMQ with extended expiry
+    const expiryMsg = { jamRoomId, date, slots };
+    this.channel.publish(
+      this.mainExchange,
+      "new.reservation",
+      Buffer.from(JSON.stringify(expiryMsg)),
+      {
+        persistent: true,
+        expiration: (additionalMinutes * 60 * 1000).toString(),
+      }
+    );
+
+    return {
+      success: true,
+      expiresAt: Date.now() + additionalMinutes * 60 * 1000,
+    };
+  }
 
   // Add method to handle failed reservations
   async handleFailedReservation(reservation) {

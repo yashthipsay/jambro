@@ -104,6 +104,10 @@ const FinalReview = () => {
     if (!reservationExpiresAt) return;
 
     const timer = setInterval(() => {
+      if (isPaymentInProgress) {
+        // Don't expire while payment is in progress
+        return;
+      }
 
       const now = Date.now();
       const remaining = reservationExpiresAt - now;
@@ -122,7 +126,7 @@ const FinalReview = () => {
             },
           });
         }, 2000);
-      } else if (remaining > 0) {
+      } else {
         setTimeRemaining(Math.floor(remaining / 1000));
       }
     }, 1000);
@@ -132,6 +136,35 @@ const FinalReview = () => {
   const checkoutHandler = async (amount) => {
     try {
       setIsPaymentInProgress(true);
+
+
+      // Calculate remaining time and needed extension
+
+      const extensionMinutes = 3;
+
+      // Extend the reservation
+      const extensionResponse = await fetch(
+        "http://43.205.169.90/api/reservations/extend",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jamRoomId: selectedRoomId,
+            date: selectedDate,
+            slots: selectedSlots,
+            additionalMinutes: extensionMinutes,
+          }),
+        }
+      );
+
+      const extensionData = await extensionResponse.json();
+      if (extensionData.success) {
+        // Update local expiry time
+        const newTimeRemaining = extensionMinutes * 60; // Convert minutes to seconds
+        console.log("New time remaining:", newTimeRemaining);
+        setTimeRemaining(newTimeRemaining);
+      }
+
       const response = await fetch(
         "http://43.205.169.90/api/payments/checkout",
         {
@@ -157,11 +190,17 @@ const FinalReview = () => {
           email: user.email,
           contact: phoneNumber,
         },
-        theme: { color: "#F37254" },
+        timeout: 180, 
         modal: {
           escape: false,
           animation: true,
           backdropClose: false, // Prevent closing on backdrop click
+          ondismiss: function () {
+            setIsPaymentInProgress(false);
+            setIsLeaving(true);
+            navigate(`/jam-room/${selectedRoomId}`);
+          },
+          
         },
         handler: async (response) => {
           console.log(response);
@@ -190,11 +229,14 @@ const FinalReview = () => {
           const verificationData = await verificationResponse.json();
           console.log("Verification data:", verificationData);
           if (verificationData.success) {
-            const userResponse = await fetch("http://43.205.169.90/api/users", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: user.email }),
-            });
+            const userResponse = await fetch(
+              "http://43.205.169.90/api/users",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: user.email }),
+              }
+            );
             console.log("verificationData", verificationData);
             const userData = await userResponse.json();
             if (userData.success) {
@@ -221,7 +263,27 @@ const FinalReview = () => {
         },
       };
       const rzp1 = new window.Razorpay(options);
+
+      
+      // Handle mobile back button while payment window is open
+      const handleBackButton = (e) => {
+        if (isPaymentInProgress) {
+          e.preventDefault();
+          rzp1.close();
+          setIsPaymentInProgress(false);
+          setIsLeaving(true);
+          navigate(`/jam-room/${selectedRoomId}`);
+        }
+      };
+
+      window.addEventListener("popstate", handleBackButton);
+
       rzp1.open();
+
+      // Cleanup event listener when payment window closes
+      return () => {
+        window.removeEventListener("popstate", handleBackButton);
+      };
     } catch (error) {
       setIsPaymentInProgress(false);
       console.error("Error creating order:", error);

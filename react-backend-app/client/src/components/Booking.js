@@ -63,20 +63,26 @@ function Booking() {
   const [selectedSubPart, setSelectedSubPart] = useState(null);
 
   useEffect(() => {
-    if (selectedRoom) {
-      socket.emit("getBookings", selectedRoom.id);
+  // Only fetch if we have a selectedRoom and haven't fetched addons yet
+  if (selectedRoom && addons.length === 0) {
+    const fetchAddons = async () => {
+      try {
+        const response = await fetch(`http://43.205.169.90/api/jamrooms/${selectedRoom.id}/addons`);
+        const data = await response.json();
+        if (data.success) {
+          setAddons(data.data);
+        }
+      } catch (err) {
+        console.error("Error fetching addons:", err);
+      }
+    };
 
-      // Fetch addons for this jamroom
-      fetch(`http://43.205.169.90/api/jamrooms/${selectedRoom.id}/addons`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            setAddons(data.data);
-          }
-        })
-        .catch((err) => console.error("Error fetching addons:", err));
-    }
+    fetchAddons();
+  }
 
+  // Socket events
+  if (selectedRoom) {
+    socket.emit("getBookings", selectedRoom.id);
     socket.on("bookings", (data) => {
       setBookings(data);
     });
@@ -84,7 +90,8 @@ function Booking() {
     return () => {
       socket.off("bookings");
     };
-  }, [selectedRoom]);
+  }
+  }, [selectedRoom, addons.length]);
 
   useEffect(() => {
     const fetchServices = async () => {

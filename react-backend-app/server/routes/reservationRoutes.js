@@ -105,6 +105,40 @@ const createReservationRouter = (io) => {
     }
   });
 
+  router.post("/extend", async (req, res) => {
+    try {
+      const { jamRoomId, date, slots, additionalMinutes } = req.body;
+
+      const result = await rabbitmqService.extendReservation(
+        jamRoomId,
+        date,
+        slots,
+        additionalMinutes
+      );
+
+      if (result.success) {
+        io.emit("reservationUpdate", {
+          jamRoomId,
+          date,
+          reservations: {
+            slots: slots.map((slot) => ({
+              slotId: slot.slotId,
+              expiresAt: result.expiresAt,
+            })),
+          },
+        });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Extend reservation error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error extending reservation",
+      });
+    }
+  });
+
   router.get("/check/:jamRoomId/:date", async (req, res) => {
     try {
       const { jamRoomId, date } = req.params;
