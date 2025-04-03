@@ -178,7 +178,7 @@ const FinalReview = () => {
 
       // Open Razorpay Checkout
       const options = {
-        key: process.env.RAZORPAY_API_KEY,
+        key: process.env.REACT_APP_RAZORPAY_API_KEY,
         amount: data.order.amount * 100,
         currency: "INR",
         name: jamRoomName,
