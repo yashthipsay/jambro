@@ -24,7 +24,7 @@ export function DashboardProvider({ children }) {
         const token = localStorage.getItem('jamroom_token');
         if (token) {
           const response = await fetch(
-            'http://43.205.169.90/api/auth/verify',
+            'https://api.vision.gigsaw.co.in/api/auth/verify',
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -47,7 +47,7 @@ export function DashboardProvider({ children }) {
 
         // If token verification fails, try registration check
         const response = await fetch(
-          'http://43.205.169.90/api/auth/check-registration',
+          'https://api.vision.gigsaw.co.in/api/auth/check-registration',
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

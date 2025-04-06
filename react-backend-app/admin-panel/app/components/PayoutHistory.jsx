@@ -60,7 +60,7 @@ const PayoutHistory = () => {
           limit: pagination.limit,
         }).toString();
         const response = await fetch(
-          `http://43.205.169.90/api/payouts/${fund_account_id}?${queryParams}`
+          `https://api.vision.gigsaw.co.in/api/payouts/${fund_account_id}?${queryParams}`
         );
         const data = await response.json();
 
