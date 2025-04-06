@@ -23,15 +23,12 @@ export function DashboardProvider({ children }) {
         // First try with existing token
         const token = localStorage.getItem('jamroom_token');
         if (token) {
-          const response = await fetch(
-            'http://43.205.169.90/api/auth/verify',
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-            }
-          );
+          const response = await fetch('http://43.205.169.90/api/auth/verify', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
           const data = await response.json();
           console.log('Token verification response:', data); // Add logging

@@ -686,34 +686,44 @@ export function LandingContent() {
   const netTotal = useMemo(() => {
     const now = new Date();
     const startOfToday = Math.floor(
-      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000
+      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() /
+        1000
     );
-    console.log("startOfToday", startOfToday);
+    console.log('startOfToday', startOfToday);
     const endOfToday = Math.floor(
-      new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime() / 1000
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59,
+        999
+      ).getTime() / 1000
     );
-    console.log("endOfToday", endOfToday);
-    console.log("payouts", payouts);
-    const todaysPayouts = payouts.filter(item => {
+    console.log('endOfToday', endOfToday);
+    console.log('payouts', payouts);
+    const todaysPayouts = payouts.filter((item) => {
       // Use either created_at or createdAt
       const created = item.created_at || item.createdAt;
       // Ensure we have a Unix timestamp
-      const createdTimestamp = typeof created === 'number'
-        ? created
-        : Math.floor(new Date(created).getTime() / 1000);
+      const createdTimestamp =
+        typeof created === 'number'
+          ? created
+          : Math.floor(new Date(created).getTime() / 1000);
       return createdTimestamp >= startOfToday && createdTimestamp <= endOfToday;
     });
     const total = todaysPayouts.reduce((sum, item) => {
-      if (["processed", "COMPLETED"].includes(item.status)) {
+      if (['processed', 'COMPLETED'].includes(item.status)) {
         console.log(item.amount);
         // Deduct fees and tax if provided, then sum
         return sum + (item.amount - (item.fees || 0) - (item.tax || 0));
       }
       return sum;
     }, 0);
-  
+
     console.log('Todays payouts:', total);
-  
+
     return total;
   }, [payouts]);
 

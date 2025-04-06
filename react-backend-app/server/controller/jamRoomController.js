@@ -613,6 +613,25 @@ const getStudioServices = async (req, res) => {
   }
 };
 
+const updateOneSignal = async(req, res) => {
+  try {
+    const { email, jamRoomId, oneSignalUserId } = req.body;
+    
+    const jamRoom = await JamRoom.findById(jamRoomId);
+    if (!jamRoom) {
+      return res.status(404).json({ success: false, message: 'Jam room not found' });
+    }
+    
+    jamRoom.ownerDetails.oneSignalUserId = oneSignalUserId;
+    await jamRoom.save();
+    
+    res.json({ success: true, message: 'OneSignal ID updated successfully' });
+  } catch (error) {
+    console.error('Error updating OneSignal ID:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
+
 module.exports = {
   createJamRoom,
   getAllJamRooms,
@@ -628,4 +647,5 @@ module.exports = {
   updateStudioService,
   deleteStudioService,
   getStudioServices,
+  updateOneSignal,
 };

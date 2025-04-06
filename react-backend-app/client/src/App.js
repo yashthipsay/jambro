@@ -127,7 +127,7 @@ function AppContent() {
       setIsLoadingGroups(true);
 
       // First get the database userId
-      const userResponse = await fetch("http://43.205.169.90/api/users", {
+      const userResponse = await fetch("http://localhost:5000/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -144,7 +144,7 @@ function AppContent() {
 
       // Fetch archived groups
       const response = await fetch(
-        `http://43.205.169.90/api/groups/archived/${userId}`
+        `http://localhost:5000/api/groups/archived/${userId}`
       );
 
       const data = await response.json();
@@ -171,7 +171,7 @@ function AppContent() {
       if (isAuthenticated && user) {
         try {
           const response = await fetch(
-            "http://43.205.169.90/api/users/register",
+            "http://localhost:5000/api/users/register",
             {
               method: "POST",
               headers: {
@@ -205,7 +205,7 @@ function AppContent() {
     if (!subscription?._id) return;
     try {
       const response = await fetch(
-        `http://43.205.169.90/api/groups/active/${subscription._id}`
+        `http://localhost:5000/api/groups/active/${subscription._id}`
       );
       const data = await response.json();
       if (data.success) {

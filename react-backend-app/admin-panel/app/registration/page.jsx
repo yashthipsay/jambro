@@ -176,13 +176,10 @@ const JamRoomRegistration = () => {
         formData.append('images', file);
       });
 
-      const response = await fetch(
-        'http://43.205.169.90/api/jamrooms/images',
-        {
-          method: 'POST', // Use POST for initial upload
-          body: formData,
-        }
-      );
+      const response = await fetch('http://43.205.169.90/api/jamrooms/images', {
+        method: 'POST', // Use POST for initial upload
+        body: formData,
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -222,28 +219,26 @@ const JamRoomRegistration = () => {
         bankValidationData: bankValidationData,
       };
 
-      const response = await fetch(
-        'http://43.205.169.90/api/jamrooms/create',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch('http://43.205.169.90/api/jamrooms/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Server error:', errorData.message || 'Unknown error');
         // Optionally, display the error to the user
-        alert(`Failed to create jamroom: ${errorData.message || 'Conflict detected'}`);
+        alert(
+          `Failed to create jamroom: ${errorData.message || 'Conflict detected'}`
+        );
         return;
       }
 
       const result = await response.json();
       if (result.success) {
-
         router.push('/'); // This revalidates and reloads the current route's data
       }
     } catch (error) {
