@@ -18,7 +18,7 @@ export function findClosestJamRooms() {
 
         try {
           // Fetch jam rooms from MongoDB API
-          const response = await fetch('http://43.205.169.90/api/jamrooms');
+          const response = await fetch('https://api.vision.gigsaw.co.in/api/jamrooms');
           const data = await response.json();
           console.log(data);
 

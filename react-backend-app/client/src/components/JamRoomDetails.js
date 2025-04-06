@@ -40,7 +40,7 @@ function JamRoomDetails() {
     const fetchArtistAlbums = async (artistId) => {
       try {
         const response = await fetch(
-          `http://43.205.169.90/api/spotify/artist-albums/${artistId}`
+          `https://api.vision.gigsaw.co.in/api/spotify/artist-albums/${artistId}`
         );
         const data = await response.json();
         if (data.success) {

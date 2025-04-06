@@ -17,7 +17,7 @@ const BookingConfirmation = () => {
     const fetchInvoiceData = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch(`http://43.205.169.90/api/payments/invoice-data/${id}`)
+        const response = await fetch(`https://api.vision.gigsaw.co.in/api/payments/invoice-data/${id}`)
         const data = await response.json()
         
         if (data.success) {

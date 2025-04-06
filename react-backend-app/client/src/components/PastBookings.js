@@ -43,7 +43,7 @@ const PastBookings = () => {
         if (!user?.email) return;
 
         // Get user ID
-        const userResponse = await fetch("http://43.205.169.90/api/users", {
+        const userResponse = await fetch("https://api.vision.gigsaw.co.in/api/users", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -58,7 +58,7 @@ const PastBookings = () => {
 
         // Fetch bookings with the user ID
         const bookingsResponse = await fetch(
-          `http://43.205.169.90/api/bookings/users/${userId}/`
+          `https://api.vision.gigsaw.co.in/api/bookings/users/${userId}/`
         );
         const bookingsData = await bookingsResponse.json();
 
