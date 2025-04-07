@@ -114,7 +114,7 @@ const JamRoomRegistration = () => {
 
     try {
       const response = await fetch(
-        'http://localhost:5000/api/bank-verification/verify',
+        'https://api.vision.gigsaw.co.in/api/bank-verification/verify',
         {
           method: 'POST',
           headers: {
@@ -176,7 +176,7 @@ const JamRoomRegistration = () => {
         formData.append('images', file);
       });
 
-      const response = await fetch('http://localhost:5000/api/jamrooms/images', {
+      const response = await fetch('https://api.vision.gigsaw.co.in/api/jamrooms/images', {
         method: 'POST', // Use POST for initial upload
         body: formData,
       });
@@ -219,7 +219,7 @@ const JamRoomRegistration = () => {
         bankValidationData: bankValidationData,
       };
 
-      const response = await fetch('http://localhost:5000/api/jamrooms/create', {
+      const response = await fetch('https://api.vision.gigsaw.co.in/api/jamrooms/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

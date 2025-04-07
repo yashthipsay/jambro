@@ -40,7 +40,7 @@ import moment from "moment-timezone";
 import io from "socket.io-client";
 import { useAuth0 } from "@auth0/auth0-react";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://api.vision.gigsaw.co.in");
 
 function Booking() {
   const { id } = useParams();
@@ -67,7 +67,7 @@ function Booking() {
   if (selectedRoom && addons.length === 0) {
     const fetchAddons = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/jamrooms/${selectedRoom.id}/addons`);
+        const response = await fetch(`https://api.vision.gigsaw.co.in/api/jamrooms/${selectedRoom.id}/addons`);
         const data = await response.json();
         if (data.success) {
           setAddons(data.data);
@@ -104,7 +104,7 @@ function Booking() {
         console.log("Fetching services for room:", selectedRoom.id);
 
         const response = await fetch(
-          `http://localhost:5000/api/jamrooms/${selectedRoom.id}/services`
+          `https://api.vision.gigsaw.co.in/api/jamrooms/${selectedRoom.id}/services`
         );
 
         if (!response.ok) {
@@ -127,7 +127,7 @@ function Booking() {
 
   useEffect(() => {
     if (user) {
-      fetch("http://localhost:5000/api/users", {
+      fetch("https://api.vision.gigsaw.co.in/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -166,7 +166,7 @@ function Booking() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reservations/check/${
+        `https://api.vision.gigsaw.co.in/api/reservations/check/${
           selectedRoom.id
         }/${moment(selectedDate).format("YYYY-MM-DD")}`
       );
@@ -378,7 +378,7 @@ function Booking() {
     try {
       setIsSaving(true);
       const response = await fetch(
-        "http://localhost:5000/api/users/save-number",
+        "https://api.vision.gigsaw.co.in/api/users/save-number",
         {
           method: "POST",
           headers: {
@@ -405,7 +405,7 @@ function Booking() {
   const handleDeleteNumber = async (number) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/users/delete-number",
+        "https://api.vision.gigsaw.co.in/api/users/delete-number",
         {
           method: "POST",
           headers: {
@@ -500,7 +500,7 @@ function Booking() {
       // Create the reservation in a separate step - this might be the slow part
       console.time("reservation-api-call");
       const reservationResponse = await fetch(
-        "http://localhost:5000/api/reservations/create",
+        "https://api.vision.gigsaw.co.in/api/reservations/create",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

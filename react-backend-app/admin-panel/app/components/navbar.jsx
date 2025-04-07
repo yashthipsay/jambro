@@ -16,7 +16,7 @@ export function Navbar() {
       if (user?.email) {
         try {
           const response = await fetch(
-            `http://localhost:5000/api/jamrooms/email/${user.email}`
+            `https://api.vision.gigsaw.co.in/api/jamrooms/email/${user.email}`
           );
           const data = await response.json();
           if (data.success && data.data) {

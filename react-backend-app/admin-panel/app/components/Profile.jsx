@@ -100,7 +100,7 @@ export default function Profile() {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://localhost:5000/api/jamrooms/email/${user.email}`
+          `https://api.vision.gigsaw.co.in/api/jamrooms/email/${user.email}`
         );
         const data = await response.json();
         if (data.success) {
@@ -155,7 +155,7 @@ export default function Profile() {
           imageFiles.forEach((file) => uploadFormData.append('images', file));
 
           const imageUploadResponse = await fetch(
-            `http://localhost:5000/api/jamrooms/images`,
+            `https://api.vision.gigsaw.co.in/api/jamrooms/images`,
             { method: 'POST', body: uploadFormData }
           );
           const imageData = await imageUploadResponse.json();
@@ -165,7 +165,7 @@ export default function Profile() {
         }
 
         const response = await fetch(
-          `http://localhost:5000/api/jamrooms/id/${jamRoomData._id}`,
+          `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -191,7 +191,7 @@ export default function Profile() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/jamrooms/id/${jamRoomData._id}`,
+        `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

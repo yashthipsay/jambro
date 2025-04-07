@@ -60,7 +60,7 @@ const StudioServicesCard = ({ jamRoomId }) => {
   const fetchServices = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/jamrooms/${jamRoomId}/services`
+        `https://api.vision.gigsaw.co.in/api/jamrooms/${jamRoomId}/services`
       );
       const data = await response.json();
       if (data.success) {
@@ -84,7 +84,7 @@ const StudioServicesCard = ({ jamRoomId }) => {
   const handleAddService = async () => {
     try {
       const response = await fetchWithAuth(
-        `http://localhost:5000/api/jamrooms/${jamRoomId}/services`,
+        `https://api.vision.gigsaw.co.in/api/jamrooms/${jamRoomId}/services`,
         {
           method: 'POST',
           body: JSON.stringify(newService),
@@ -109,7 +109,7 @@ const StudioServicesCard = ({ jamRoomId }) => {
   const handleUpdateService = async (serviceId) => {
     try {
       const response = await fetchWithAuth(
-        `http://localhost:5000/api/jamrooms/${jamRoomId}/services/${serviceId}`,
+        `https://api.vision.gigsaw.co.in/api/jamrooms/${jamRoomId}/services/${serviceId}`,
         {
           method: 'PUT',
           body: JSON.stringify(editingService),
@@ -133,7 +133,7 @@ const StudioServicesCard = ({ jamRoomId }) => {
   const handleDeleteService = async (serviceId) => {
     try {
       const response = await fetchWithAuth(
-        `http://localhost:5000/api/jamrooms/${jamRoomId}/services/${serviceId}`,
+        `https://api.vision.gigsaw.co.in/api/jamrooms/${jamRoomId}/services/${serviceId}`,
         { method: 'DELETE' }
       );
       const data = await response.json();
@@ -458,7 +458,7 @@ const AddonsCard = ({ jamRoomId }) => {
   const fetchAddons = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/jamrooms/email/${user.email}`
+        `https://api.vision.gigsaw.co.in/api/jamrooms/email/${user.email}`
       );
       const data = await response.json();
       if (data.success && data.data) {
@@ -473,7 +473,7 @@ const AddonsCard = ({ jamRoomId }) => {
   const handleAddAddon = async () => {
     try {
       const response = await fetchWithAuth(
-        `http://localhost:5000/api/jamrooms/${jamRoomId}/addons`,
+        `https://api.vision.gigsaw.co.in/api/jamrooms/${jamRoomId}/addons`,
         {
           method: 'PUT',
           body: JSON.stringify({
@@ -500,7 +500,7 @@ const AddonsCard = ({ jamRoomId }) => {
   const handleDeleteAddon = async (addonId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/jamrooms/${jamRoomId}/addons/${addonId}`,
+        `https://api.vision.gigsaw.co.in/api/jamrooms/${jamRoomId}/addons/${addonId}`,
         { method: 'DELETE' }
       );
       const data = await response.json();
@@ -631,12 +631,12 @@ export function LandingContent() {
         fundAccountId = JSON.parse(atob(tokenStr.split('.')[1])).fundAccountId;
 
         const payoutsResponse = await fetchWithAuth(
-          `http://localhost:5000/api/payouts/${fundAccountId}`
+          `https://api.vision.gigsaw.co.in/api/payouts/${fundAccountId}`
         );
         const payoutsData = await payoutsResponse.json();
 
         const bookingsResponse = await fetchWithAuth(
-          `http://localhost:5000/api/bookings/jamroom/${jamRoomId}`
+          `https://api.vision.gigsaw.co.in/api/bookings/jamroom/${jamRoomId}`
         );
         const bookingsData = await bookingsResponse.json();
 

@@ -36,7 +36,7 @@ const FinalReview = () => {
   useEffect(() => {
     return () => {
       if (isLeaving) {
-        fetch("http://localhost:5000/api/reservations/release", {
+        fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -71,7 +71,7 @@ const FinalReview = () => {
       // Instead of just calling preventDefault, push state again
       window.history.pushState(null, document.title, window.location.href);
       setIsLeaving(true);
-      fetch("http://localhost:5000/api/reservations/release", {
+      fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -144,7 +144,7 @@ const FinalReview = () => {
 
       // Extend the reservation
       const extensionResponse = await fetch(
-        "http://localhost:5000/api/reservations/extend",
+        "https://api.vision.gigsaw.co.in/api/reservations/extend",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -166,7 +166,7 @@ const FinalReview = () => {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/payments/checkout",
+        "https://api.vision.gigsaw.co.in/api/payments/checkout",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -206,7 +206,7 @@ const FinalReview = () => {
           console.log(response);
           setIsPaymentInProgress(false);
           const verificationResponse = await fetch(
-            "http://localhost:5000/api/payments/verify",
+            "https://api.vision.gigsaw.co.in/api/payments/verify",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -230,7 +230,7 @@ const FinalReview = () => {
           console.log("Verification data:", verificationData);
           if (verificationData.success) {
             const userResponse = await fetch(
-              "http://localhost:5000/api/users",
+              "https://api.vision.gigsaw.co.in/api/users",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -242,7 +242,7 @@ const FinalReview = () => {
             if (userData.success) {
               const userId = userData.data._id;
               console.log("selected date", selectedDate);
-              await fetch("http://localhost:5000/api/bookings", {
+              await fetch("https://api.vision.gigsaw.co.in/api/bookings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

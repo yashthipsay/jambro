@@ -25,7 +25,7 @@ export default function BrandingPage() {
       if (!user?.email) return;
       try {
         const response = await fetch(
-          `http://localhost:5000/api/jamrooms/email/${user.email}`
+          `https://api.vision.gigsaw.co.in/api/jamrooms/email/${user.email}`
         );
         const data = await response.json();
         if (data.success) {
@@ -47,7 +47,7 @@ export default function BrandingPage() {
     setIsVerifying(true);
     try {
       const response = await fetch(
-        'http://localhost:5000/api/spotify/verify/initiate',
+        'https://api.vision.gigsaw.co.in/api/spotify/verify/initiate',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -84,7 +84,7 @@ export default function BrandingPage() {
   const fetchArtistAlbums = async (artistId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/spotify/artist-albums/${artistId}`
+        `https://api.vision.gigsaw.co.in/api/spotify/artist-albums/${artistId}`
       );
       const data = await response.json();
       if (data.success) {
