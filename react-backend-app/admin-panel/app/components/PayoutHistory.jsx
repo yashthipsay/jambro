@@ -60,7 +60,7 @@ const PayoutHistory = () => {
           limit: pagination.limit,
         }).toString();
         const response = await fetch(
-          `http://43.205.169.90/api/payouts/${fund_account_id}?${queryParams}`
+          `http://localhost:5000/api/payouts/${fund_account_id}?${queryParams}`
         );
         const data = await response.json();
 
@@ -116,14 +116,14 @@ const PayoutHistory = () => {
   const currentPage = Math.floor(pagination.skip / pagination.limit) + 1;
 
   return (
-    <div className="flex-1 p-6 mt-16 ml-64 overflow-y-auto h-[calc(100vh-4rem)]">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="sticky top-0 z-10 backdrop-blur-sm pb-4">
-          <h1 className="text-3xl font-audiowide text-[#7DF9FF] mb-6">
+    <div className="flex-1 p-4 sm:p-6 mt-16 sm:ml-64 overflow-y-auto h-[calc(100vh-4rem)]">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-32 sm:pb-20">
+        <div className="z-10 backdrop-blur-sm pb-4">
+          <h1 className="text-2xl sm:text-3xl font-audiowide text-[#7DF9FF] mb-4 sm:mb-6">
             Payout History
           </h1>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-3 sm:mb-4">
             <Input
               name="minAmount"
               placeholder="Min Amount"
@@ -155,7 +155,7 @@ const PayoutHistory = () => {
               className="glassmorphism bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
             />
           </div>
-          <div className="flex gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3 sm:mb-4">
             <Select
               value={filters.sortBy}
               onValueChange={(value) =>
@@ -205,7 +205,7 @@ const PayoutHistory = () => {
           </div>
         </div>
         {payouts.length > 0 ? (
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {payouts.map((payout) => (
               <motion.div
                 key={payout._id}
@@ -214,31 +214,33 @@ const PayoutHistory = () => {
                 transition={{ duration: 0.5 }}
               >
                 <Card className="glass-card bg-gradient-to-b from-white/10 to-purple-500/10 border-[#7DF9FF]/20">
-                  <CardHeader>
-                    <h3 className="text-lg font-audiowide text-[#7DF9FF]">
+                  <CardHeader className="p-3 sm:p-4">
+                    <h3 className="text-base sm:text-lg font-audiowide text-[#7DF9FF] break-all">
                       Payout ID: {payout._id}
                     </h3>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-[#7DF9FF]/80">
+                  <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 space-y-2">
+                    <p className="text-sm sm:text-base text-[#7DF9FF]/80">
                       Amount: ₹{payout.amount}
                     </p>
-                    <p className="text-[#7DF9FF]/80">Status: {payout.status}</p>
-                    <p className="text-[#7DF9FF]/80">
+                    <p className="text-sm sm:text-base text-[#7DF9FF]/80">
+                      Status: {payout.status}
+                    </p>
+                    <p className="text-sm sm:text-base text-[#7DF9FF]/80">
                       Date: {new Date(payout.createdAt).toLocaleDateString()}
                     </p>
+                    <Button
+                      onClick={() =>
+                        router.push(
+                          `/bookings/${payout.reference_id}?bookingId=${payout.bookingId}`
+                        )
+                      }
+                      variant="outline"
+                      className="w-full sm:w-auto mt-2 bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-[#7DF9FF] border-[#7DF9FF]/30"
+                    >
+                      View Booking
+                    </Button>
                   </CardContent>
-                  <Button
-                    onClick={() =>
-                      router.push(
-                        `/bookings/${payout.reference_id}?bookingId=${payout.bookingId}`
-                      )
-                    }
-                    variant="outline"
-                    className="mt-2 mb-4 mx-4 bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-[#7DF9FF] border-[#7DF9FF]/30"
-                  >
-                    View Booking
-                  </Button>
                 </Card>
               </motion.div>
             ))}
@@ -248,21 +250,21 @@ const PayoutHistory = () => {
         )}
 
         {payouts.length > 0 && (
-          <div className="flex justify-between items-center mt-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
             <Button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
+              className="w-full sm:w-auto bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
             >
               Previous
             </Button>
-            <span className="text-[#7DF9FF] font-medium">
+            <span className="text-sm sm:text-base text-[#7DF9FF] font-medium order-first sm:order-none">
               Page {currentPage} of {totalPages}
             </span>
             <Button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
+              className="w-full sm:w-auto bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
             >
               Next
             </Button>

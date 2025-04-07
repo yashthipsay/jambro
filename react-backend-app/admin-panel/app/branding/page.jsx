@@ -25,7 +25,7 @@ export default function BrandingPage() {
       if (!user?.email) return;
       try {
         const response = await fetch(
-          `http://43.205.169.90/api/jamrooms/email/${user.email}`
+          `http://localhost:5000/api/jamrooms/email/${user.email}`
         );
         const data = await response.json();
         if (data.success) {
@@ -47,7 +47,7 @@ export default function BrandingPage() {
     setIsVerifying(true);
     try {
       const response = await fetch(
-        'http://43.205.169.90/api/spotify/verify/initiate',
+        'http://localhost:5000/api/spotify/verify/initiate',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -84,7 +84,7 @@ export default function BrandingPage() {
   const fetchArtistAlbums = async (artistId) => {
     try {
       const response = await fetch(
-        `http://43.205.169.90/api/spotify/artist-albums/${artistId}`
+        `http://localhost:5000/api/spotify/artist-albums/${artistId}`
       );
       const data = await response.json();
       if (data.success) {
@@ -102,9 +102,9 @@ export default function BrandingPage() {
   }, [spotifyProfile]);
 
   return (
-    <div className="flex-1 p-6 mt-16 pl-72 overflow-y-auto h-[calc(100vh-4rem)]">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <h1 className="text-3xl font-audiowide text-[#7DF9FF] mb-6">
+    <div className="flex-1 p-4 sm:p-6 mt-16 pl-4 sm:pl-72 overflow-y-auto h-[calc(100vh-4rem)]">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        <h1 className="text-2xl sm:text-3xl font-audiowide text-[#7DF9FF] mb-4 sm:mb-6">
           Personal Branding
         </h1>
 
@@ -114,15 +114,15 @@ export default function BrandingPage() {
           transition={{ duration: 0.5 }}
         >
           <Card className="overflow-hidden rounded-xl border border-[#7DF9FF]/20 bg-black/40 backdrop-blur-sm">
-            <div className="p-8">
+            <div className="p-4 sm:p-8">
               {/* Show verification field if profile not verified */}
               {!spotifyProfile?.isVerified ? (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-[#7DF9FF] mb-2">
                       Spotify Username
                     </label>
-                    <div className="flex space-x-4">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4">
                       <Input
                         value={spotifyUsername}
                         onChange={(e) => setSpotifyUsername(e.target.value)}
@@ -132,7 +132,7 @@ export default function BrandingPage() {
                       <Button
                         onClick={handleVerification}
                         disabled={isVerifying || !spotifyUsername}
-                        className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
+                        className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white w-full sm:w-auto"
                       >
                         {isVerifying ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -147,36 +147,35 @@ export default function BrandingPage() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="space-y-6"
+                  className="space-y-4 sm:space-y-6"
                 >
                   <div className="flex items-center space-x-3 text-[#7DF9FF]">
                     <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span>Verified Spotify Profile</span>
+                    <span className="text-sm sm:text-base">Verified Spotify Profile</span>
                   </div>
-                  <div className="rounded-lg bg-[#7DF9FF]/5 p-6">
-                    <div className="flex items-center space-x-6">
+                  <div className="rounded-lg bg-[#7DF9FF]/5 p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:space-x-6">
                       {spotifyProfile.images?.[0]?.url ? (
                         <img
                           src={spotifyProfile.images[0].url}
                           alt="Profile"
-                          className="h-16 w-16 rounded-full"
+                          className="h-16 w-16 rounded-full mx-auto sm:mx-0"
                         />
                       ) : (
-                        <Music className="h-16 w-16 text-[#7DF9FF]" />
+                        <Music className="h-16 w-16 text-[#7DF9FF] mx-auto sm:mx-0" />
                       )}
-                      <div>
-                        <h3 className="text-xl font-bold text-[#7DF9FF]">
-                          {spotifyProfile.displayName ||
-                            spotifyProfile.username}
+                      <div className="text-center sm:text-left">
+                        <h3 className="text-lg sm:text-xl font-bold text-[#7DF9FF]">
+                          {spotifyProfile.displayName || spotifyProfile.username}
                         </h3>
-                        <p className="text-[#7DF9FF]/60">
+                        <p className="text-sm text-[#7DF9FF]/60">
                           {spotifyProfile.followers} followers
                         </p>
                         <a
                           href={spotifyProfile.profileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-block mt-2 text-[#7DF9FF]/80 hover:text-[#7DF9FF] transition-colors"
+                          className="inline-block mt-2 text-sm sm:text-base text-[#7DF9FF]/80 hover:text-[#7DF9FF] transition-colors"
                         >
                           View Profile →
                         </a>
@@ -186,12 +185,12 @@ export default function BrandingPage() {
 
                   {/* Render Albums in a linear, tabular scrollable format inside the same card */}
                   {albums.length > 0 && (
-                    <div className="mt-8">
-                      <h2 className="text-2xl font-bold text-[#7DF9FF] mb-4">
+                    <div className="mt-6 sm:mt-8">
+                      <h2 className="text-xl sm:text-2xl font-bold text-[#7DF9FF] mb-3 sm:mb-4">
                         Artist Albums
                       </h2>
                       <ScrollArea className="max-h-[300px] overflow-y-auto">
-                        <div className="pr-4 space-y-2">
+                        <div className="pr-2 sm:pr-4 space-y-2">
                           {albums.map((album) => (
                             <motion.a
                               key={album.id}
@@ -200,28 +199,28 @@ export default function BrandingPage() {
                               rel="noopener noreferrer"
                               className="flex items-center justify-between p-3 border-b border-[#7DF9FF]/20 hover:bg-[#7DF9FF]/5 transition-colors group"
                             >
-                              <div className="flex items-center space-x-4">
+                              <div className="flex items-center space-x-3 sm:space-x-4">
                                 {album.images[0]?.url ? (
                                   <img
                                     src={album.images[0].url}
                                     alt={album.name}
-                                    className="h-12 w-12 object-cover rounded"
+                                    className="h-10 w-10 sm:h-12 sm:w-12 object-cover rounded"
                                   />
                                 ) : (
-                                  <div className="h-12 w-12 flex items-center justify-center bg-[#7DF9FF]/5 rounded">
-                                    <Music className="h-6 w-6 text-[#7DF9FF]/40" />
+                                  <div className="h-10 w-10 sm:h-12 sm:w-12 flex items-center justify-center bg-[#7DF9FF]/5 rounded">
+                                    <Music className="h-5 w-5 sm:h-6 sm:w-6 text-[#7DF9FF]/40" />
                                   </div>
                                 )}
-                                <div>
-                                  <h4 className="font-medium text-[#7DF9FF] group-hover:text-white transition-colors">
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="font-medium text-sm sm:text-base text-[#7DF9FF] truncate group-hover:text-white transition-colors">
                                     {album.name}
                                   </h4>
-                                  <p className="text-sm text-[#7DF9FF]/60">
+                                  <p className="text-xs sm:text-sm text-[#7DF9FF]/60">
                                     {new Date(album.release_date).getFullYear()}
                                   </p>
                                 </div>
                               </div>
-                              <span className="text-[#7DF9FF]/60 group-hover:text-[#7DF9FF] transition-colors">
+                              <span className="text-[#7DF9FF]/60 group-hover:text-[#7DF9FF] transition-colors ml-2 text-sm sm:text-base">
                                 View →
                               </span>
                             </motion.a>

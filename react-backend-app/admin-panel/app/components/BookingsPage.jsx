@@ -56,7 +56,7 @@ export default function BookingsPage() {
           limit: pagination.limit,
         }).toString();
         const response = await fetch(
-          `http://43.205.169.90/api/bookings/jamroom/${jamroom_id}?${queryParams}`
+          `http://localhost:5000/api/bookings/jamroom/${jamroom_id}?${queryParams}`
         );
         const data = await response.json();
         console.log(data);
@@ -120,7 +120,7 @@ export default function BookingsPage() {
     try {
       setSelectedBookingId(bookingId); // Track which booking was clicked
       const response = await fetch(
-        `http://43.205.169.90/api/bookings/user/${bookingId}`
+        `http://localhost:5000/api/bookings/user/${bookingId}`
       );
       const data = await response.json();
       console.log(data);
@@ -158,21 +158,19 @@ export default function BookingsPage() {
   };
 
   const renderEventContent = (eventInfo) => {
-    console.log(eventInfo.event.extendedProps);
     const status = eventInfo.event.extendedProps.status;
     const statusColors = {
       NOT_STARTED: 'bg-yellow-500',
       ONGOING: 'bg-blue-500',
       COMPLETED: 'bg-green-500',
-      TERMINATED: 'bg-red-500', // Add color for terminated status
+      TERMINATED: 'bg-red-500',
     };
 
     return (
-      <div className={`p-1 rounded ${statusColors[status]} text-white`}>
-        <div className="text-sm font-semibold">{eventInfo.event.title}</div>
-        <div className="text-xs">
-          {moment(eventInfo.event.start).format('HH:mm')} -
-          {moment(eventInfo.event.end).format('HH:mm')}
+      <div className={`p-0.5 rounded ${statusColors[status]} text-white shadow-sm`}>
+        <div className="text-xs font-medium truncate">{eventInfo.event.title}</div>
+        <div className="text-[10px] opacity-90">
+          {moment(eventInfo.event.start).format('HH:mm')}
         </div>
       </div>
     );
@@ -213,10 +211,10 @@ export default function BookingsPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="w-full max-w-4xl mx-auto"
+      className="w-full mx-auto px-4 sm:px-0"
     >
       {bookings.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {bookings.map((booking) => (
             <Card
               key={booking.id}
@@ -277,161 +275,183 @@ export default function BookingsPage() {
     </motion.div>
   );
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <div className="p-4">Loading...</div>;
+  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
 
   const totalPages = Math.ceil(pagination.total / pagination.limit);
   const currentPage = Math.floor(pagination.skip / pagination.limit) + 1;
 
   return (
-    <div className="flex-1 p-6 mt-16 pl-72 overflow-y-auto h-[calc(100vh-4rem)]">
-      <div className="max-w-7xl mx-auto space-y-4">
-        <h1 className="text-2xl font-bold mb-4 text-[#7DF9FF] text-shadow">
+    <div className="flex-1 p-4 sm:p-6 mt-16 sm:pl-72 overflow-auto h-[calc(100vh-4rem)]">
+      <div className="max-w-7xl mx-auto space-y-4 pb-32 sm:pb-20">
+        <h1 className="text-xl sm:text-2xl font-bold mb-4 text-[#7DF9FF] text-shadow">
           Bookings
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <Input
-            name="startDate"
-            type="date"
-            placeholder="Start Date"
-            value={filters.startDate}
-            onChange={handleFilterChange}
-            className="bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
-          />
-          <Input
-            name="endDate"
-            type="date"
-            placeholder="End Date"
-            value={filters.endDate}
-            onChange={handleFilterChange}
-            className="bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
-          />
-        </div>
-        <div className="flex gap-4 mb-4">
-          <Select
-            value={filters.sortBy}
-            onValueChange={(value) =>
-              handleSortChange(value, filters.sortOrder)
-            }
-          >
-            <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
-              <SelectValue placeholder="Sort By" className="text-white" />
-            </SelectTrigger>
-            <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
-              <SelectItem
-                value="date"
-                className="text-white hover:bg-[#7DF9FF]/20"
-              >
-                Date
-              </SelectItem>
-              <SelectItem
-                value="totalAmount"
-                className="text-white hover:bg-[#7DF9FF]/20"
-              >
-                Amount
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.sortOrder}
-            onValueChange={(value) => handleSortChange(filters.sortBy, value)}
-          >
-            <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
-              <SelectValue placeholder="Sort Order" className="text-white" />
-            </SelectTrigger>
-            <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
-              <SelectItem
-                value="asc"
-                className="text-white hover:bg-[#7DF9FF]/20"
-              >
-                Ascending
-              </SelectItem>
-              <SelectItem
-                value="desc"
-                className="text-white hover:bg-[#7DF9FF]/20"
-              >
-                Descending
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-4 bg-black/30 text-white">
-          <TabsTrigger
-            value="calendar"
-            className="flex items-center gap-2 text-white data-[state=active]:bg-[#7DF9FF]/30 data-[state=active]:text-white"
-          >
-            <Calendar className="w-4 h-4" />
-            Calendar View
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            className="flex items-center gap-2 text-white data-[state=active]:bg-[#7DF9FF]/30 data-[state=active]:text-white"
-          >
-            <List className="w-4 h-4" />
-            Booking History
-          </TabsTrigger>
-        </TabsList>
-
-        <AnimatePresence mode="wait">
-          <TabsContent value="calendar">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+        
+        {/* Filters Section */}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Input
+              name="startDate"
+              type="date"
+              placeholder="Start Date"
+              value={filters.startDate}
+              onChange={handleFilterChange}
+              className="w-full bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
+            />
+            <Input
+              name="endDate"
+              type="date"
+              placeholder="End Date"
+              value={filters.endDate}
+              onChange={handleFilterChange}
+              className="w-full bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
+            />
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Select
+              value={filters.sortBy}
+              onValueChange={(value) => handleSortChange(value, filters.sortOrder)}
+              className="w-full sm:w-auto"
             >
-              <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
-                <CardContent className="p-2 sm:p-4">
-                  {bookings.length > 0 ? (
-                    <FullCalendar
-                      plugins={[dayGridPlugin, interactionPlugin]}
-                      initialView="dayGridMonth"
-                      events={bookings}
-                      eventContent={renderEventContent}
-                      headerToolbar={{
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,dayGridWeek,dayGridDay',
-                      }}
-                      eventClick={handleEventClick}
-                      eventClassNames="cursor-pointer hover:opacity-75"
-                      height="auto"
-                    />
-                  ) : (
-                    <NoResults />
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="history">
-            <BookingHistory />
-          </TabsContent>
-        </AnimatePresence>
-      </Tabs>
-      {bookings.length > 0 && (
-        <div className="flex justify-between items-center mt-6">
-          <Button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
-          >
-            Previous
-          </Button>
-          <span className="text-[#7DF9FF] font-medium">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30 px-6 py-2"
-          >
-            Next
-          </Button>
+              <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
+                <SelectValue placeholder="Sort By" className="text-white" />
+              </SelectTrigger>
+              <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
+                <SelectItem
+                  value="date"
+                  className="text-white hover:bg-[#7DF9FF]/20"
+                >
+                  Date
+                </SelectItem>
+                <SelectItem
+                  value="totalAmount"
+                  className="text-white hover:bg-[#7DF9FF]/20"
+                >
+                  Amount
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.sortOrder}
+              onValueChange={(value) => handleSortChange(filters.sortBy, value)}
+              className="w-full sm:w-auto"
+            >
+              <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
+                <SelectValue placeholder="Sort Order" className="text-white" />
+              </SelectTrigger>
+              <SelectContent className="bg-black/80 border-[#7DF9FF]/30 text-white">
+                <SelectItem
+                  value="asc"
+                  className="text-white hover:bg-[#7DF9FF]/20"
+                >
+                  Ascending
+                </SelectItem>
+                <SelectItem
+                  value="desc"
+                  className="text-white hover:bg-[#7DF9FF]/20"
+                >
+                  Descending
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      )}
+
+        {/* Tabs Section */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4 bg-black/30 text-white sticky top-0 z-10">
+            <TabsTrigger
+              value="calendar"
+              className="flex items-center gap-2 text-white data-[state=active]:bg-[#7DF9FF]/30 data-[state=active]:text-white"
+            >
+              <Calendar className="w-4 h-4" />
+              Calendar View
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              className="flex items-center gap-2 text-white data-[state=active]:bg-[#7DF9FF]/30 data-[state=active]:text-white"
+            >
+              <List className="w-4 h-4" />
+              Booking History
+            </TabsTrigger>
+          </TabsList>
+
+          <AnimatePresence mode="wait">
+            <TabsContent value="calendar" className="mt-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
+                  <CardContent className="p-2 sm:p-4 overflow-x-auto">
+                    {bookings.length > 0 ? (
+                      <div className="min-w-[800px] lg:min-w-0">
+                        <FullCalendar
+                          plugins={[dayGridPlugin, interactionPlugin]}
+                          initialView="dayGridMonth"
+                          events={bookings}
+                          eventContent={renderEventContent}
+                          headerToolbar={{
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,dayGridWeek,dayGridDay',
+                          }}
+                          eventClick={handleEventClick}
+                          eventClassNames="cursor-pointer hover:opacity-75"
+                          height="auto"
+                          eventTimeFormat={{
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            meridiem: false,
+                            hour12: false
+                          }}
+                          dayMaxEvents={3}
+                          slotMinHeight={30}
+                          contentHeight="auto"
+                          aspectRatio={1.8}
+                        />
+                      </div>
+                    ) : (
+                      <NoResults />
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-4">
+              <BookingHistory />
+            </TabsContent>
+          </AnimatePresence>
+        </Tabs>
+
+        {/* Pagination Section */}
+        {bookings.length > 0 && (
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 mb-safe">
+            <Button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="w-full sm:w-auto bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
+            >
+              Previous
+            </Button>
+            <span className="text-[#7DF9FF] font-medium">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="w-full sm:w-auto bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/40 text-white border-[#7DF9FF]/30"
+            >
+              Next
+            </Button>
+          </div>
+        )}
+      </div>
+
       <UserInfoModal
         isOpen={isModalOpen}
         onClose={() => {

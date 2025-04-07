@@ -114,7 +114,7 @@ const JamRoomRegistration = () => {
 
     try {
       const response = await fetch(
-        'http://43.205.169.90/api/bank-verification/verify',
+        'http://localhost:5000/api/bank-verification/verify',
         {
           method: 'POST',
           headers: {
@@ -176,7 +176,7 @@ const JamRoomRegistration = () => {
         formData.append('images', file);
       });
 
-      const response = await fetch('http://43.205.169.90/api/jamrooms/images', {
+      const response = await fetch('http://localhost:5000/api/jamrooms/images', {
         method: 'POST', // Use POST for initial upload
         body: formData,
       });
@@ -219,7 +219,7 @@ const JamRoomRegistration = () => {
         bankValidationData: bankValidationData,
       };
 
-      const response = await fetch('http://43.205.169.90/api/jamrooms/create', {
+      const response = await fetch('http://localhost:5000/api/jamrooms/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -273,79 +273,91 @@ const JamRoomRegistration = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black to-zinc-900 overflow-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-black to-zinc-900 overflow-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-4xl mx-auto my-8"
+        className="w-full max-w-4xl mx-auto my-4 sm:my-8"
       >
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] mb-3">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] mb-2 sm:mb-3">
             Jam Room Registration
           </h1>
-          <p className="text-white/70 text-lg">
+          <p className="text-white/70 text-base sm:text-lg">
             Register your jam room to start accepting bookings
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Card className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md shadow-2xl overflow-visible">
-            <CardContent className="p-8">
+          <Card className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md shadow-2xl overflow-visible">
+            <CardContent className="p-4 sm:p-8">
               <Tabs value={currentStep} onValueChange={setCurrentStep}>
                 {/* Progress bar */}
-                <div className="relative mb-10 mt-2">
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-zinc-800 rounded-full"></div>
+                <div className="relative mb-6 sm:mb-10 mt-2">
+                  {/* Progress track */}
+                  <div className="absolute left-0 top-[45%] sm:top-1/2 -translate-y-1/2 w-full h-1 bg-zinc-800 rounded-full hidden sm:block"></div>
+                  
+                  {/* Mobile progress dots */}
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-zinc-800 rounded-full sm:hidden">
+                    <div className="relative h-full">
+                      {steps.map((_, index) => (
+                        <div 
+                          key={index}
+                          className={`absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full
+                            ${index <= steps.findIndex(s => s.id === currentStep) 
+                              ? 'bg-[#7DF9FF]' 
+                              : 'bg-zinc-600'}`}
+                          style={{ left: `${(index / (steps.length - 1)) * 100}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Progress fill */}
                   <div
-                    className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] rounded-full transition-all duration-300"
+                    className="absolute left-0 top-[45%] sm:top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] rounded-full transition-all duration-300"
                     style={{
-                      width:
-                        currentStep === 'basic'
-                          ? '25%'
-                          : currentStep === 'owner'
-                            ? '50%'
-                            : currentStep === 'location'
-                              ? '75%'
-                              : '100%',
+                      width: `${(steps.findIndex(s => s.id === currentStep) / (steps.length - 1)) * 100}%`
                     }}
                   ></div>
 
-                  <div className="relative flex justify-between">
+                  {/* Step indicators */}
+                  <div className="relative flex justify-between items-start">
                     {steps.map((step, index) => (
-                      <div key={step.id} className="flex flex-col items-center">
+                      <div 
+                        key={step.id} 
+                        className="flex flex-col items-center w-full max-w-[100px]"
+                      >
                         <button
                           type="button"
                           onClick={() => setCurrentStep(step.id)}
-                          className={`w-10 h-10 rounded-full flex items-center justify-center z-10
-                            ${
-                              currentStep === step.id
-                                ? 'bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] text-black'
-                                : index <
-                                    steps.findIndex((s) => s.id === currentStep)
-                                  ? 'bg-gradient-to-r from-[#7DF9FF]/80 to-[#00BFFF]/80 text-black'
-                                  : 'bg-zinc-800 text-white/60'
+                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center z-10
+                            ${currentStep === step.id
+                              ? 'bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] text-black'
+                              : index < steps.findIndex(s => s.id === currentStep)
+                                ? 'bg-gradient-to-r from-[#7DF9FF]/80 to-[#00BFFF]/80 text-black'
+                                : 'bg-zinc-800 text-white/60'
                             } transition-all duration-200`}
                         >
-                          {index + 1}
+                          <span className="text-xs sm:text-sm">{index + 1}</span>
                         </button>
-                        <span
-                          className={`mt-2 text-sm font-medium ${currentStep === step.id ? 'text-white' : 'text-white/60'}`}
-                        >
+                        <span className="text-[10px] sm:text-sm font-medium mt-2 text-center text-white/60 line-clamp-1">
                           {step.label}
                         </span>
                       </div>
                     ))}
                   </div>
                 </div>
-
-                <TabsContent value="basic" className="mt-6 space-y-8">
-                  <div className="space-y-6">
+                
+                <TabsContent value="basic" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     <Label className="text-white text-lg mb-4 block">
                       Venue Type
                     </Label>
                     <RadioGroup
                       {...register('type', { required: true })}
-                      className="flex gap-6"
+                      className="flex flex-col sm:flex-row gap-3 sm:gap-6"
                       defaultValue="Jamroom"
                     >
                       <div className="flex items-center space-x-2">
@@ -416,11 +428,11 @@ const JamRoomRegistration = () => {
                       )}
                     </div>
 
-                    <div className="flex justify-end pt-4">
+                    <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-4">
                       <Button
                         type="button"
                         onClick={() => setCurrentStep('owner')}
-                        className="bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-white border-[#7DF9FF]/30 px-6 py-2 rounded-lg flex items-center gap-2 transition-all"
+                        className="w-full sm:w-auto bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-white border-[#7DF9FF]/30 px-6 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2 transition-all"
                       >
                         Next <ArrowRight className="w-4 h-4" />
                       </Button>
@@ -428,8 +440,8 @@ const JamRoomRegistration = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="owner" className="mt-6 space-y-8">
-                  <div className="space-y-6">
+                <TabsContent value="owner" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     <div>
                       <Label
                         htmlFor="fullname"
@@ -493,18 +505,18 @@ const JamRoomRegistration = () => {
                       )}
                     </div>
 
-                    <div className="flex justify-between pt-4">
+                    <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-4">
                       <Button
                         type="button"
                         onClick={() => setCurrentStep('basic')}
-                        className="bg-black/50 hover:bg-black/70 text-white border-white/10 px-6 py-2 rounded-lg flex items-center gap-2"
+                        className="w-full sm:w-auto bg-black/50 hover:bg-black/70 text-white border-white/10 px-6 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2"
                       >
                         <ArrowLeft className="w-4 h-4" /> Previous
                       </Button>
                       <Button
                         type="button"
                         onClick={() => setCurrentStep('location')}
-                        className="bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-white border-[#7DF9FF]/30 px-6 py-2 rounded-lg flex items-center gap-2"
+                        className="w-full sm:w-auto bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-white border-[#7DF9FF]/30 px-6 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2"
                       >
                         Next <ArrowRight className="w-4 h-4" />
                       </Button>
@@ -512,8 +524,8 @@ const JamRoomRegistration = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="location" className="mt-6 space-y-8">
-                  <div className="space-y-6">
+                <TabsContent value="location" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <Label htmlFor="address" className="text-white text-lg">
@@ -594,7 +606,7 @@ const JamRoomRegistration = () => {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <Label
                           htmlFor="latitude"
@@ -640,18 +652,18 @@ const JamRoomRegistration = () => {
                       </div>
                     </div>
 
-                    <div className="flex justify-between pt-4">
+                    <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-4">
                       <Button
                         type="button"
                         onClick={() => setCurrentStep('owner')}
-                        className="bg-black/50 hover:bg-black/70 text-white border-white/10 px-6 py-2 rounded-lg flex items-center gap-2"
+                        className="w-full sm:w-auto bg-black/50 hover:bg-black/70 text-white border-white/10 px-6 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2"
                       >
                         <ArrowLeft className="w-4 h-4" /> Previous
                       </Button>
                       <Button
                         type="button"
                         onClick={() => setCurrentStep('additional')}
-                        className="bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-white border-[#7DF9FF]/30 px-6 py-2 rounded-lg flex items-center gap-2"
+                        className="w-full sm:w-auto bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-white border-[#7DF9FF]/30 px-6 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2"
                       >
                         Next <ArrowRight className="w-4 h-4" />
                       </Button>
@@ -659,8 +671,8 @@ const JamRoomRegistration = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="additional" className="mt-6 space-y-8">
-                  <div className="space-y-6">
+                <TabsContent value="additional" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     <div>
                       <Label
                         htmlFor="images"
@@ -708,7 +720,7 @@ const JamRoomRegistration = () => {
 
                       {/* Image preview section */}
                       {images.length > 0 && (
-                        <div className="mt-6 grid grid-cols-3 gap-4">
+                        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
                           {images.map((img, index) => (
                             <div
                               key={index}
@@ -806,7 +818,7 @@ const JamRoomRegistration = () => {
                       >
                         UPI Address
                       </Label>
-                      <div className="flex items-center space-x-4">
+                      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
                         <Input
                           id="upiAddress"
                           {...register('upiAddress', {
@@ -849,18 +861,18 @@ const JamRoomRegistration = () => {
                       )}
                     </div>
 
-                    <div className="flex justify-between pt-6">
+                    <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-6">
                       <Button
                         type="button"
                         onClick={() => setCurrentStep('location')}
-                        className="bg-black/50 hover:bg-black/70 text-white border-white/10 px-6 py-2 rounded-lg flex items-center gap-2"
+                        className="w-full sm:w-auto bg-black/50 hover:bg-black/70 text-white border-white/10 px-6 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2"
                       >
                         <ArrowLeft className="w-4 h-4" /> Previous
                       </Button>
                       <Button
                         type="submit"
                         disabled={isSubmitting || uploadingImages}
-                        className="bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] hover:from-[#7DF9FF]/90 hover:to-[#00BFFF]/90 text-black font-medium px-8 py-2 rounded-lg relative disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] hover:from-[#7DF9FF]/90 hover:to-[#00BFFF]/90 text-black font-medium px-8 py-2 rounded-lg relative disabled:opacity-70 disabled:cursor-not-allowed"
                       >
                         {isSubmitting || uploadingImages ? (
                           <div className="flex items-center gap-2">

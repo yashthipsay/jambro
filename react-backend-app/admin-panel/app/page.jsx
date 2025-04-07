@@ -12,6 +12,9 @@ export default function HomePage() {
   useEffect(() => {
     async function initializeOneSignal() {
       try {
+        // Get window width for mobile detection
+        const isMobile = window.innerWidth < 768;
+
         // Initialize OneSignal
         await OneSignal.init({
           appId: 'c5c4fe85-5fe4-42e8-aaf4-c8edbfe967a9',
@@ -19,6 +22,15 @@ export default function HomePage() {
           notifyButton: {
             enable: true,
             position: 'bottom-right',
+            offset: isMobile
+              ? {
+                  bottom: '70px',
+                  right: '2px',
+                }
+              : {
+                  bottom: '20px',
+                  right: '40px',
+                },
           },
         });
 
