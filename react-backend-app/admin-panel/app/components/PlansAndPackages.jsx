@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from './ui/select';
 
+const WORK_IN_PROGRESS = true;
+
 export function PlansAndPackages() {
   const [plans, setPlans] = useState([]);
   const [packages, setPackages] = useState([]);
@@ -79,9 +81,35 @@ export function PlansAndPackages() {
     });
   };
 
+  if (WORK_IN_PROGRESS) {
+    return (
+      <div className="flex-1 p-4 sm:p-8 pl-4 sm:pl-72 pt-20 sm:pt-24 h-screen overflow-y-auto">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
+              <CardContent className="p-6 text-center">
+                <Package className="w-12 h-12 text-[#7DF9FF] mx-auto mb-4" />
+                <h2 className="text-xl sm:text-2xl font-bold text-[#7DF9FF] mb-2">
+                  Work in Progress
+                </h2>
+                <p className="text-[#7DF9FF]/60">
+                  This feature is currently under development.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 p-8 pl-72 pt-24 h-screen overflow-y-auto">
-      <div className="max-w-7xl mx-auto space-y-6 pb-8">
+    <div className="flex-1 p-4 sm:p-8 pl-4 sm:pl-72 pt-20 sm:pt-24 h-screen overflow-y-auto">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-8">
         {/* Individual Plans Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -89,14 +117,14 @@ export function PlansAndPackages() {
           transition={{ duration: 0.5 }}
         >
           <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">
+            <CardContent className="p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-[#7DF9FF]">
                 Create Individual Plan
               </h2>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <Label className="text-[#7DF9FF]/80">Plan Name</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Plan Name</Label>
                   <Input
                     value={newPlan.name}
                     onChange={(e) =>
@@ -107,7 +135,7 @@ export function PlansAndPackages() {
                   />
                 </div>
                 <div>
-                  <Label className="text-[#7DF9FF]/80">Price (₹)</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Price (₹)</Label>
                   <Input
                     type="number"
                     value={newPlan.price}
@@ -123,9 +151,9 @@ export function PlansAndPackages() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <Label className="text-[#7DF9FF]/80">Duration</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Duration</Label>
                   <Input
                     type="number"
                     value={newPlan.duration}
@@ -140,7 +168,7 @@ export function PlansAndPackages() {
                   />
                 </div>
                 <div>
-                  <Label className="text-[#7DF9FF]/80">Duration Type</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Duration Type</Label>
                   <Select
                     value={newPlan.durationType}
                     onValueChange={(value) =>
@@ -160,7 +188,7 @@ export function PlansAndPackages() {
               </div>
 
               <div className="mb-4">
-                <Label className="text-[#7DF9FF]/80">Description</Label>
+                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Description</Label>
                 <Input
                   value={newPlan.description}
                   onChange={(e) =>
@@ -172,17 +200,17 @@ export function PlansAndPackages() {
               </div>
 
               <div className="mb-4">
-                <Label className="text-[#7DF9FF]/80">Features</Label>
-                <div className="flex gap-2 mb-2">
+                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Features</Label>
+                <div className="flex flex-col sm:flex-row gap-2 mb-2">
                   <Input
                     value={newFeature}
                     onChange={(e) => setNewFeature(e.target.value)}
-                    className="bg-black/20 border-[#7DF9FF]/30 text-white"
+                    className="flex-1 bg-black/20 border-[#7DF9FF]/30 text-white text-sm sm:text-base"
                     placeholder="Add a feature"
                   />
                   <Button
                     onClick={handleAddFeature}
-                    className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
+                    className="w-full sm:w-auto bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
@@ -224,15 +252,15 @@ export function PlansAndPackages() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF] flex items-center gap-2">
-                <Package className="w-6 h-6" />
+            <CardContent className="p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-[#7DF9FF] flex items-center gap-2">
+                <Package className="w-5 h-5 sm:w-6 sm:h-6" />
                 Create Package
               </h2>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <Label className="text-[#7DF9FF]/80">Package Name</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Package Name</Label>
                   <Input
                     value={newPackage.name}
                     onChange={(e) =>
@@ -243,7 +271,7 @@ export function PlansAndPackages() {
                   />
                 </div>
                 <div>
-                  <Label className="text-[#7DF9FF]/80">Discount (%)</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Discount (%)</Label>
                   <Input
                     type="number"
                     value={newPackage.discount}
@@ -262,7 +290,7 @@ export function PlansAndPackages() {
               </div>
 
               <div className="mb-4">
-                <Label className="text-[#7DF9FF]/80">Description</Label>
+                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Description</Label>
                 <Input
                   value={newPackage.description}
                   onChange={(e) =>
@@ -277,16 +305,16 @@ export function PlansAndPackages() {
               </div>
 
               <div className="mb-4">
-                <Label className="text-[#7DF9FF]/80">Select Plans</Label>
+                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Select Plans</Label>
                 <ScrollArea className="h-48 border border-[#7DF9FF]/30 rounded-md p-2">
                   {plans.map((plan) => (
                     <div
                       key={plan.id}
-                      className="flex items-center justify-between p-2 bg-black/20 rounded mb-1"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-2 bg-black/20 rounded mb-1 gap-2"
                     >
-                      <div>
-                        <h3 className="text-[#7DF9FF]">{plan.name}</h3>
-                        <p className="text-white/60 text-sm">₹{plan.price}</p>
+                      <div className="text-center sm:text-left">
+                        <h3 className="text-[#7DF9FF] text-sm sm:text-base">{plan.name}</h3>
+                        <p className="text-white/60 text-xs sm:text-sm">₹{plan.price}</p>
                       </div>
                       <Button
                         variant="outline"
@@ -300,15 +328,13 @@ export function PlansAndPackages() {
                               : [...newPackage.plans, plan.id],
                           });
                         }}
-                        className={`${
+                        className={`w-full sm:w-auto ${
                           newPackage.plans.includes(plan.id)
                             ? 'bg-[#7DF9FF]/20 text-white'
                             : 'bg-transparent text-[#7DF9FF]'
                         }`}
                       >
-                        {newPackage.plans.includes(plan.id)
-                          ? 'Selected'
-                          : 'Select'}
+                        {newPackage.plans.includes(plan.id) ? 'Selected' : 'Select'}
                       </Button>
                     </div>
                   ))}

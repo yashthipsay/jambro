@@ -69,6 +69,7 @@ const jamRoomSchema = new mongoose.Schema({
       required: true,
       validate: [validateContact, "Please enter a valid phone number"],
     },
+    oneSignalUserId: { type: String },
     spotify: {
       username: String,
       displayName: String,

@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -10,7 +9,6 @@ import { useRouter } from 'next/navigation';
 export function Navbar() {
   const { user, error, isLoading } = useUser();
   const router = useRouter();
-
   const [jamRoomName, setJamRoomName] = useState('');
 
   useEffect(() => {
@@ -24,7 +22,6 @@ export function Navbar() {
           if (data.success && data.data) {
             setJamRoomName(data.data.jamRoomDetails.name);
           }
-          console.log(data);
         } catch (error) {
           console.error('Error fetching jam room name:', error);
         }
@@ -43,21 +40,24 @@ export function Navbar() {
     >
       <Link href="/">
         <motion.h1
-          className="text-3xl gradient-text"
+          className="text-xl md:text-3xl gradient-text truncate mr-4"
           whileHover={{ scale: 1.05 }}
         >
-          Gigsaw Admin - {`${jamRoomName}`}
+          <span className="md:hidden">GS Admin</span>
+          <span className="hidden md:inline">
+            Gigsaw Admin - {jamRoomName || 'Loading...'}
+          </span>
         </motion.h1>
       </Link>
       <div>
         {isLoading ? (
-          <Button variant="outline" className="btn-secondary">
+          <Button variant="outline" className="btn-secondary text-sm md:text-base">
             Loading...
           </Button>
         ) : user ? (
           <Button
             variant="outline"
-            className="btn-secondary"
+            className="btn-secondary text-sm md:text-base"
             onClick={() => (window.location.href = '/api/auth/logout')}
           >
             Log Out
@@ -65,7 +65,7 @@ export function Navbar() {
         ) : (
           <Button
             variant="outline"
-            className="btn-secondary"
+            className="btn-secondary text-sm md:text-base"
             onClick={() => (window.location.href = '/api/auth/login')}
           >
             Log In

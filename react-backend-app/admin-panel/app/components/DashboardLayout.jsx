@@ -21,11 +21,16 @@ export function DashboardLayout({ children }) {
     <div className="relative min-h-screen bg-cover bg-center">
       <div className="absolute inset-0 bg-black bg-opacity-60"></div>
       <div className="relative text-white h-screen flex flex-col">
-        <Navbar className="flex-shrink-0" />
-        <div className="flex flex-1 overflow-hidden">
-          <Sidebar className="flex-shrink-0" />
-          <div className="flex-1 overflow-auto p-6 ml-72">{children}</div>
+        <Navbar />
+        <div className="flex-1 overflow-hidden">
+          {/* Main content area with padding adjustment for mobile */}
+          <div className="h-full overflow-auto pb-24 md:pb-6 md:pl-72">
+            {children}
+          </div>
         </div>
+        
+        {/* Sidebar handles its own responsive behavior */}
+        <Sidebar />
       </div>
     </div>
   );

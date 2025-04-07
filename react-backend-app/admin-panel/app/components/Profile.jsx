@@ -29,9 +29,9 @@ const ProfileSection = ({
   onCancel,
 }) => (
   <Card className="relative group glass-card bg-gradient-to-b from-white/10 to-purple-500/10">
-    <CardHeader>
+    <CardHeader className="p-4 sm:p-6">
       <div className="flex justify-between items-center">
-        <CardTitle className="text-[#7DF9FF] font-audiowide">{title}</CardTitle>
+        <CardTitle className="text-base sm:text-lg text-[#7DF9FF] font-audiowide">{title}</CardTitle>
         {!isEditing && (
           <motion.button
             initial={{ opacity: 0 }}
@@ -66,7 +66,7 @@ const ProfileSection = ({
         )}
       </div>
     </CardHeader>
-    <CardContent>{children}</CardContent>
+    <CardContent className="p-4 sm:p-6">{children}</CardContent>
   </Card>
 );
 
@@ -91,7 +91,6 @@ export default function Profile() {
   const [editingSection, setEditingSection] = useState(null);
   const [useAutocomplete, setUseAutocomplete] = useState(true);
   const { register, handleSubmit, reset, setValue, watch } = useForm();
-  // Add new state for temporary image previews
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
 
@@ -131,12 +130,10 @@ export default function Profile() {
     setEditingSection(section);
   };
 
-  // Update image upload handler
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     setImageFiles((prev) => [...prev, ...files]);
 
-    // Create preview URLs
     const newPreviews = files.map((file) => URL.createObjectURL(file));
     setImagePreviews((prev) => [...prev, ...newPreviews]);
   };
@@ -146,7 +143,6 @@ export default function Profile() {
       const formData = watch();
 
       if (section === 'additional') {
-        // Handle images separately if there are any new uploads
         const existingImages =
           formData.images?.filter((image) => !image.startsWith('blob:')) || [];
 
@@ -165,12 +161,9 @@ export default function Profile() {
           const imageData = await imageUploadResponse.json();
           if (!imageData.success) throw new Error('Failed to upload images');
 
-          // Merge existing images with the new image URLs
           formData.images = [...existingImages, ...imageData.imageUrls];
         }
-        console.log(`Formdata for ${section} update:`, formData);
 
-        // Handle feesPerSlot and slots update
         const response = await fetch(
           `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
           {
@@ -185,11 +178,9 @@ export default function Profile() {
         );
 
         const data = await response.json();
-        console.log(`Data for ${section} update:`, data);
         if (!data.success) throw new Error(data.message || 'Update failed');
 
         setJamRoomData(data.data);
-        console.log('Updated jam room data:', data.data);
         setEditingSection(null);
         toast({
           title: 'Success',
@@ -199,7 +190,6 @@ export default function Profile() {
         return;
       }
 
-      // Handle other sections as before
       const response = await fetch(
         `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
         {
@@ -236,20 +226,15 @@ export default function Profile() {
   };
 
   const handleLocationSelect = (selectedLocation) => {
-    // Update form values with selected location
     setValue('location.address', selectedLocation.description);
     setValue('location.latitude', selectedLocation.geometry.location.lat);
     setValue('location.longitude', selectedLocation.geometry.location.lng);
-    console.log(selectedLocation);
-    // You might want to fetch the coordinates for the selected location
-    // and update the latitude and longitude fields
   };
 
   const handlePinLocationSelect = (location) => {
     setValue('location.address', location.address);
     setValue('location.latitude', location.lat);
     setValue('location.longitude', location.lon);
-    console.log(location);
   };
 
   if (loading) {
@@ -262,43 +247,49 @@ export default function Profile() {
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <div className="flex-1 p-6 mt-16 ml-64 h-[calc(100vh-6rem)] overflow-y-auto">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex-1 p-4 sm:p-6 mt-16 sm:ml-64 overflow-y-auto h-[calc(100vh-4rem)] pb-32 sm:pb-20">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl font-audiowide mb-6 text-[#7DF9FF]">
+            <h1 className="text-2xl sm:text-4xl font-audiowide mb-4 sm:mb-6 text-[#7DF9FF]">
               Profile Settings
             </h1>
 
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6 glass-card">
-                <TabsTrigger
-                  value="basic"
-                  className="text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate"
-                >
-                  Basic Info
-                </TabsTrigger>
-                <TabsTrigger
-                  value="owner"
-                  className="text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate"
-                >
-                  Owner Details
-                </TabsTrigger>
-                <TabsTrigger
-                  value="location"
-                  className="text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate"
-                >
-                  Location
-                </TabsTrigger>
-                <TabsTrigger
-                  value="additional"
-                  className="text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate"
-                >
-                  Additional Info
-                </TabsTrigger>
+              <TabsList className="relative w-full mb-4 sm:mb-6 glass-card">
+                <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-black/20 to-transparent pointer-events-none sm:hidden z-10" />
+                <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black/20 to-transparent pointer-events-none sm:hidden z-10" />
+                <div className="w-full overflow-x-auto scrollbar-none">
+                  <div className="flex sm:grid sm:grid-cols-4 min-w-max sm:min-w-0 px-2 sm:px-0 py-1 sm:py-0">
+                    <TabsTrigger
+                      value="basic"
+                      className="flex-1 text-sm sm:text-base text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate whitespace-nowrap"
+                    >
+                      Basic Info 
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="owner"
+                      className="flex-1 text-sm sm:text-base text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate whitespace-nowrap"
+                    >
+                      Owner Details
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="location"
+                      className="flex-1 text-sm sm:text-base text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate whitespace-nowrap"
+                    >
+                      Location
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="additional"
+                      className="flex-1 text-sm sm:text-base text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate whitespace-nowrap"
+                    >
+                      Additional Info
+                    </TabsTrigger>
+                  </div>
+                </div>
               </TabsList>
 
               <AnimatePresence mode="wait">
@@ -310,33 +301,33 @@ export default function Profile() {
                     onSave={() => handleSectionSave('jamRoomDetails')}
                     onCancel={handleSectionCancel}
                   >
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <Label className="text-[#7DF9FF]/80">
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">
                           Jam Room Name
                         </Label>
                         {editingSection === 'jamRoomDetails' ? (
                           <Input
                             {...register('jamRoomDetails.name')}
                             defaultValue={jamRoomData.jamRoomDetails.name}
+                            className="mt-1 sm:mt-2"
                           />
                         ) : (
-                          <p className="text-lg text-[#7DF9FF]">
+                          <p className="text-base sm:text-lg text-[#7DF9FF] mt-1">
                             {jamRoomData.jamRoomDetails.name}
                           </p>
                         )}
                       </div>
                       <div>
-                        <Label className="text-[#7DF9FF]/80">Description</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Description</Label>
                         {editingSection === 'jamRoomDetails' ? (
                           <Textarea
                             {...register('jamRoomDetails.description')}
-                            defaultValue={
-                              jamRoomData.jamRoomDetails.description
-                            }
+                            defaultValue={jamRoomData.jamRoomDetails.description}
+                            className="mt-1 sm:mt-2"
                           />
                         ) : (
-                          <p className="text-lg text-[#7DF9FF]">
+                          <p className="text-base sm:text-lg text-[#7DF9FF] mt-1">
                             {jamRoomData.jamRoomDetails.description}
                           </p>
                         )}
@@ -353,46 +344,45 @@ export default function Profile() {
                     onSave={() => handleSectionSave('ownerDetails')}
                     onCancel={handleSectionCancel}
                   >
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <Label className="text-[#7DF9FF]/80">Owner Name</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Owner Name</Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
                             {...register('ownerDetails.fullname')}
                             defaultValue={jamRoomData.ownerDetails.fullname}
+                            className="mt-1 sm:mt-2"
                           />
                         ) : (
-                          <p className="text-lg text-[#7DF9FF]">
+                          <p className="text-base sm:text-lg text-[#7DF9FF] mt-1">
                             {jamRoomData.ownerDetails.fullname}
                           </p>
                         )}
                       </div>
                       <div>
-                        <Label className="text-[#7DF9FF]/80">
-                          Email Address
-                        </Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Email Address</Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
                             {...register('ownerDetails.email')}
                             defaultValue={jamRoomData.ownerDetails.email}
+                            className="mt-1 sm:mt-2"
                           />
                         ) : (
-                          <p className="text-lg text-[#7DF9FF]">
+                          <p className="text-base sm:text-lg text-[#7DF9FF] mt-1">
                             {jamRoomData.ownerDetails.email}
                           </p>
                         )}
                       </div>
                       <div>
-                        <Label className="text-[#7DF9FF]/80">
-                          Phone Number
-                        </Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Phone Number</Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
                             {...register('ownerDetails.phone')}
                             defaultValue={jamRoomData.ownerDetails.phone}
+                            className="mt-1 sm:mt-2"
                           />
                         ) : (
-                          <p className="text-lg text-[#7DF9FF]">
+                          <p className="text-base sm:text-lg text-[#7DF9FF] mt-1">
                             {jamRoomData.ownerDetails.phone}
                           </p>
                         )}
@@ -410,9 +400,9 @@ export default function Profile() {
                     onCancel={handleSectionCancel}
                   >
                     {editingSection === 'location' ? (
-                      <div className="space-y-4">
+                      <div className="space-y-3 sm:space-y-4">
                         <div className="flex justify-between items-center">
-                          <Label className="text-[#7DF9FF]/80">Address</Label>
+                          <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Address</Label>
                           <Button
                             type="button"
                             onClick={() => setUseAutocomplete(!useAutocomplete)}
@@ -438,7 +428,7 @@ export default function Profile() {
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <p className="text-lg text-[#7DF9FF]">
+                        <p className="text-base sm:text-lg text-[#7DF9FF]">
                           {jamRoomData.location.address}
                         </p>
                         <p className="text-sm text-gray-500">
@@ -458,13 +448,12 @@ export default function Profile() {
                     onSave={() => handleSectionSave('additional')}
                     onCancel={handleSectionCancel}
                   >
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <Label className="text-[#7DF9FF]/80">Images</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Images</Label>
                         {editingSection === 'additional' ? (
                           <div className="space-y-4">
-                            <div className="grid grid-cols-3 gap-4 mb-4">
-                              {/* Show existing images */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4">
                               {jamRoomData.images.map((image, index) => (
                                 <div
                                   key={`existing-${index}`}
@@ -481,7 +470,6 @@ export default function Profile() {
                                         jamRoomData.images.filter(
                                           (_, i) => i !== index
                                         );
-                                      // Update both the jamRoomData state and the form value
                                       setJamRoomData((prev) => ({
                                         ...prev,
                                         images: newImages,
@@ -494,7 +482,6 @@ export default function Profile() {
                                   </button>
                                 </div>
                               ))}
-                              {/* Show new image previews */}
                               {imagePreviews.map((preview, index) => (
                                 <div
                                   key={`preview-${index}`}
@@ -552,7 +539,7 @@ export default function Profile() {
                             </div>
                           </div>
                         ) : (
-                          <div className="grid grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                             {jamRoomData.images.map((image, index) => (
                               <div key={index} className="relative">
                                 <img
@@ -566,36 +553,33 @@ export default function Profile() {
                         )}
                       </div>
                       <div>
-                        <Label className="text-[#7DF9FF]/80">
-                          Fees per Slot
-                        </Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Fees per Slot</Label>
                         {editingSection === 'additional' ? (
                           <Input
                             type="number"
                             {...register('feesPerSlot')}
                             defaultValue={jamRoomData.feesPerSlot}
+                            className="mt-1 sm:mt-2"
                           />
                         ) : (
-                          <p className="text-lg text-[#7DF9FF]">
+                          <p className="text-base sm:text-lg text-[#7DF9FF] mt-1">
                             ₹{jamRoomData.feesPerSlot}
                           </p>
                         )}
                       </div>
                       <div>
-                        <Label className="text-[#7DF9FF]/80">Time Slots</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Time Slots</Label>
                         {editingSection === 'additional' ? (
                           <TimeSlotSelector
                             selectedSlots={watch('slots') || jamRoomData.slots}
                             setSlots={(newSlots) => {
                               try {
-                                // Validate newSlots array
                                 if (!Array.isArray(newSlots)) {
                                   throw new Error(
                                     'Selected slots must be an array'
                                   );
                                 }
 
-                                // Ensure slots are properly formatted and have required properties
                                 const formattedSlots = newSlots.map(
                                   (slot, index) => {
                                     if (!slot.startTime || !slot.endTime) {
@@ -604,7 +588,6 @@ export default function Profile() {
                                       );
                                     }
 
-                                    // Validate time format (HH:mm)
                                     const timeRegex =
                                       /^([0-1][0-9]|2[0-3]):00$/;
                                     if (
@@ -626,7 +609,6 @@ export default function Profile() {
                                   }
                                 );
 
-                                // Check for duplicate slot IDs
                                 const slotIds = new Set();
                                 formattedSlots.forEach((slot) => {
                                   if (slotIds.has(slot.slotId)) {
@@ -637,7 +619,6 @@ export default function Profile() {
                                   slotIds.add(slot.slotId);
                                 });
 
-                                // Sort slots by start time
                                 formattedSlots.sort((a, b) => {
                                   return (
                                     parseInt(a.startTime) -
@@ -662,7 +643,7 @@ export default function Profile() {
                             }}
                           />
                         ) : (
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                             {jamRoomData.slots.map((slot) => (
                               <div
                                 key={slot.slotId}

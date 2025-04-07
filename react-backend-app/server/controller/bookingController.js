@@ -2,6 +2,7 @@ const BookingSchema = require("../models/BookingSchema");
 const JamRoom = require("../models/JamRooms");
 const User = require("../models/User");
 const moment = require("moment-timezone");
+const {sendBookingNotification} = require("../services/notificationService");
 
 const createBooking = async (req, res) => {
   try {
@@ -51,6 +52,28 @@ const createBooking = async (req, res) => {
 
     // 4. Save the booking
     const savedBooking = await newBooking.save();
+
+    // 5. Send notification to the owner - handle separately from main flow
+    if (jamRoom && jamRoom.ownerDetails && jamRoom.ownerDetails.oneSignalUserId) {
+      try {
+        console.log("Attempting to send notification to:", jamRoom.ownerDetails.oneSignalUserId);
+        await sendBookingNotification({
+          jamRoomId: req.body.jamRoomId,
+          jamRoomName: jamRoom.jamRoomDetails.name,
+          ownerOneSignalId: jamRoom.ownerDetails.oneSignalUserId,
+          bookingId: newBooking._id,
+          bookingDate: req.body.date,
+          slots: req.body.slots
+        });
+        console.log("Notification sent successfully");
+      } catch (notificationError) {
+        // Log the error but don't fail the booking creation
+        console.error("Failed to send notification:", notificationError);
+        console.error("Notification error details:", notificationError.response?.data || notificationError.message);
+      }
+    } else {
+      console.log("Skipping notification - missing OneSignal user ID");
+    }
 
     res.status(201).json({ success: true, booking: savedBooking });
   } catch (error) {

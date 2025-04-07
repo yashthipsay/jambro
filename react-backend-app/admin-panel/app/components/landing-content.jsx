@@ -30,7 +30,6 @@ const fetchWithAuth = async (url, options = {}) => {
   });
 };
 
-// Add this new component after AddonsCard
 const StudioServicesCard = ({ jamRoomId }) => {
   const [services, setServices] = useState([]);
   const [newService, setNewService] = useState({
@@ -46,7 +45,6 @@ const StudioServicesCard = ({ jamRoomId }) => {
   });
   const [editingService, setEditingService] = useState(null);
 
-  // Categories for studio services
   const SERVICE_CATEGORIES = [
     'RECORDING',
     'MIXING',
@@ -154,14 +152,13 @@ const StudioServicesCard = ({ jamRoomId }) => {
       transition={{ duration: 0.5 }}
     >
       <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-[#7DF9FF] mb-4">
+        <div className="p-4 sm:p-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#7DF9FF] mb-4">
             Studio Services
           </h2>
 
-          {/* Add New Service Form */}
           <div className="space-y-4 mb-6">
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Input
                 placeholder="Service Name"
                 value={newService.serviceName}
@@ -194,7 +191,6 @@ const StudioServicesCard = ({ jamRoomId }) => {
               className="bg-black/20 border-[#7DF9FF]/30 text-white"
             />
 
-            {/* Add Sub-parts */}
             <div className="space-y-2">
               <Label className="text-[#7DF9FF]">Add Sub-parts</Label>
               <div className="flex gap-4">
@@ -227,7 +223,6 @@ const StudioServicesCard = ({ jamRoomId }) => {
               </div>
             </div>
 
-            {/* Display added sub-parts */}
             {newService.subParts.length > 0 && (
               <div className="space-y-2">
                 <Label className="text-[#7DF9FF]">Added Sub-parts:</Label>
@@ -272,7 +267,6 @@ const StudioServicesCard = ({ jamRoomId }) => {
             </Button>
           </div>
 
-          {/* Display Services */}
           <ScrollArea className="max-h-[400px] overflow-y-auto">
             <div className="space-y-4">
               {services.map((service) => (
@@ -281,9 +275,8 @@ const StudioServicesCard = ({ jamRoomId }) => {
                   className="p-4 border border-[#7DF9FF]/30 rounded-lg bg-black/20"
                 >
                   {editingService && editingService._id === service._id ? (
-                    // Edit form
                     <div className="space-y-4">
-                      <div className="flex gap-4">
+                      <div className="flex flex-col sm:flex-row gap-4">
                         <Input
                           value={editingService.serviceName}
                           onChange={(e) =>
@@ -400,7 +393,6 @@ const StudioServicesCard = ({ jamRoomId }) => {
                       </div>
                     </div>
                   ) : (
-                    // Display mode (existing code)
                     <>
                       <div className="flex justify-between items-center mb-2">
                         <div>
@@ -527,18 +519,18 @@ const AddonsCard = ({ jamRoomId }) => {
       transition={{ duration: 0.5 }}
     >
       <Card className="glass-card border-[#7DF9FF]/30 bg-gradient-to-b from-white/10 to-purple-500/10">
-        <div className="p-6 ">
-          <h2 className="text-2xl font-bold text-[#7DF9FF]">
+        <div className="p-4 sm:p-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#7DF9FF]">
             Equipment for Rent
           </h2>
           <div className="space-y-4">
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <select
                 value={newAddon.instrumentType}
                 onChange={(e) =>
                   setNewAddon({ ...newAddon, instrumentType: e.target.value })
                 }
-                className="bg-black/20 border border-[#7DF9FF]/30 rounded p-2 text-white flex-1"
+                className="bg-black/20 border border-[#7DF9FF]/30 rounded p-2 text-white w-full sm:flex-1"
               >
                 <option value="">Select Instrument</option>
                 {INSTRUMENT_TYPES.map((type) => (
@@ -548,37 +540,39 @@ const AddonsCard = ({ jamRoomId }) => {
                 ))}
               </select>
 
-              <Input
-                type="number"
-                placeholder="Qty"
-                value={newAddon.quantity}
-                onChange={(e) =>
-                  setNewAddon({
-                    ...newAddon,
-                    quantity: parseInt(e.target.value),
-                  })
-                }
-                min="1"
-                className="w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
-              />
+              <div className="flex gap-4">
+                <Input
+                  type="number"
+                  placeholder="Qty"
+                  value={newAddon.quantity}
+                  onChange={(e) =>
+                    setNewAddon({
+                      ...newAddon,
+                      quantity: parseInt(e.target.value),
+                    })
+                  }
+                  min="1"
+                  className="w-full sm:w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
+                />
 
-              <Input
-                type="number"
-                placeholder="₹/hr"
-                value={newAddon.pricePerHour}
-                onChange={(e) =>
-                  setNewAddon({
-                    ...newAddon,
-                    pricePerHour: parseInt(e.target.value),
-                  })
-                }
-                min="0"
-                className="w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
-              />
+                <Input
+                  type="number"
+                  placeholder="₹/hr"
+                  value={newAddon.pricePerHour}
+                  onChange={(e) =>
+                    setNewAddon({
+                      ...newAddon,
+                      pricePerHour: parseInt(e.target.value),
+                    })
+                  }
+                  min="0"
+                  className="w-full sm:w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
+                />
+              </div>
 
               <Button
                 onClick={handleAddAddon}
-                className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
+                className="w-full sm:w-auto bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
               >
                 Add
               </Button>
@@ -629,7 +623,6 @@ export function LandingContent() {
     { id: 3, name: 'Completed Sessions', count: 0 },
   ]);
 
-  // Fetch bookings and payouts
   useEffect(() => {
     async function fetchData() {
       let fundAccountId;
@@ -637,13 +630,11 @@ export function LandingContent() {
         const tokenStr = localStorage.getItem('jamroom_token');
         fundAccountId = JSON.parse(atob(tokenStr.split('.')[1])).fundAccountId;
 
-        // Fetch payouts
         const payoutsResponse = await fetchWithAuth(
           `https://api.vision.gigsaw.co.in/api/payouts/${fundAccountId}`
         );
         const payoutsData = await payoutsResponse.json();
 
-        // Fetch bookings
         const bookingsResponse = await fetchWithAuth(
           `https://api.vision.gigsaw.co.in/api/bookings/jamroom/${jamRoomId}`
         );
@@ -653,7 +644,6 @@ export function LandingContent() {
           setPayouts(payoutsData.data);
           setBookings(bookingsData.data);
 
-          // Calculate stats
           const pendingPayouts = payoutsData.data.filter((payout) =>
             ['PENDING', 'processing', 'queued'].includes(payout.status)
           ).length;
@@ -682,81 +672,79 @@ export function LandingContent() {
     }
   }, [jamRoomId]);
 
-  // Compute today's earnings with useMemo based on fetched payouts
   const netTotal = useMemo(() => {
     const now = new Date();
     const startOfToday = Math.floor(
-      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000
+      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() /
+        1000
     );
-    console.log("startOfToday", startOfToday);
     const endOfToday = Math.floor(
-      new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime() / 1000
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59,
+        999
+      ).getTime() / 1000
     );
-    console.log("endOfToday", endOfToday);
-    console.log("payouts", payouts);
-    const todaysPayouts = payouts.filter(item => {
-      // Use either created_at or createdAt
+    const todaysPayouts = payouts.filter((item) => {
       const created = item.created_at || item.createdAt;
-      // Ensure we have a Unix timestamp
-      const createdTimestamp = typeof created === 'number'
-        ? created
-        : Math.floor(new Date(created).getTime() / 1000);
+      const createdTimestamp =
+        typeof created === 'number'
+          ? created
+          : Math.floor(new Date(created).getTime() / 1000);
       return createdTimestamp >= startOfToday && createdTimestamp <= endOfToday;
     });
     const total = todaysPayouts.reduce((sum, item) => {
-      if (["processed", "COMPLETED"].includes(item.status)) {
-        console.log(item.amount);
-        // Deduct fees and tax if provided, then sum
+      if (['processed', 'COMPLETED'].includes(item.status)) {
         return sum + (item.amount - (item.fees || 0) - (item.tax || 0));
       }
       return sum;
     }, 0);
-  
-    console.log('Todays payouts:', total);
-  
+
     return total;
   }, [payouts]);
 
   return (
-    <div className="flex-1 p-8 pl-72 pt-24 h-screen overflow-y-auto">
+    <div className="flex-1 p-4 sm:p-8 pl-4 sm:pl-72 pt-20 sm:pt-24 h-screen overflow-y-auto">
       <div className="max-w-7xl mx-auto space-y-4 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Card 1: Today's Earnings */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">
+              <div className="p-4 sm:p-6">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 text-[#7DF9FF]">
                   Today's Earnings
                 </h2>
-                <div className="text-4xl font-bold text-[#7DF9FF]">
+                <div className="text-2xl sm:text-4xl font-bold text-[#7DF9FF]">
                   ₹{netTotal.toLocaleString()}
                 </div>
               </div>
             </Card>
           </motion.div>
 
-          {/* Card 2: Quick Stats */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">
+              <div className="p-4 sm:p-6">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 text-[#7DF9FF]">
                   Quick Stats
                 </h2>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                   {stats.map((stat) => (
                     <div key={stat.id} className="text-center">
-                      <div className="text-3xl font-bold text-[#7DF9FF]">
+                      <div className="text-xl sm:text-3xl font-bold text-[#7DF9FF]">
                         {stat.count}
                       </div>
-                      <div className="text-sm text-[#7DF9FF]/80">
+                      <div className="text-xs sm:text-sm text-[#7DF9FF]/80">
                         {stat.name}
                       </div>
                     </div>
@@ -767,24 +755,31 @@ export function LandingContent() {
           </motion.div>
         </div>
 
-        {/* Addons Card */}
-        {jamRoomId && <AddonsCard jamRoomId={jamRoomId} />}
+        {jamRoomId && (
+          <div className="w-full">
+            <AddonsCard jamRoomId={jamRoomId} />
+          </div>
+        )}
 
-        {/* Studio Services Card - Replace Recent Activity */}
-        {jamRoomId && <StudioServicesCard jamRoomId={jamRoomId} />}
+        {jamRoomId && (
+          <div className="w-full">
+            <StudioServicesCard jamRoomId={jamRoomId} />
+          </div>
+        )}
 
-        {/* Card 4: Placeholder for future content */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Card className="glass-card border-[#7DF9FF]/30 bg-black/10">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-4 text-[#7DF9FF]">
+            <div className="p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-[#7DF9FF]">
                 Recent Activity
               </h2>
-              <div className="text-[#7DF9FF]/80">Coming soon...</div>
+              <div className="text-sm sm:text-base text-[#7DF9FF]/80">
+                Coming soon...
+              </div>
             </div>
           </Card>
         </motion.div>
