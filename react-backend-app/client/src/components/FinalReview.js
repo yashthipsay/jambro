@@ -184,7 +184,7 @@ const FinalReview = () => {
         name: jamRoomName,
         description: "Jam Room Booking",
         order_id: data.order.id,
-        callback_url: `https://www.gigsaw.co.in/payment-success`,
+        // callback_url: `https://www.gigsaw.co.in/payment-success`,
         prefill: {
           name: user.name,
           email: user.email,
