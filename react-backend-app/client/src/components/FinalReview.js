@@ -62,15 +62,29 @@ const FinalReview = () => {
 
   // Add new effect to handle mobile navigation
   useEffect(() => {
+    // On mount, push a custom history state if not already present.
+    if (!window.history.state || window.history.state.page !== "final-review") {
+      window.history.pushState(
+        { page: "final-review" },
+        document.title,
+        window.location.href
+      );
+    }
+
     const handlePopState = (e) => {
+      e.preventDefault();
+      // If payment in progress, do not let user go back.
       if (isPaymentInProgress) {
-        e.preventDefault();
-        window.history.pushState(null, document.title, window.location.href);
+        // Re-push our state so that native navigation doesn’t exit.
+        window.history.pushState(
+          { page: "final-review" },
+          document.title,
+          window.location.href
+        );
         return;
       }
-      // Initial history push to ensure we can capture the back action
-      window.history.pushState(null, document.title, window.location.href);
 
+      // Trigger any cleanup logic (e.g. releasing reservation)
       setIsLeaving(true);
       fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
         method: "POST",
@@ -81,15 +95,12 @@ const FinalReview = () => {
           slots: selectedSlots,
         }),
       });
-      // Actually navigate back properly
+      // Then use controlled navigation (same as custom back button)
       navigate(-1);
     };
 
     window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
+    return () => window.removeEventListener("popstate", handlePopState);
   }, [
     selectedRoomId,
     selectedDate,

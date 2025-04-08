@@ -35,6 +35,28 @@ function JamRoomDetails() {
   // Add handleModalToggle function
   const handleModalToggle = () => setModalOpen(!modalOpen);
 
+  useEffect(() => {
+    if (
+      !window.history.state ||
+      window.history.state.page !== "jamroom-details"
+    ) {
+      window.history.pushState(
+        { page: "jamroom-details" },
+        document.title,
+        window.location.href
+      );
+    }
+
+    const handlePopState = (e) => {
+      e.preventDefault();
+      // Navigate back to the root finder page (or another desired route)
+      navigate("/");
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [navigate]);
+
   // Using useMemo to fetch artist albums when selectedRoom changes
   useMemo(() => {
     const fetchArtistAlbums = async (artistId) => {

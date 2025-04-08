@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { CheckCircle, Download, AlertCircle, Calendar, Clock, MapPin, CreditCard } from "lucide-react"
 import { Button, Divider, Paper, Typography, Box } from "@mui/material"
 import html2canvas from "html2canvas"
 
 const BookingConfirmation = () => {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [invoiceData, setInvoiceData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -35,6 +36,22 @@ const BookingConfirmation = () => {
 
     fetchInvoiceData()
   }, [id])
+
+    // Add mobile back navigation handler so that a native back event goes directly to home
+    useEffect(() => {
+      // On mount, push a custom history state if not already present.
+      if (!window.history.state || window.history.state.page !== "booking-confirmation") {
+        window.history.pushState({ page: "booking-confirmation" }, document.title, window.location.href)
+      }
+  
+      const handlePopState = (e) => {
+        e.preventDefault()
+        navigate("/", { replace: true })
+      }
+  
+      window.addEventListener("popstate", handlePopState)
+      return () => window.removeEventListener("popstate", handlePopState)
+    }, [navigate])
 
   // New screenshot download function
   const handleDownloadScreenshot = async () => {

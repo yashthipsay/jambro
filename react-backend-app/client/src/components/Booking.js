@@ -163,20 +163,24 @@ function Booking() {
   }, []);
 
   useEffect(() => {
-  const handlePopState = (e) => {
-    // Push initial state to ensure back navigation works
-    window.history.pushState(null, document.title, window.location.href);
-    navigate(`/jam-room/${selectedRoom.id}`);
-  };
+    // Push a custom history state on mount.
+    if (!window.history.state || window.history.state.page !== "booking") {
+      window.history.pushState(
+        { page: "booking" },
+        document.title,
+        window.location.href
+      );
+    }
 
-  // Push initial state when component mounts
-  window.history.pushState(null, document.title, window.location.href);
-  window.addEventListener("popstate", handlePopState);
+    const handlePopState = (e) => {
+      e.preventDefault();
+      // For Booking, simply navigate back to JamRoomDetails.
+      navigate(`/jam-room/${selectedRoom?.id}`);
+    };
 
-  return () => {
-    window.removeEventListener("popstate", handlePopState);
-  };
-}, [navigate, selectedRoom?.id]);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [navigate, selectedRoom?.id]);
 
   // Check reservations for that particular slot
   const checkReservations = useCallback(async () => {
