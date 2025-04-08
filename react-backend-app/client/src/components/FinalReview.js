@@ -68,8 +68,9 @@ const FinalReview = () => {
         window.history.pushState(null, document.title, window.location.href);
         return;
       }
-      // Instead of just calling preventDefault, push state again
+      // Initial history push to ensure we can capture the back action
       window.history.pushState(null, document.title, window.location.href);
+
       setIsLeaving(true);
       fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
         method: "POST",
@@ -80,6 +81,8 @@ const FinalReview = () => {
           slots: selectedSlots,
         }),
       });
+      // Actually navigate back properly
+      navigate(-1);
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -87,7 +90,13 @@ const FinalReview = () => {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [selectedRoomId, selectedDate, selectedSlots, isPaymentInProgress]);
+  }, [
+    selectedRoomId,
+    selectedDate,
+    selectedSlots,
+    isPaymentInProgress,
+    navigate,
+  ]);
 
   // Handle back navigation
   const handleBack = () => {

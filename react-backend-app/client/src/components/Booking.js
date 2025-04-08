@@ -63,34 +63,36 @@ function Booking() {
   const [selectedSubPart, setSelectedSubPart] = useState(null);
 
   useEffect(() => {
-  // Only fetch if we have a selectedRoom and haven't fetched addons yet
-  if (selectedRoom && addons.length === 0) {
-    const fetchAddons = async () => {
-      try {
-        const response = await fetch(`https://api.vision.gigsaw.co.in/api/jamrooms/${selectedRoom.id}/addons`);
-        const data = await response.json();
-        if (data.success) {
-          setAddons(data.data);
+    // Only fetch if we have a selectedRoom and haven't fetched addons yet
+    if (selectedRoom && addons.length === 0) {
+      const fetchAddons = async () => {
+        try {
+          const response = await fetch(
+            `https://api.vision.gigsaw.co.in/api/jamrooms/${selectedRoom.id}/addons`
+          );
+          const data = await response.json();
+          if (data.success) {
+            setAddons(data.data);
+          }
+        } catch (err) {
+          console.error("Error fetching addons:", err);
         }
-      } catch (err) {
-        console.error("Error fetching addons:", err);
-      }
-    };
+      };
 
-    fetchAddons();
-  }
+      fetchAddons();
+    }
 
-  // Socket events
-  if (selectedRoom) {
-    socket.emit("getBookings", selectedRoom.id);
-    socket.on("bookings", (data) => {
-      setBookings(data);
-    });
+    // Socket events
+    if (selectedRoom) {
+      socket.emit("getBookings", selectedRoom.id);
+      socket.on("bookings", (data) => {
+        setBookings(data);
+      });
 
-    return () => {
-      socket.off("bookings");
-    };
-  }
+      return () => {
+        socket.off("bookings");
+      };
+    }
   }, [selectedRoom, addons.length]);
 
   useEffect(() => {
@@ -159,6 +161,22 @@ function Booking() {
       socket.off("sessionStatusUpdate");
     };
   }, []);
+
+  useEffect(() => {
+  const handlePopState = (e) => {
+    // Push initial state to ensure back navigation works
+    window.history.pushState(null, document.title, window.location.href);
+    navigate(`/jam-room/${selectedRoom.id}`);
+  };
+
+  // Push initial state when component mounts
+  window.history.pushState(null, document.title, window.location.href);
+  window.addEventListener("popstate", handlePopState);
+
+  return () => {
+    window.removeEventListener("popstate", handlePopState);
+  };
+}, [navigate, selectedRoom?.id]);
 
   // Check reservations for that particular slot
   const checkReservations = useCallback(async () => {
