@@ -68,8 +68,9 @@ const FinalReview = () => {
         window.history.pushState(null, document.title, window.location.href);
         return;
       }
-      // Instead of just calling preventDefault, push state again
+      // Initial history push to ensure we can capture the back action
       window.history.pushState(null, document.title, window.location.href);
+
       setIsLeaving(true);
       fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
         method: "POST",
@@ -80,6 +81,8 @@ const FinalReview = () => {
           slots: selectedSlots,
         }),
       });
+      // Actually navigate back properly
+      navigate(-1);
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -87,17 +90,18 @@ const FinalReview = () => {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [selectedRoomId, selectedDate, selectedSlots, isPaymentInProgress]);
+  }, [
+    selectedRoomId,
+    selectedDate,
+    selectedSlots,
+    isPaymentInProgress,
+    navigate,
+  ]);
 
   // Handle back navigation
   const handleBack = () => {
-    const confirmLeave = window.confirm(
-      "Are you sure you want to go back? Your temporary reservation will be released."
-    );
-    if (confirmLeave) {
-      setIsLeaving(true);
-      navigate(-1);
-    }
+    setIsLeaving(true);
+    navigate(-1);
   };
 
   useEffect(() => {
@@ -136,7 +140,6 @@ const FinalReview = () => {
   const checkoutHandler = async (amount) => {
     try {
       setIsPaymentInProgress(true);
-
 
       // Calculate remaining time and needed extension
 
@@ -190,7 +193,7 @@ const FinalReview = () => {
           email: user.email,
           contact: phoneNumber,
         },
-        timeout: 180, 
+        timeout: 180,
         modal: {
           escape: false,
           animation: true,
@@ -200,7 +203,6 @@ const FinalReview = () => {
             setIsLeaving(true);
             navigate(`/jam-room/${selectedRoomId}`);
           },
-          
         },
         handler: async (response) => {
           console.log(response);
@@ -264,7 +266,6 @@ const FinalReview = () => {
       };
       const rzp1 = new window.Razorpay(options);
 
-      
       // Handle mobile back button while payment window is open
       const handleBackButton = (e) => {
         if (isPaymentInProgress) {
