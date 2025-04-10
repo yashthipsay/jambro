@@ -36,7 +36,7 @@ const FinalReview = () => {
   useEffect(() => {
     return () => {
       if (isLeaving) {
-        fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
+        fetch("http://localhost:5000/api/reservations/release", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -86,7 +86,7 @@ const FinalReview = () => {
 
       // Trigger any cleanup logic (e.g. releasing reservation)
       setIsLeaving(true);
-      fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
+      fetch("http://localhost:5000/api/reservations/release", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -158,7 +158,7 @@ const FinalReview = () => {
 
       // Extend the reservation
       const extensionResponse = await fetch(
-        "https://api.vision.gigsaw.co.in/api/reservations/extend",
+        "http://localhost:5000/api/reservations/extend",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -180,13 +180,23 @@ const FinalReview = () => {
       }
 
       const response = await fetch(
-        "https://api.vision.gigsaw.co.in/api/payments/checkout",
+        "http://localhost:5000/api/payments/checkout",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ amount }),
         }
       );
+
+      
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Checkout API Error:", errorData);
+      throw new Error(
+        errorData.message || "Failed to initiate Razorpay checkout"
+      );
+    }
+    
       const data = await response.json();
       console.log(data);
 
@@ -198,7 +208,7 @@ const FinalReview = () => {
         name: jamRoomName,
         description: "Jam Room Booking",
         order_id: data.order.id,
-        // callback_url: `https://www.gigsaw.co.in/payment-success`,
+        // callback_url: `https://localhost:3000/payment-success`,
         prefill: {
           name: user.name,
           email: user.email,
@@ -219,7 +229,7 @@ const FinalReview = () => {
           console.log(response);
           setIsPaymentInProgress(false);
           const verificationResponse = await fetch(
-            "https://api.vision.gigsaw.co.in/api/payments/verify",
+            "http://localhost:5000/api/payments/verify",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -243,7 +253,7 @@ const FinalReview = () => {
           console.log("Verification data:", verificationData);
           if (verificationData.success) {
             const userResponse = await fetch(
-              "https://api.vision.gigsaw.co.in/api/users",
+              "http://localhost:5000/api/users",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -255,7 +265,7 @@ const FinalReview = () => {
             if (userData.success) {
               const userId = userData.data._id;
               console.log("selected date", selectedDate);
-              await fetch("https://api.vision.gigsaw.co.in/api/bookings", {
+              await fetch("http://localhost:5000/api/bookings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

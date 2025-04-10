@@ -31,7 +31,7 @@ export function SubscriptionProvider({ children }) {
         setError(null);
 
         // First get userId from database
-        const userResponse = await fetch("https://api.vision.gigsaw.co.in/api/users", {
+        const userResponse = await fetch("http://localhost:5000/api/users", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -46,7 +46,7 @@ export function SubscriptionProvider({ children }) {
 
         // Fetch subscription with userId
         const response = await fetch(
-          `https://api.vision.gigsaw.co.in/api/subscriptions/user/${userData.data._id}`
+          `http://localhost:5000/api/subscriptions/user/${userData.data._id}`
         );
 
         if (!response.ok) {
@@ -124,7 +124,7 @@ export function SubscriptionProvider({ children }) {
       setError(null);
 
       const response = await fetch(
-        "https://api.vision.gigsaw.co.in/api/subscriptions/cancel",
+        "http://localhost:5000/api/subscriptions/cancel",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -46,7 +46,7 @@ const GroupSetup = () => {
         setIsLoading(true);
 
         // First get the database userId
-        const userResponse = await fetch("https://api.vision.gigsaw.co.in/api/users", {
+        const userResponse = await fetch("http://localhost:5000/api/users", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -63,7 +63,7 @@ const GroupSetup = () => {
 
         // Fetch user's groups
         const groupsResponse = await fetch(
-          `https://api.vision.gigsaw.co.in/api/groups/admin/${userId}`
+          `http://localhost:5000/api/groups/admin/${userId}`
         );
         const groupsData = await groupsResponse.json();
 
@@ -131,7 +131,7 @@ const GroupSetup = () => {
       setIsSaving(true);
 
       // First get the database userId
-      const userResponse = await fetch("https://api.vision.gigsaw.co.in/api/users", {
+      const userResponse = await fetch("http://localhost:5000/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -147,7 +147,7 @@ const GroupSetup = () => {
       const userId = userData.data._id;
 
       // Create the group
-      const response = await fetch("https://api.vision.gigsaw.co.in/api/groups/create", {
+      const response = await fetch("http://localhost:5000/api/groups/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -187,7 +187,7 @@ const GroupSetup = () => {
   const handleDeleteGroup = async (groupId) => {
     try {
       // First get the database userId
-      const userResponse = await fetch("https://api.vision.gigsaw.co.in/api/users", {
+      const userResponse = await fetch("http://localhost:5000/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -204,7 +204,7 @@ const GroupSetup = () => {
 
       // Delete the group
       const response = await fetch(
-        `https://api.vision.gigsaw.co.in/api/groups/${groupId}`,
+        `http://localhost:5000/api/groups/${groupId}`,
         {
           method: "DELETE",
           headers: {
