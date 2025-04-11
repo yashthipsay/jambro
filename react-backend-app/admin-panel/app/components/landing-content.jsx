@@ -631,7 +631,7 @@ export function LandingContent() {
         fundAccountId = JSON.parse(atob(tokenStr.split('.')[1])).fundAccountId;
 
         const payoutsResponse = await fetchWithAuth(
-          `https://api.vision.gigsaw.co.in/api/payouts/${fundAccountId}`
+          `https://api.vision.gigsaw.co.in/api/payouts/${jamRoomId}`
         );
         const payoutsData = await payoutsResponse.json();
 

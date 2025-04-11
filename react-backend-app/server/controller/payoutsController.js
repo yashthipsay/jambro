@@ -28,7 +28,10 @@ async function createBulkPePayout(req, res) {
       return res.status(404).json({ error: "JamRoom not found" });
     }
 
-    if (!jamroom.bankValidationData.fund_account.vpa.address || !jamroom.ownerDetails.fullname) {
+    if (
+      !jamroom.bankValidationData.fund_account.vpa.address ||
+      !jamroom.ownerDetails.fullname
+    ) {
       console.error(
         `Missing UPI ID or owner name for JamRoom ID: ${jamroomId}`
       );
@@ -106,9 +109,9 @@ async function createBulkPePayout(req, res) {
   }
 }
 
-async function getPayoutsByFundAccountId(req, res) {
+async function getPayoutsByJamRoomId(req, res) {
   try {
-    const { fund_account_id } = req.params;
+    const { jamroom_id } = req.params;
     const {
       minAmount,
       maxAmount,
@@ -120,7 +123,7 @@ async function getPayoutsByFundAccountId(req, res) {
       limit = 10,
     } = req.query;
 
-    const filter = { fund_account_id };
+    const filter = { jamroom: jamroom_id };
 
     if (minAmount) {
       filter.amount = { ...filter.amount, $gte: Number(minAmount) };
@@ -142,13 +145,13 @@ async function getPayoutsByFundAccountId(req, res) {
     if (sortBy) {
       sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
     }
-
+    const totalPayouts = await Payout.countDocuments(filter);
+    console.log("count", totalPayouts);
     const payouts = await Payout.find(filter)
       .sort(sortOptions)
       .skip(Number(skip))
-      .limit(Number(limit));
-
-    const totalPayouts = await Payout.countDocuments(filter);
+      .limit(Number(limit))
+      .populate("jamroom", "jamRoomDetails.name");
 
     res.status(200).json({
       success: true,
@@ -266,5 +269,5 @@ async function cancelBookingAndCreateRefund(req, res) {
 module.exports = {
   createBulkPePayout,
   cancelBookingAndCreateRefund,
-  getPayoutsByFundAccountId,
+  getPayoutsByJamRoomId,
 };
