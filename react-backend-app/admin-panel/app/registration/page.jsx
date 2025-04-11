@@ -114,7 +114,7 @@ const JamRoomRegistration = () => {
 
     try {
       const response = await fetch(
-        'https://api.vision.gigsaw.co.in/api/bank-verification/verify',
+        'http://localhost:5000/api/bank-verification/verify',
         {
           method: 'POST',
           headers: {

@@ -162,17 +162,6 @@ class SessionMonitor {
         mockResponse
       );
 
-      if (payoutResponse) {
-        console.log(
-          `Payout successfully processed for booking ID: ${booking._id}`
-        );
-      } else {
-        console.error(
-          `Payout failed for booking ID: ${booking._id}. Response:`,
-          payoutResponse
-        );
-      }
-
       console.log(`Payout processed for booking ${booking._id}`);
     } catch (error) {
       console.error("Payout processing error:", error);
