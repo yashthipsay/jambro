@@ -187,6 +187,16 @@ const FinalReview = () => {
           body: JSON.stringify({ amount }),
         }
       );
+
+      
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Checkout API Error:", errorData);
+      throw new Error(
+        errorData.message || "Failed to initiate Razorpay checkout"
+      );
+    }
+    
       const data = await response.json();
       console.log(data);
 
@@ -198,7 +208,7 @@ const FinalReview = () => {
         name: jamRoomName,
         description: "Jam Room Booking",
         order_id: data.order.id,
-        // callback_url: `https://www.gigsaw.co.in/payment-success`,
+        // callback_url: `https://localhost:3000/payment-success`,
         prefill: {
           name: user.name,
           email: user.email,

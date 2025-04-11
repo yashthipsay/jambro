@@ -32,7 +32,7 @@ export function Sidebar() {
     {
       icon: Wallet,
       label: 'Payout History',
-      path: `/payouts/${fundAccountId}`,
+      path: `/payouts/${jamRoomId}`,
     },
     {
       icon: Package,

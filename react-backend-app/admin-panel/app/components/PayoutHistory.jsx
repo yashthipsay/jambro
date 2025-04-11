@@ -1,5 +1,6 @@
 'use client';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { useDashboard } from '../context/DashboardContext';
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from './ui/card';
 import { motion } from 'framer-motion';
@@ -14,8 +15,7 @@ import {
 } from './ui/select';
 
 const PayoutHistory = () => {
-  const pathname = usePathname();
-  const fund_account_id = pathname.split('/').pop(); // Get last segment of URL
+  const { jamRoomId } = useDashboard(); 
   const router = useRouter();
 
   const [payouts, setPayouts] = useState([]);
@@ -35,6 +35,8 @@ const PayoutHistory = () => {
     total: 0,
   });
 
+
+
   const NoResults = () => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -52,6 +54,11 @@ const PayoutHistory = () => {
   );
 
   useEffect(() => {
+    if (!jamRoomId || jamRoomId === "null") {
+      setLoading(false);
+      return;
+    }
+
     const fetchPayouts = async () => {
       try {
         const queryParams = new URLSearchParams({
@@ -60,9 +67,10 @@ const PayoutHistory = () => {
           limit: pagination.limit,
         }).toString();
         const response = await fetch(
-          `https://api.vision.gigsaw.co.in/api/payouts/${fund_account_id}?${queryParams}`
+          `http://localhost:5000/api/payouts/${jamRoomId}?${queryParams}`
         );
         const data = await response.json();
+        console.log("Payouts: ", data);
 
         if (data.success) {
           setPayouts(data.data);
@@ -79,7 +87,7 @@ const PayoutHistory = () => {
     };
 
     fetchPayouts();
-  }, [fund_account_id, filters, pagination.skip, pagination.limit]);
+  }, [jamRoomId, filters, pagination.skip, pagination.limit]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -216,7 +224,7 @@ const PayoutHistory = () => {
                 <Card className="glass-card bg-gradient-to-b from-white/10 to-purple-500/10 border-[#7DF9FF]/20">
                   <CardHeader className="p-3 sm:p-4">
                     <h3 className="text-base sm:text-lg font-audiowide text-[#7DF9FF] break-all">
-                      Payout ID: {payout._id}
+                      Payout ID: {payout.razorpayPayoutId || payout._id}
                     </h3>
                   </CardHeader>
                   <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0 space-y-2">
@@ -227,14 +235,21 @@ const PayoutHistory = () => {
                       Status: {payout.status}
                     </p>
                     <p className="text-sm sm:text-base text-[#7DF9FF]/80">
+                      Beneficiary: {payout.beneficiaryName}
+                    </p>
+                    {payout.upiId && (
+                      <p className="text-sm sm:text-base text-[#7DF9FF]/80">
+                        UPI ID: {payout.upiId}
+                      </p>
+                    )}
+                    <p className="text-sm sm:text-base text-[#7DF9FF]/80">
+                      Transaction ID: {payout.bulkpeTransactionId || 'N/A'}
+                    </p>
+                    <p className="text-sm sm:text-base text-[#7DF9FF]/80">
                       Date: {new Date(payout.createdAt).toLocaleDateString()}
                     </p>
                     <Button
-                      onClick={() =>
-                        router.push(
-                          `/bookings/${payout.reference_id}?bookingId=${payout.bookingId}`
-                        )
-                      }
+                      onClick={() => router.push(`/bookings/${jamRoomId}?bookingId=${payout.bookingId}`)}
                       variant="outline"
                       className="w-full sm:w-auto mt-2 bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-[#7DF9FF] border-[#7DF9FF]/30"
                     >
