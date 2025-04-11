@@ -23,7 +23,7 @@ const GroupSelectionModal = ({ open, onClose, archivedGroups, isLoading }) => {
     try {
       // Reactivate the group
       const response = await fetch(
-        `http://localhost:5000/api/groups/${group.groupId}/reactivate`,
+        `https://api.vision.gigsaw.co.in/api/groups/${group.groupId}/reactivate`,
         {
           method: "POST",
         }
