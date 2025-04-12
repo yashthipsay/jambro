@@ -6,8 +6,6 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_API_SECRET,
 });
 
-// Helper function to add delay
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const verifyBankAccount = async (req, res) => {
   try {
@@ -49,8 +47,6 @@ const verifyBankAccount = async (req, res) => {
 
     const contactId = contactResult.id;
 
-    // Add delay before creating fund account
-    await delay(2000);
 
     // Step 2: Create fund account of type VPA using the endpoint directly
     const fundAccountResponse = await fetch(
@@ -85,9 +81,6 @@ const verifyBankAccount = async (req, res) => {
     const fundAccountId = fundAccountResult.id;
     console.log(fundAccountId);
 
-    // Add delay before validation
-    await delay(2000);
-
     // Step 3: Validate the bank account using the endpoint directly
     const validationResponse = await fetch(
       "https://api.razorpay.com/v1/fund_accounts/validations",
@@ -100,7 +93,7 @@ const verifyBankAccount = async (req, res) => {
           ).toString("base64")}`,
         },
         body: JSON.stringify({
-          account_number: process.env.RAZORPAY_SOURCE_ACCOUNT,
+          account_number: '2323230082162607',
           fund_account: {
             id: fundAccountId,
           },
