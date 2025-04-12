@@ -29,7 +29,7 @@ async function createBulkPePayout(req, res) {
     }
 
     if (
-      !jamroom.bankValidationData.fund_account.vpa.address ||
+      !jamroom.bankValidationData.vpa.address ||
       !jamroom.ownerDetails.fullname
     ) {
       console.error(
@@ -52,7 +52,7 @@ async function createBulkPePayout(req, res) {
       reference_id: reference_id,
       transcation_note: purpose || "Jamroom session payout",
       beneficiaryName: jamroom.ownerDetails.fullname,
-      upi: jamroom.bankValidationData.fund_account.vpa.address, // Make sure this field exists in your JamRoom model
+      upi: jamroom.bankValidationData.vpa.address, // Make sure this field exists in your JamRoom model
     };
 
     const response = await axios.post(
@@ -80,7 +80,7 @@ async function createBulkPePayout(req, res) {
         bulkpeTransactionId: response.data.data.transcation_id,
         bookingId: bookingId,
         beneficiaryName: jamroom.ownerName,
-        upiId: jamroom.bankValidationData.fund_account.vpa.address,
+        upiId: jamroom.bankValidationData.vpa.address,
       });
       await newPayout.save();
       console.log(`Payout record saved for reference ID: ${reference_id}`);

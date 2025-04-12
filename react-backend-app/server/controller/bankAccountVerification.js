@@ -6,7 +6,6 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_API_SECRET,
 });
 
-
 const verifyBankAccount = async (req, res) => {
   try {
     const { name, email, contact, upiAddress } = req.body;
@@ -47,7 +46,6 @@ const verifyBankAccount = async (req, res) => {
 
     const contactId = contactResult.id;
 
-
     // Step 2: Create fund account of type VPA using the endpoint directly
     const fundAccountResponse = await fetch(
       "https://api.razorpay.com/v1/fund_accounts",
@@ -81,42 +79,53 @@ const verifyBankAccount = async (req, res) => {
     const fundAccountId = fundAccountResult.id;
     console.log(fundAccountId);
 
-    // Step 3: Validate the bank account using the endpoint directly
-    const validationResponse = await fetch(
-      "https://api.razorpay.com/v1/fund_accounts/validations",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Basic ${Buffer.from(
-            `${process.env.RAZORPAY_API_KEY}:${process.env.RAZORPAY_API_SECRET}`
-          ).toString("base64")}`,
-        },
-        body: JSON.stringify({
-          account_number: '2323230082162607',
-          fund_account: {
-            id: fundAccountId,
-          },
-          notes: {
-            random_key_1: "Make it so.",
-            random_key_2: "Tea. Earl Grey. Hot.",
-          },
-        }),
-      }
-    );
-    const validationResult = await validationResponse.json();
+    // Return success with fund account details
+    return res.status(200).json({
+      success: true,
+      validation: {
+        id: fundAccountResult.id,
+        contact_id: contactId,
+        vpa: fundAccountResult.vpa,
+        active: fundAccountResult.active,
+      },
+    });
 
-    if (validationResponse.status === 200) {
-      return res.status(200).json({
-        success: true,
-        validation: validationResult,
-      });
-    } else {
-      return res.status(400).json({
-        success: false,
-        error: validationResult.error.description,
-      });
-    }
+    // Step 3: Validate the bank account using the endpoint directly
+    // const validationResponse = await fetch(
+    //   "https://api.razorpay.com/v1/fund_accounts/validations",
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: `Basic ${Buffer.from(
+    //         `${process.env.RAZORPAY_API_KEY}:${process.env.RAZORPAY_API_SECRET}`
+    //       ).toString("base64")}`,
+    //     },
+    //     body: JSON.stringify({
+    //       account_number: '2323230082162607',
+    //       fund_account: {
+    //         id: fundAccountId,
+    //       },
+    //       notes: {
+    //         random_key_1: "Make it so.",
+    //         random_key_2: "Tea. Earl Grey. Hot.",
+    //       },
+    //     }),
+    //   }
+    // );
+    // const validationResult = await validationResponse.json();
+
+    // if (validationResponse.status === 200) {
+    //   return res.status(200).json({
+    //     success: true,
+    //     validation: validationResult,
+    //   });
+    // } else {
+    //   return res.status(400).json({
+    //     success: false,
+    //     error: validationResult.error.description,
+    //   });
+    // }
   } catch (err) {
     console.error(
       `Fund account creation error: ${JSON.stringify(err, null, 2)}`
