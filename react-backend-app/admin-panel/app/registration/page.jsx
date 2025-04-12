@@ -171,32 +171,51 @@ const JamRoomRegistration = () => {
 
     setUploadingImages(true);
     try {
-      const formData = new FormData();
-      imageFiles.forEach((file) => {
-        formData.append('images', file);
+          // 1. Get presigned URLs for each file
+    const filesMetadata = imageFiles.map(file => ({
+      name: file.name,
+      type: file.type
+    }));
+
+    const response = await fetch(
+      'https://api.vision.gigsaw.co.in/api/jamrooms/images',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ files: filesMetadata })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to get presigned URLs');
+    }
+
+        // Assume the backend returns the presigned URLs in result.data
+        const presignedData = result.data;
+
+    // 2. Upload files directly to S3 using presigned URLs
+    const uploadPromises = imageFiles.map((file, index) => {
+      return fetch(presignedData[index].uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type,
+        },
+        body: file
       });
+    });
 
-      const response = await fetch(
-        'https://api.vision.gigsaw.co.in/api/jamrooms/images',
-        {
-          method: 'POST', // Use POST for initial upload
-          body: formData,
-        }
-      );
+    // Wait for all uploads to complete
+    await Promise.all(uploadPromises);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to upload images');
-      }
+    setUploadingImages(false);
 
-      const data = await response.json();
-      setUploadingImages(false);
+    // 3. Return array of final URLs where the files can be accessed
+    return presignedData.map(item => item.finalUrl);
 
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to upload images');
-      }
-
-      return data.imageUrls;
     } catch (error) {
       setUploadingImages(false);
       console.error('Error uploading images:', error);
