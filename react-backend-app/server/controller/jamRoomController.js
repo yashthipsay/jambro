@@ -291,6 +291,7 @@ const upload = multer({
 }).array("images"); // Use 'images' consistently here
 
 const uploadJamRoomImages = async (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
   try {
     upload(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
@@ -468,7 +469,6 @@ const addStudioService = async (req, res) => {
       });
     }
 
-
     // Validate sub-parts
     for (const subPart of subParts) {
       if (!subPart.name || !subPart.price) {
@@ -613,24 +613,26 @@ const getStudioServices = async (req, res) => {
   }
 };
 
-const updateOneSignal = async(req, res) => {
+const updateOneSignal = async (req, res) => {
   try {
     const { email, jamRoomId, oneSignalUserId } = req.body;
-    
+
     const jamRoom = await JamRoom.findById(jamRoomId);
     if (!jamRoom) {
-      return res.status(404).json({ success: false, message: 'Jam room not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Jam room not found" });
     }
-    
+
     jamRoom.ownerDetails.oneSignalUserId = oneSignalUserId;
     await jamRoom.save();
-    
-    res.json({ success: true, message: 'OneSignal ID updated successfully' });
+
+    res.json({ success: true, message: "OneSignal ID updated successfully" });
   } catch (error) {
-    console.error('Error updating OneSignal ID:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Error updating OneSignal ID:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
-}
+};
 
 module.exports = {
   createJamRoom,
