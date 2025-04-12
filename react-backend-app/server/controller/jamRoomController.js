@@ -6,6 +6,7 @@ const { generateToken } = require("../middleware/auth");
 
 // Configure AWS S3
 const s3 = new Aws.S3({
+  region: "eu-north-1",
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
@@ -291,67 +292,51 @@ const upload = multer({
 }).array("images"); // Use 'images' consistently here
 
 const uploadJamRoomImages = async (req, res) => {
-  res.header("Access-Control-Allow-Origin", "https://gigsaw-admin.vercel.app");
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.header("Access-Control-Allow-Credentials", "true");
   try {
-    upload(req, res, async (err) => {
-      if (err instanceof multer.MulterError) {
-        return res.status(400).json({
-          success: false,
-          message: "File upload error",
-          error: err.message,
-        });
-      } else if (err) {
-        return res.status(500).json({
-          success: false,
-          message: "Server error",
-          error: err.message,
-        });
-      }
+    const { files } = req.body; // Expected array of file metadata (name, type)
 
-      if (!req.files || req.files.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "No images provided",
-        });
-      }
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No files metadata provided",
+      });
+    }
+    // Generate presigned URLs for each file
+    const presignedData = await Promise.all(
+      files.map(async (file) => {
+        const key = `jamrooms/${Date.now()}-${file.name}`;
+        const params = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: key,
+          ContentType: file.type,
+          ACL: "public-read",
+          Expires: 600, // URL expires in 10 minutes
+        };
 
-      try {
-        const imageUrls = await Promise.all(
-          req.files.map(async (file) => {
-            const params = {
-              Bucket: process.env.S3_BUCKET_NAME,
-              Key: `jamrooms/${Date.now()}-${file.originalname}`,
-              Body: file.buffer,
-              ContentType: file.mimetype,
-              ACL: "public-read",
-            };
+        const uploadUrl = await s3.getSignedUrlPromise("putObject", params);
+        const finalUrl = `https://${process.env.S3_BUCKET_NAME}.s3.eu-north-1.amazonaws.com/${key}`;
 
-            const uploadResult = await s3.upload(params).promise();
-            return uploadResult.Location;
-          })
-        );
+        return {
+          uploadUrl,
+          finalUrl,
+          key,
+        };
+      })
+    );
 
-        res.status(200).json({
-          success: true,
-          imageUrls,
-        });
-      } catch (uploadError) {
-        console.error("S3 upload error:", uploadError);
-        res.status(500).json({
-          success: false,
-          message: "Error uploading to S3",
-          error: uploadError.message,
-        });
-      }
+    res.status(200).json({
+      success: true,
+      data: presignedData,
     });
   } catch (error) {
-    console.error("Error uploading images:", error);
+    console.error("Error generating presigned URLs:", error);
     res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "Error generating upload URLs",
       error: error.message,
     });
   }
