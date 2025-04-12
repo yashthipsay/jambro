@@ -291,7 +291,10 @@ const upload = multer({
 }).array("images"); // Use 'images' consistently here
 
 const uploadJamRoomImages = async (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", "https://gigsaw-admin.vercel.app");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
   try {
     upload(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
