@@ -163,10 +163,10 @@ function Booking() {
   }, []);
 
   useEffect(() => {
-    // Push a custom history state on mount.
+    // Push a custom history state on mount if not already present
     if (!window.history.state || window.history.state.page !== "booking") {
       window.history.pushState(
-        { page: "booking" },
+        { page: "booking", source: "jamroom-details" },
         document.title,
         window.location.href
       );
@@ -174,7 +174,7 @@ function Booking() {
 
     const handlePopState = (e) => {
       e.preventDefault();
-      // For Booking, simply navigate back to JamRoomDetails.
+      // Navigate back to JamRoomDetails
       navigate(`/jam-room/${selectedRoom?.id}`);
     };
 

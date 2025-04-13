@@ -308,11 +308,12 @@ function JamRoomFinder() {
   // Main service categories (superset)
   const mainServices = [
     {
-      id: "pass",
-      name: "GigSaw Pass",
-      icon: <CardMembership sx={{ fontSize: 20 }} />,
+      id: "rentals",
+      name: "Rentals",
+      icon: <LibraryMusic sx={{ fontSize: 20 }} />,
       active: false,
     },
+ 
     {
       id: "jamrooms_studios",
       name: "JamRooms/Studios",
@@ -320,11 +321,12 @@ function JamRoomFinder() {
       active: true,
     },
     {
-      id: "rentals",
-      name: "Rentals",
-      icon: <LibraryMusic sx={{ fontSize: 20 }} />,
+      id: "pass",
+      name: "GigSaw Pass",
+      icon: <CardMembership sx={{ fontSize: 20 }} />,
       active: false,
     },
+
     {
       id: "coaching",
       name: "Coaching",
@@ -437,7 +439,6 @@ function JamRoomFinder() {
     } else {
       // For other services (rentals, coaching, events),
       // just update state for now and reset the category filter
-      setSelectedCategory("All");
       // In the future you might want to navigate to specific pages for these services
       // e.g., navigate(`/${serviceId}`);
     }
@@ -445,26 +446,24 @@ function JamRoomFinder() {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen pb-16 md:pb-0"
       style={{
         backgroundColor,
         backgroundImage: `radial-gradient(circle at 50% 0%, #e9e4ff 0%, ${backgroundColor} 70%)`,
       }}
     >
+      {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {" "}
-        {/* Increased max width and adjusted padding */}
-        {/* Header */}
+        {/* Header with Logo and Text */}
         <div className="text-center mb-8">
-          <img
-            src="/Gigsaw_Color.png"
-            alt="GigSaw Logo"
-            className="h-16 mx-auto mb-4 filter drop-shadow-lg transition-all duration-300 hover:scale-105"
-            style={{
-              maxWidth: "320px",
-              objectFit: "contain",
-            }}
-          />
+          <div className="mb-6">
+            <img
+              src="/Gigsaw_Color.png"
+              alt="GigSaw Logo"
+              className="h-16 w-auto mx-auto"
+              style={{ objectFit: "contain" }}
+            />
+          </div>
           <Typography
             variant="h4"
             sx={{
@@ -480,7 +479,8 @@ function JamRoomFinder() {
             Discover nearby jam rooms and book your session in minutes
           </Typography>
         </div>
-        {/* Two column layout for larger screens */}
+
+        {/* Rest of the existing content */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
           {/* Event Carousel - Takes up 2 columns */}
           <div className="lg:col-span-2">
@@ -489,47 +489,6 @@ function JamRoomFinder() {
 
           {/* Main content - Takes up 3 columns */}
           <div className="lg:col-span-3">
-            {/* Main Service Categories */}
-            <Card
-              className="rounded-xl overflow-hidden mb-6"
-              sx={{
-                backgroundColor: cardBackground,
-                boxShadow: "0 4px 16px rgba(100, 52, 252, 0.15)",
-                border: "1px solid rgba(160, 133, 235, 0.2)",
-                mx: -2, // Negative margin to extend to edges
-              }}
-            >
-              <div className="relative">
-                {/* Horizontal scrollable service categories */}
-                <div className="flex overflow-x-auto scrollbar-hide py-3">
-                  {mainServices.map((service) => (
-                    <button
-                      key={service.id}
-                      onClick={() => handleServiceClick(service.id)}
-                      className={`
-                        flex items-center space-x-2 whitespace-nowrap px-4 py-2 mx-1 rounded-full
-                        transition-all duration-200 first:ml-0 last:mr-0
-                        ${
-                          activeService === service.id
-                            ? `bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium`
-                            : `bg-white text-gray-700 border border-gray-200 hover:border-indigo-200 hover:bg-indigo-50`
-                        }
-                      `}
-                    >
-                      <span className="flex items-center justify-center">
-                        {service.icon}
-                      </span>
-                      <span>{service.name}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Gradient fade indicators for scrolling */}
-                <div className="absolute pointer-events-none left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent z-10" />
-                <div className="absolute pointer-events-none right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent z-10" />
-              </div>
-            </Card>
-
             {/* Find Button */}
             <Button
               variant="contained"
@@ -651,6 +610,75 @@ function JamRoomFinder() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-purple-100 shadow-lg">
+        <div className="flex items-center justify-between px-2 py-2 relative">
+          {mainServices.map((service, index) => {
+            const isCenter = index === Math.floor(mainServices.length / 2);
+            return (
+              <button
+                key={service.id}
+                onClick={() => handleServiceClick(service.id)}
+                className={`
+                  flex flex-col items-center justify-center w-full
+                  transition-all duration-200 text-xs relative
+                  ${isCenter ? '-mt-6' : ''}
+                  ${
+                    activeService === service.id
+                      ? `text-indigo-600 font-medium`
+                      : `text-gray-600`
+                  }
+                `}
+              >
+                <div
+                  className={`
+                    flex items-center justify-center
+                    ${
+                      isCenter
+                        ? 'bg-gradient-to-r from-indigo-500 to-purple-600 p-3 rounded-full shadow-lg transform -translate-y-2'
+                        : 'mb-1'
+                    }
+                  `}
+                >
+                  <span className={`${isCenter ? 'text-white text-2xl' : 'text-xl'}`}>
+                    {service.icon}
+                  </span>
+                </div>
+                <span className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[70px] text-center">
+                  {service.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Desktop Navigation - Side Panel */}
+      <div className="hidden md:block fixed right-0 top-1/2 transform -translate-y-1/2 bg-white/95 backdrop-blur-sm rounded-l-xl shadow-lg border border-purple-100 z-50">
+        <div className="flex flex-col py-4 px-2">
+          {mainServices.map((service) => (
+            <button
+              key={service.id}
+              onClick={() => handleServiceClick(service.id)}
+              className={`
+                flex items-center space-x-2 px-4 py-3 rounded-lg text-sm
+                transition-all duration-200 mb-1 last:mb-0
+                ${
+                  activeService === service.id
+                    ? `bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium`
+                    : `text-gray-700 hover:bg-purple-50`
+                }
+              `}
+            >
+              <span className="flex items-center justify-center">
+                {service.icon}
+              </span>
+              <span>{service.name}</span>
+            </button>
+          ))}
         </div>
       </div>
     </div>
