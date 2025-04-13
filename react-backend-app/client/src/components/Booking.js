@@ -24,6 +24,7 @@ import {
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
+  Modal,
 } from "@mui/material";
 import {
   Calendar,
@@ -35,10 +36,17 @@ import {
   Music,
   Check,
   Guitar,
+  Sun,
+  Sunrise,
+  Sunset,
 } from "lucide-react";
 import moment from "moment-timezone";
 import io from "socket.io-client";
 import { useAuth0 } from "@auth0/auth0-react";
+import {
+  convertTo12HourFormat,
+  groupSlotsByCategory,
+} from "../utils/timeUtils";
 
 const socket = io("https://api.vision.gigsaw.co.in");
 
@@ -61,6 +69,11 @@ function Booking() {
   const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedSubPart, setSelectedSubPart] = useState(null);
+
+  // Add state variables for slide-up modals
+  const [studioServicesModalOpen, setStudioServicesModalOpen] = useState(false);
+  const [addonsModalOpen, setAddonsModalOpen] = useState(false);
+  const [savedNumbersModalOpen, setSavedNumbersModalOpen] = useState(false);
 
   useEffect(() => {
     // Only fetch if we have a selectedRoom and haven't fetched addons yet
@@ -161,26 +174,6 @@ function Booking() {
       socket.off("sessionStatusUpdate");
     };
   }, []);
-
-  // useEffect(() => {
-  //   // Push a custom history state on mount if not already present
-  //   if (!window.history.state || window.history.state.page !== "booking") {
-  //     window.history.pushState(
-  //       { page: "booking", source: "jamroom-details" },
-  //       document.title,
-  //       window.location.href
-  //     );
-  //   }
-
-  //   const handlePopState = (e) => {
-  //     e.preventDefault();
-  //     // Navigate back to JamRoomDetails
-  //     navigate(`/jam-room/${selectedRoom?.id}`);
-  //   };
-
-  //   window.addEventListener("popstate", handlePopState);
-  //   return () => window.removeEventListener("popstate", handlePopState);
-  // }, [navigate, selectedRoom?.id]);
 
   // Check reservations for that particular slot
   const checkReservations = useCallback(async () => {
@@ -638,84 +631,361 @@ function Booking() {
                 </Typography>
               </div>
             ) : (
-              <FormGroup className="grid grid-cols-2 gap-2">
-                {selectedRoom.slots.map((slot) => {
-                  const bookingStatus = isSlotBooked(slot.slotId);
-                  const isPassed = hasSlotTimePassedToday(slot);
-                  const isDisabled = bookingStatus || isPassed;
-
-                  return (
-                    <div
-                      key={slot.slotId}
-                      className={`
-        border rounded-lg p-3 relative
-        ${
-          isPassed
-            ? "bg-gray-100 border-gray-200"
-            : bookingStatus === "TEMPORARY"
-            ? "bg-yellow-50 border-yellow-200"
-            : bookingStatus === "PERMANENT"
-            ? "bg-gray-100 border-gray-200"
-            : "border-gray-300"
-        }
-        ${
-          selectedSlots.includes(slot.slotId)
-            ? "border-indigo-500 bg-indigo-50"
-            : ""
-        }
-      `}
+              <div className="space-y-4">
+                {/* Morning Slots */}
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Sunrise className="w-4 h-4 text-yellow-500 mr-2" />
+                    <Typography
+                      variant="subtitle2"
+                      className="text-gray-700 font-medium"
                     >
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={selectedSlots.includes(slot.slotId)}
-                            onChange={() => handleSlotChange(slot.slotId)}
-                            disabled={Boolean(isDisabled)} // Convert to boolean explicitly
-                            className="absolute top-2 right-2"
-                            color="primary"
-                            size="small"
-                          />
-                        }
-                        label={
-                          <div>
-                            <div className="flex items-center">
-                              <Clock className="w-4 h-4 text-gray-500 mr-1" />
-                              <Typography variant="body2">
-                                {slot.startTime} - {slot.endTime}
+                      Morning
+                    </Typography>
+                  </div>
+                  <div className="flex overflow-x-auto pb-2 hide-scrollbar">
+                    {selectedRoom.slots
+                      .filter((slot) => {
+                        const hour = parseInt(slot.startTime.split(":")[0]);
+                        return hour < 12;
+                      })
+                      .map((slot) => {
+                        const bookingStatus = isSlotBooked(slot.slotId);
+                        const isPassed = hasSlotTimePassedToday(slot);
+                        const isDisabled = bookingStatus || isPassed;
+                        const isSelected = selectedSlots.includes(slot.slotId);
+
+                        return (
+                          <div
+                            key={slot.slotId}
+                            onClick={() =>
+                              !isDisabled && handleSlotChange(slot.slotId)
+                            }
+                            className={`
+                              flex-shrink-0 mx-1 w-24 border rounded-lg relative cursor-pointer transition-all
+                              ${
+                                isDisabled
+                                  ? "cursor-not-allowed opacity-70"
+                                  : "hover:border-indigo-300"
+                              }
+                              ${
+                                isSelected
+                                  ? "border-indigo-500 bg-indigo-50"
+                                  : "border-gray-200"
+                              }
+                              ${
+                                isPassed
+                                  ? "bg-gray-100"
+                                  : bookingStatus === "TEMPORARY"
+                                  ? "bg-yellow-50"
+                                  : bookingStatus === "PERMANENT"
+                                  ? "bg-gray-100"
+                                  : "bg-white"
+                              }
+                            `}
+                          >
+                            <div className="p-3 text-center">
+                              <div className="flex justify-center">
+                                <Clock className="w-4 h-4 text-gray-500" />
+                              </div>
+                              <Typography variant="body2" className="mt-1">
+                                {convertTo12HourFormat(slot.startTime)}
                               </Typography>
+                              <Typography
+                                variant="caption"
+                                className="text-gray-500 block"
+                              >
+                                ₹{selectedRoom.feesPerSlot}
+                              </Typography>
+
+                              {isSelected && (
+                                <div className="absolute top-1 right-1 w-3 h-3 bg-indigo-500 rounded-full"></div>
+                              )}
+
+                              {bookingStatus === "PERMANENT" && (
+                                <div className="mt-1 text-xs text-red-500">
+                                  Booked
+                                </div>
+                              )}
+
+                              {bookingStatus === "TEMPORARY" && (
+                                <div className="mt-1 text-xs text-yellow-600">
+                                  Reserved
+                                </div>
+                              )}
+
+                              {isPassed && !bookingStatus && (
+                                <div className="mt-1 text-xs text-orange-500">
+                                  Passed
+                                </div>
+                              )}
                             </div>
-                            <Typography
-                              variant="caption"
-                              className="text-gray-500"
-                            >
-                              ₹{selectedRoom.feesPerSlot}
-                            </Typography>
-
-                            {bookingStatus === "PERMANENT" && (
-                              <div className="mt-1 text-xs text-red-500">
-                                Already booked
-                              </div>
-                            )}
-
-                            {bookingStatus === "TEMPORARY" && (
-                              <div className="mt-1 text-xs text-yellow-600">
-                                Temporarily reserved
-                              </div>
-                            )}
-
-                            {isPassed && !bookingStatus && (
-                              <div className="mt-1 text-xs text-orange-500">
-                                Time passed
-                              </div>
-                            )}
                           </div>
-                        }
-                        className="m-0"
-                      />
+                        );
+                      })}
+                    {selectedRoom.slots.filter(
+                      (slot) => parseInt(slot.startTime.split(":")[0]) < 12
+                    ).length === 0 && (
+                      <div className="w-full text-center py-3 text-gray-500 italic">
+                        No morning slots available
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Afternoon Slots */}
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Sun className="w-4 h-4 text-orange-500 mr-2" />
+                    <Typography
+                      variant="subtitle2"
+                      className="text-gray-700 font-medium"
+                    >
+                      Afternoon
+                    </Typography>
+                  </div>
+                  <div className="flex overflow-x-auto pb-2 hide-scrollbar">
+                    {selectedRoom.slots
+                      .filter((slot) => {
+                        const hour = parseInt(slot.startTime.split(":")[0]);
+                        return hour >= 12 && hour < 17;
+                      })
+                      .map((slot) => {
+                        const bookingStatus = isSlotBooked(slot.slotId);
+                        const isPassed = hasSlotTimePassedToday(slot);
+                        const isDisabled = bookingStatus || isPassed;
+                        const isSelected = selectedSlots.includes(slot.slotId);
+
+                        return (
+                          <div
+                            key={slot.slotId}
+                            onClick={() =>
+                              !isDisabled && handleSlotChange(slot.slotId)
+                            }
+                            className={`
+                              flex-shrink-0 mx-1 w-24 border rounded-lg relative cursor-pointer transition-all
+                              ${
+                                isDisabled
+                                  ? "cursor-not-allowed opacity-70"
+                                  : "hover:border-indigo-300"
+                              }
+                              ${
+                                isSelected
+                                  ? "border-indigo-500 bg-indigo-50"
+                                  : "border-gray-200"
+                              }
+                              ${
+                                isPassed
+                                  ? "bg-gray-100"
+                                  : bookingStatus === "TEMPORARY"
+                                  ? "bg-yellow-50"
+                                  : bookingStatus === "PERMANENT"
+                                  ? "bg-gray-100"
+                                  : "bg-white"
+                              }
+                            `}
+                          >
+                            <div className="p-3 text-center">
+                              <div className="flex justify-center">
+                                <Clock className="w-4 h-4 text-gray-500" />
+                              </div>
+                              <Typography variant="body2" className="mt-1">
+                                {convertTo12HourFormat(slot.startTime)}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                className="text-gray-500 block"
+                              >
+                                ₹{selectedRoom.feesPerSlot}
+                              </Typography>
+
+                              {isSelected && (
+                                <div className="absolute top-1 right-1 w-3 h-3 bg-indigo-500 rounded-full"></div>
+                              )}
+
+                              {bookingStatus === "PERMANENT" && (
+                                <div className="mt-1 text-xs text-red-500">
+                                  Booked
+                                </div>
+                              )}
+
+                              {bookingStatus === "TEMPORARY" && (
+                                <div className="mt-1 text-xs text-yellow-600">
+                                  Reserved
+                                </div>
+                              )}
+
+                              {isPassed && !bookingStatus && (
+                                <div className="mt-1 text-xs text-orange-500">
+                                  Passed
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    {selectedRoom.slots.filter((slot) => {
+                      const hour = parseInt(slot.startTime.split(":")[0]);
+                      return hour >= 12 && hour < 17;
+                    }).length === 0 && (
+                      <div className="w-full text-center py-3 text-gray-500 italic">
+                        No afternoon slots available
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Evening Slots */}
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Sunset className="w-4 h-4 text-red-500 mr-2" />
+                    <Typography
+                      variant="subtitle2"
+                      className="text-gray-700 font-medium"
+                    >
+                      Evening
+                    </Typography>
+                  </div>
+                  <div className="flex overflow-x-auto pb-2 hide-scrollbar">
+                    {selectedRoom.slots
+                      .filter((slot) => {
+                        const hour = parseInt(slot.startTime.split(":")[0]);
+                        return hour >= 17;
+                      })
+                      .map((slot) => {
+                        const bookingStatus = isSlotBooked(slot.slotId);
+                        const isPassed = hasSlotTimePassedToday(slot);
+                        const isDisabled = bookingStatus || isPassed;
+                        const isSelected = selectedSlots.includes(slot.slotId);
+
+                        return (
+                          <div
+                            key={slot.slotId}
+                            onClick={() =>
+                              !isDisabled && handleSlotChange(slot.slotId)
+                            }
+                            className={`
+                              flex-shrink-0 mx-1 w-24 border rounded-lg relative cursor-pointer transition-all
+                              ${
+                                isDisabled
+                                  ? "cursor-not-allowed opacity-70"
+                                  : "hover:border-indigo-300"
+                              }
+                              ${
+                                isSelected
+                                  ? "border-indigo-500 bg-indigo-50"
+                                  : "border-gray-200"
+                              }
+                              ${
+                                isPassed
+                                  ? "bg-gray-100"
+                                  : bookingStatus === "TEMPORARY"
+                                  ? "bg-yellow-50"
+                                  : bookingStatus === "PERMANENT"
+                                  ? "bg-gray-100"
+                                  : "bg-white"
+                              }
+                            `}
+                          >
+                            <div className="p-3 text-center">
+                              <div className="flex justify-center">
+                                <Clock className="w-4 h-4 text-gray-500" />
+                              </div>
+                              <Typography variant="body2" className="mt-1">
+                                {convertTo12HourFormat(slot.startTime)}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                className="text-gray-500 block"
+                              >
+                                ₹{selectedRoom.feesPerSlot}
+                              </Typography>
+
+                              {isSelected && (
+                                <div className="absolute top-1 right-1 w-3 h-3 bg-indigo-500 rounded-full"></div>
+                              )}
+
+                              {bookingStatus === "PERMANENT" && (
+                                <div className="mt-1 text-xs text-red-500">
+                                  Booked
+                                </div>
+                              )}
+
+                              {bookingStatus === "TEMPORARY" && (
+                                <div className="mt-1 text-xs text-yellow-600">
+                                  Reserved
+                                </div>
+                              )}
+
+                              {isPassed && !bookingStatus && (
+                                <div className="mt-1 text-xs text-orange-500">
+                                  Passed
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    {selectedRoom.slots.filter(
+                      (slot) => parseInt(slot.startTime.split(":")[0]) >= 17
+                    ).length === 0 && (
+                      <div className="w-full text-center py-3 text-gray-500 italic">
+                        No evening slots available
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Selected Slots Summary */}
+                {selectedSlots.length > 0 && (
+                  <div className="mt-4 bg-indigo-50 p-3 rounded-lg">
+                    <Typography
+                      variant="subtitle2"
+                      className="text-indigo-700 mb-1"
+                    >
+                      Selected Time Slots ({selectedSlots.length})
+                    </Typography>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedSlots
+                        .sort((a, b) => {
+                          const slotA = selectedRoom.slots.find(
+                            (s) => s.slotId === a
+                          );
+                          const slotB = selectedRoom.slots.find(
+                            (s) => s.slotId === b
+                          );
+                          return (
+                            parseInt(slotA.startTime) -
+                            parseInt(slotB.startTime)
+                          );
+                        })
+                        .map((slotId) => {
+                          const slot = selectedRoom.slots.find(
+                            (s) => s.slotId === slotId
+                          );
+                          return (
+                            <div
+                              key={slotId}
+                              className="bg-white border border-indigo-200 rounded-lg px-2 py-1 flex items-center"
+                            >
+                              <Typography variant="caption">
+                                {convertTo12HourFormat(slot.startTime)} -{" "}
+                                {convertTo12HourFormat(slot.endTime)}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleSlotChange(slotId)}
+                                className="ml-1 p-0.5 text-gray-400 hover:text-red-500"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </IconButton>
+                            </div>
+                          );
+                        })}
                     </div>
-                  );
-                })}
-              </FormGroup>
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
@@ -729,69 +999,18 @@ function Booking() {
               </Typography>
 
               {services.length > 0 ? (
-                <div className="space-y-4">
-                  {/* Service Selection */}
-                  <div className="space-y-2">
-                    <Typography variant="body2" className="text-gray-500">
-                      Select Service
-                    </Typography>
-                    <div className="grid grid-cols-2 gap-2">
-                      {services.map((service) => (
-                        <div
-                          key={service._id}
-                          onClick={() => handleServiceSelect(service)}
-                          className={`
-                            p-3 rounded-lg cursor-pointer transition-all
-                            ${
-                              selectedService?._id === service._id
-                                ? "bg-indigo-100 border-2 border-indigo-500"
-                                : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
-                            }
-                          `}
-                        >
-                          <Typography variant="body2" className="font-medium">
-                            {service.serviceName}
-                          </Typography>
-                          <Typography variant="caption" color="textSecondary">
-                            {service.category}
-                          </Typography>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Sub-parts Selection */}
-                  {selectedService && (
-                    <div className="space-y-2">
-                      <Typography variant="body2" className="text-gray-500">
-                        Select Option
-                      </Typography>
-                      <div className="grid grid-cols-2 gap-2">
-                        {selectedService.subParts.map((subPart, index) => (
-                          <div
-                            key={index}
-                            onClick={() => handleSubPartSelect(subPart)}
-                            className={`
-                              p-3 rounded-lg cursor-pointer transition-all
-                              ${
-                                selectedSubPart?._id === subPart._id
-                                  ? "bg-indigo-100 border-2 border-indigo-500"
-                                  : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
-                              }
-                            `}
-                          >
-                            <Typography variant="body2" className="font-medium">
-                              {subPart.name}
-                            </Typography>
-                            <Typography variant="caption" color="textSecondary">
-                              ₹{subPart.price}
-                            </Typography>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  fullWidth
+                  onClick={() => setStudioServicesModalOpen(true)}
+                  className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                  startIcon={<Music className="w-4 h-4" />}
+                >
+                  {selectedService && selectedSubPart
+                    ? `Selected: ${selectedService.serviceName} - ${selectedSubPart.name}`
+                    : "Select Studio Services"}
+                </Button>
               ) : (
                 <Typography variant="body2" color="textSecondary">
                   No services available for this studio
@@ -816,40 +1035,20 @@ function Booking() {
                 </Typography>
               </div>
             ) : (
-              <List>
-                {addons.map(
-                  (addon) =>
-                    addon.isAvailable && (
-                      <ListItem
-                        key={addon._id}
-                        className={`
-                        border rounded-lg mb-2 transition-all
-                        ${
-                          selectedAddons.includes(addon._id)
-                            ? "border-indigo-500 bg-indigo-50"
-                            : "border-gray-200"
-                        }
-                      `}
-                      >
-                        <ListItemIcon>
-                          <Guitar className="text-gray-600" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={addon.instrumentType.join(", ")}
-                          secondary={`₹${addon.pricePerHour}/hour · ${addon.quantity} available`}
-                        />
-                        <ListItemSecondaryAction>
-                          <Checkbox
-                            edge="end"
-                            onChange={() => handleAddonToggle(addon._id)}
-                            checked={selectedAddons.includes(addon._id)}
-                            color="primary"
-                          />
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    )
-                )}
-              </List>
+              <Button
+                variant="outlined"
+                color="secondary"
+                fullWidth
+                onClick={() => setAddonsModalOpen(true)}
+                className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                startIcon={<Guitar className="w-4 h-4" />}
+              >
+                {selectedAddons.length > 0
+                  ? `${selectedAddons.length} Add-on${
+                      selectedAddons.length > 1 ? "s" : ""
+                    } Selected`
+                  : "Select Add-on Instruments"}
+              </Button>
             )}
           </CardContent>
         </Card>
@@ -874,7 +1073,20 @@ function Booking() {
                   ),
                 }}
               />
-              <div className="flex justify-end mt-2">
+              <div className="flex justify-between mt-2">
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => setSavedNumbersModalOpen(true)}
+                  size="small"
+                  disabled={savedNumbers.length === 0}
+                  className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                >
+                  {savedNumbers.length > 0
+                    ? "Choose Saved Number"
+                    : "No Saved Numbers"}
+                </Button>
+
                 <Button
                   variant="outlined"
                   color="primary"
@@ -894,41 +1106,17 @@ function Booking() {
               </div>
             </div>
 
-            {savedNumbers.length > 0 && (
-              <>
-                <Typography variant="subtitle2" className="text-gray-600 mb-2">
-                  Saved Numbers
+            {selectedPhoneNumber && (
+              <div className="bg-indigo-50 p-2 rounded-lg text-center">
+                <Typography variant="body2" className="text-indigo-700">
+                  Using: {selectedPhoneNumber}
                 </Typography>
-                <RadioGroup
-                  value={selectedPhoneNumber}
-                  onChange={handleSavedNumberChange}
-                >
-                  {savedNumbers.map((number, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between border-b border-gray-100 py-2"
-                    >
-                      <FormControlLabel
-                        value={number}
-                        control={<Radio color="primary" />}
-                        label={number}
-                      />
-                      <IconButton
-                        onClick={() => handleDeleteNumber(number)}
-                        size="small"
-                        className="text-gray-400 hover:text-red-500"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </IconButton>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="mb-6 rounded-xl shadow-sm">
+        <Card className="mb-4 rounded-xl shadow-sm">
           <CardContent className="p-4">
             <div className="flex justify-between items-center mb-2">
               <Typography variant="body2" className="text-gray-600">
@@ -1010,6 +1198,241 @@ function Booking() {
             {isLoading ? "Processing..." : "Proceed to Review"}
           </Button>
         </div>
+
+        {/* Studio Services Slide-up Modal */}
+        {selectedRoom.type === "Studio" && (
+          <Modal
+            open={studioServicesModalOpen}
+            onClose={() => setStudioServicesModalOpen(false)}
+            className="flex items-end justify-center"
+          >
+            <div className="bg-white w-full max-w-md rounded-t-xl shadow-lg transform transition-transform duration-300 ease-in-out animate-slide-up overflow-hidden">
+              <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+                <Typography variant="h6">Studio Services</Typography>
+                <IconButton
+                  onClick={() => setStudioServicesModalOpen(false)}
+                  size="small"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </IconButton>
+              </div>
+              <div className="p-4 max-h-[70vh] overflow-y-auto">
+                {/* Service Selection */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Typography variant="body1" className="font-medium">
+                      Select Service
+                    </Typography>
+                    <div className="grid grid-cols-2 gap-2">
+                      {services.map((service) => (
+                        <div
+                          key={service._id}
+                          onClick={() => handleServiceSelect(service)}
+                          className={`
+                            p-3 rounded-lg cursor-pointer transition-all
+                            ${
+                              selectedService?._id === service._id
+                                ? "bg-indigo-100 border-2 border-indigo-500"
+                                : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                            }
+                          `}
+                        >
+                          <Typography variant="body2" className="font-medium">
+                            {service.serviceName}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            {service.category}
+                          </Typography>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sub-parts Selection */}
+                  {selectedService && (
+                    <div className="space-y-2">
+                      <Typography variant="body1" className="font-medium">
+                        Select Option
+                      </Typography>
+                      <div className="grid grid-cols-2 gap-2">
+                        {selectedService.subParts.map((subPart, index) => (
+                          <div
+                            key={index}
+                            onClick={() => handleSubPartSelect(subPart)}
+                            className={`
+                              p-3 rounded-lg cursor-pointer transition-all
+                              ${
+                                selectedSubPart?._id === subPart._id
+                                  ? "bg-indigo-100 border-2 border-indigo-500"
+                                  : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                              }
+                            `}
+                          >
+                            <Typography variant="body2" className="font-medium">
+                              {subPart.name}
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary">
+                              ₹{subPart.price}
+                            </Typography>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={() => {
+                      if (selectedService && selectedSubPart) {
+                        setStudioServicesModalOpen(false);
+                      } else {
+                        alert("Please select both a service and an option");
+                      }
+                    }}
+                    disabled={!selectedService || !selectedSubPart}
+                    className="mt-4"
+                  >
+                    Confirm Selection
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Modal>
+        )}
+
+        {/* Addons Slide-up Modal */}
+        <Modal
+          open={addonsModalOpen}
+          onClose={() => setAddonsModalOpen(false)}
+          className="flex items-end justify-center"
+        >
+          <div className="bg-white w-full max-w-md rounded-t-xl shadow-lg transform transition-transform duration-300 ease-in-out animate-slide-up overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <Typography variant="h6">Add-on Instruments</Typography>
+              <IconButton
+                onClick={() => setAddonsModalOpen(false)}
+                size="small"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </IconButton>
+            </div>
+            <div className="p-4 max-h-[70vh] overflow-y-auto">
+              <List>
+                {addons.map(
+                  (addon) =>
+                    addon.isAvailable && (
+                      <ListItem
+                        key={addon._id}
+                        className={`
+                        border rounded-lg mb-3 transition-all
+                        ${
+                          selectedAddons.includes(addon._id)
+                            ? "border-indigo-500 bg-indigo-50"
+                            : "border-gray-200"
+                        }
+                      `}
+                      >
+                        <ListItemIcon>
+                          <Guitar className="text-indigo-500" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Typography variant="body1" className="font-medium">
+                              {addon.instrumentType.join(", ")}
+                            </Typography>
+                          }
+                          secondary={`₹${addon.pricePerHour}/hour · ${addon.quantity} available`}
+                        />
+                        <ListItemSecondaryAction>
+                          <Checkbox
+                            edge="end"
+                            onChange={() => handleAddonToggle(addon._id)}
+                            checked={selectedAddons.includes(addon._id)}
+                            color="primary"
+                          />
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    )
+                )}
+              </List>
+
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={() => setAddonsModalOpen(false)}
+                className="mt-4"
+              >
+                {selectedAddons.length > 0
+                  ? `Confirm ${selectedAddons.length} Add-on${
+                      selectedAddons.length > 1 ? "s" : ""
+                    }`
+                  : "No Add-ons Selected"}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Saved Numbers Slide-up Modal */}
+        <Modal
+          open={savedNumbersModalOpen}
+          onClose={() => setSavedNumbersModalOpen(false)}
+          className="flex items-end justify-center"
+        >
+          <div className="bg-white w-full max-w-md rounded-t-xl shadow-lg transform transition-transform duration-300 ease-in-out animate-slide-up overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <Typography variant="h6">Saved Numbers</Typography>
+              <IconButton
+                onClick={() => setSavedNumbersModalOpen(false)}
+                size="small"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </IconButton>
+            </div>
+            <div className="p-4 max-h-[70vh] overflow-y-auto">
+              <RadioGroup
+                value={selectedPhoneNumber}
+                onChange={(e) => {
+                  handleSavedNumberChange(e);
+                }}
+              >
+                {savedNumbers.map((number, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between border-b border-gray-100 py-3"
+                  >
+                    <FormControlLabel
+                      value={number}
+                      control={<Radio color="primary" />}
+                      label={<Typography variant="body1">{number}</Typography>}
+                      className="flex-grow"
+                    />
+                    <IconButton
+                      onClick={() => handleDeleteNumber(number)}
+                      size="small"
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </IconButton>
+                  </div>
+                ))}
+              </RadioGroup>
+
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={() => setSavedNumbersModalOpen(false)}
+                disabled={!selectedPhoneNumber}
+                className="mt-4"
+              >
+                Use Selected Number
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );
