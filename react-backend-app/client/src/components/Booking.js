@@ -162,25 +162,25 @@ function Booking() {
     };
   }, []);
 
-  useEffect(() => {
-    // Push a custom history state on mount if not already present
-    if (!window.history.state || window.history.state.page !== "booking") {
-      window.history.pushState(
-        { page: "booking", source: "jamroom-details" },
-        document.title,
-        window.location.href
-      );
-    }
+  // useEffect(() => {
+  //   // Push a custom history state on mount if not already present
+  //   if (!window.history.state || window.history.state.page !== "booking") {
+  //     window.history.pushState(
+  //       { page: "booking", source: "jamroom-details" },
+  //       document.title,
+  //       window.location.href
+  //     );
+  //   }
 
-    const handlePopState = (e) => {
-      e.preventDefault();
-      // Navigate back to JamRoomDetails
-      navigate(`/jam-room/${selectedRoom?.id}`);
-    };
+  //   const handlePopState = (e) => {
+  //     e.preventDefault();
+  //     // Navigate back to JamRoomDetails
+  //     navigate(`/jam-room/${selectedRoom?.id}`);
+  //   };
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [navigate, selectedRoom?.id]);
+  //   window.addEventListener("popstate", handlePopState);
+  //   return () => window.removeEventListener("popstate", handlePopState);
+  // }, [navigate, selectedRoom?.id]);
 
   // Check reservations for that particular slot
   const checkReservations = useCallback(async () => {

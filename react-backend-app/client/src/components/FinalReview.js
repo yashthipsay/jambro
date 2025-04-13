@@ -61,53 +61,53 @@ const FinalReview = () => {
   }, []);
 
   // Add new effect to handle mobile navigation
-  useEffect(() => {
-    // Push state if not already present
-    if (!window.history.state || window.history.state.page !== "final-review") {
-      window.history.pushState(
-        { page: "final-review", source: "booking" },
-        document.title,
-        window.location.href
-      );
-    }
+  // useEffect(() => {
+  //   // Push state if not already present
+  //   if (!window.history.state || window.history.state.page !== "final-review") {
+  //     window.history.pushState(
+  //       { page: "final-review", source: "booking" },
+  //       document.title,
+  //       window.location.href
+  //     );
+  //   }
 
-    const handlePopState = (e) => {
-      e.preventDefault();
-      // If payment in progress, prevent navigation
-      if (isPaymentInProgress) {
-        window.history.pushState(
-          { page: "final-review", source: "booking" },
-          document.title,
-          window.location.href
-        );
-        return;
-      }
+  //   const handlePopState = (e) => {
+  //     e.preventDefault();
+  //     // If payment in progress, prevent navigation
+  //     if (isPaymentInProgress) {
+  //       window.history.pushState(
+  //         { page: "final-review", source: "booking" },
+  //         document.title,
+  //         window.location.href
+  //       );
+  //       return;
+  //     }
 
-      // Release reservation and navigate back
-      setIsLeaving(true);
-      fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jamRoomId: selectedRoomId,
-          date: selectedDate,
-          slots: selectedSlots,
-        }),
-      });
+  //     // Release reservation and navigate back
+  //     setIsLeaving(true);
+  //     fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         jamRoomId: selectedRoomId,
+  //         date: selectedDate,
+  //         slots: selectedSlots,
+  //       }),
+  //     });
 
-      // Use natural back navigation
-      navigate(-1);
-    };
+  //     // Use natural back navigation
+  //     navigate(-1);
+  //   };
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [
-    isPaymentInProgress,
-    selectedRoomId,
-    selectedDate,
-    selectedSlots,
-    navigate,
-  ]);
+  //   window.addEventListener("popstate", handlePopState);
+  //   return () => window.removeEventListener("popstate", handlePopState);
+  // }, [
+  //   isPaymentInProgress,
+  //   selectedRoomId,
+  //   selectedDate,
+  //   selectedSlots,
+  //   navigate,
+  // ]);
 
   // Handle back button click
   const handleBack = () => {

@@ -35,37 +35,37 @@ function JamRoomDetails() {
   // Add handleModalToggle function
   const handleModalToggle = () => setModalOpen(!modalOpen);
 
-  useEffect(() => {
-    // Only push state if coming from finder or no state exists
-    if (!window.history.state || !window.history.state.page) {
-      window.history.pushState(
-        { page: "jamroom-details", source: "finder" },
-        document.title,
-        window.location.href
-      );
-    }
+  // useEffect(() => {
+  //   // Only push state if coming from finder or no state exists
+  //   if (!window.history.state || !window.history.state.page) {
+  //     window.history.pushState(
+  //       { page: "jamroom-details", source: "finder" },
+  //       document.title,
+  //       window.location.href
+  //     );
+  //   }
 
-    const handlePopState = (e) => {
-      e.preventDefault();
-      // Get the previous page from history state
-      const previousPage = e.state?.page;
-      const source = e.state?.source;
+  //   const handlePopState = (e) => {
+  //     e.preventDefault();
+  //     // Get the previous page from history state
+  //     const previousPage = e.state?.page;
+  //     const source = e.state?.source;
 
-      if (previousPage === "booking" || previousPage === "final-review") {
-        // If coming back from booking or review, use natural back navigation
-        navigate(-1);
-      } else if (source === "finder" || !previousPage) {
-        // Only navigate to root if explicitly coming from finder or no state
-        navigate("/");
-      } else {
-        // For any other case, use natural back navigation
-        navigate(-1);
-      }
-    };
+  //     if (previousPage === "booking" || previousPage === "final-review") {
+  //       // If coming back from booking or review, use natural back navigation
+  //       navigate(-1);
+  //     } else if (source === "finder" || !previousPage) {
+  //       // Only navigate to root if explicitly coming from finder or no state
+  //       navigate("/");
+  //     } else {
+  //       // For any other case, use natural back navigation
+  //       navigate(-1);
+  //     }
+  //   };
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [navigate]);
+  //   window.addEventListener("popstate", handlePopState);
+  //   return () => window.removeEventListener("popstate", handlePopState);
+  // }, [navigate]);
 
   // Using useMemo to fetch artist albums when selectedRoom changes
   useMemo(() => {
