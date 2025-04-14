@@ -313,7 +313,7 @@ function JamRoomFinder() {
       icon: <LibraryMusic sx={{ fontSize: 20 }} />,
       active: false,
     },
- 
+
     {
       id: "jamrooms_studios",
       name: "JamRooms/Studios",
@@ -625,10 +625,10 @@ function JamRoomFinder() {
                 className={`
                   flex flex-col items-center justify-center w-full
                   transition-all duration-200 text-xs relative
-                  ${isCenter ? '-mt-6' : ''}
+                  ${isCenter ? "-mt-6" : ""}
                   ${
                     activeService === service.id
-                      ? `text-indigo-600 font-medium`
+                      ? `text-indigo-600 font-medium bg-purple-200 rounded-lg py-1`
                       : `text-gray-600`
                   }
                 `}
@@ -638,12 +638,16 @@ function JamRoomFinder() {
                     flex items-center justify-center
                     ${
                       isCenter
-                        ? 'bg-gradient-to-r from-indigo-500 to-purple-600 p-3 rounded-full shadow-lg transform -translate-y-2'
-                        : 'mb-1'
+                        ? "bg-gradient-to-r from-indigo-500 to-purple-600 p-3 rounded-full shadow-lg transform -translate-y-2"
+                        : "mb-1"
                     }
                   `}
                 >
-                  <span className={`${isCenter ? 'text-white text-2xl' : 'text-xl'}`}>
+                  <span
+                    className={`${
+                      isCenter ? "text-white text-2xl" : "text-xl"
+                    }`}
+                  >
                     {service.icon}
                   </span>
                 </div>
