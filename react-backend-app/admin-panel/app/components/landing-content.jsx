@@ -193,48 +193,59 @@ const StudioServicesCard = ({ jamRoomId }) => {
 
             <div className="space-y-2">
               <Label className="text-[#7DF9FF]">Add Sub-parts</Label>
-              <div className="flex gap-4">
-                <Input
-                  placeholder="Sub-part Name"
-                  value={newSubPart.name}
-                  onChange={(e) =>
-                    setNewSubPart({ ...newSubPart, name: e.target.value })
-                  }
-                  className="bg-black/20 border-[#7DF9FF]/30 text-white"
-                />
-                <Input
-                  type="number"
-                  placeholder="Price"
-                  value={newSubPart.price}
-                  onChange={(e) =>
-                    setNewSubPart({
-                      ...newSubPart,
-                      price: Number(e.target.value),
-                    })
-                  }
-                  className="bg-black/20 border-[#7DF9FF]/30 text-white w-32"
-                />
-                <Button
-                  onClick={handleAddSubPart}
-                  className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white"
-                >
-                  Add Sub-part
-                </Button>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 space-y-2">
+                  <Label className="text-[#7DF9FF]/80 text-sm">Sub-part Name</Label>
+                  <Input
+                    placeholder="Sub-part Name"
+                    value={newSubPart.name}
+                    onChange={(e) =>
+                      setNewSubPart({ ...newSubPart, name: e.target.value })
+                    }
+                    className="bg-black/20 border-[#7DF9FF]/30 text-white"
+                  />
+                </div>
+
+                <div className="w-full sm:w-32 space-y-2">
+                  <Label className="text-[#7DF9FF]/80 text-sm">Price (₹)</Label>
+                  <Input
+                    type="number"
+                    placeholder="Price"
+                    value={newSubPart.price}
+                    onChange={(e) =>
+                      setNewSubPart({
+                        ...newSubPart,
+                        price: Number(e.target.value),
+                      })
+                    }
+                    className="bg-black/20 border-[#7DF9FF]/30 text-white"
+                  />
+                </div>
+                
+                <div className="flex items-end">
+                  <Button
+                    onClick={handleAddSubPart}
+                    className="bg-[#7DF9FF]/20 hover:bg-[#7DF9FF]/30 text-white w-full sm:w-auto"
+                  >
+                    Add Sub-part
+                  </Button>
+                </div>
               </div>
             </div>
 
             {newService.subParts.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-2 mt-4">
                 <Label className="text-[#7DF9FF]">Added Sub-parts:</Label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {newService.subParts.map((subPart, index) => (
                     <div
                       key={index}
                       className="flex justify-between items-center p-2 bg-black/20 rounded"
                     >
-                      <span className="text-white">
-                        {subPart.name} - ₹{subPart.price}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-white font-medium">{subPart.name}</span>
+                        <span className="text-[#7DF9FF]/70 text-sm">₹{subPart.price}</span>
+                      </div>
                       <Button
                         variant="destructive"
                         size="sm"
@@ -540,34 +551,40 @@ const AddonsCard = ({ jamRoomId }) => {
                 ))}
               </select>
 
-              <div className="flex gap-4">
-                <Input
-                  type="number"
-                  placeholder="Qty"
-                  value={newAddon.quantity}
-                  onChange={(e) =>
-                    setNewAddon({
-                      ...newAddon,
-                      quantity: parseInt(e.target.value),
-                    })
-                  }
-                  min="1"
-                  className="w-full sm:w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
-                />
+              <div className="flex gap-4 flex-col sm:flex-row">
+                <div className="flex flex-col">
+                  <Label className="text-[#7DF9FF]/80 text-sm mb-1">Quantity</Label>
+                  <Input
+                    type="number"
+                    placeholder="Qty"
+                    value={newAddon.quantity}
+                    onChange={(e) =>
+                      setNewAddon({
+                        ...newAddon,
+                        quantity: parseInt(e.target.value),
+                      })
+                    }
+                    min="1"
+                    className="w-full sm:w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
+                  />
+                </div>
 
-                <Input
-                  type="number"
-                  placeholder="₹/hr"
-                  value={newAddon.pricePerHour}
-                  onChange={(e) =>
-                    setNewAddon({
-                      ...newAddon,
-                      pricePerHour: parseInt(e.target.value),
-                    })
-                  }
-                  min="0"
-                  className="w-full sm:w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
-                />
+                <div className="flex flex-col">
+                  <Label className="text-[#7DF9FF]/80 text-sm mb-1">Price per hour</Label>
+                  <Input
+                    type="number"
+                    placeholder="₹/hr"
+                    value={newAddon.pricePerHour}
+                    onChange={(e) =>
+                      setNewAddon({
+                        ...newAddon,
+                        pricePerHour: parseInt(e.target.value),
+                      })
+                    }
+                    min="0"
+                    className="w-full sm:w-20 bg-black/20 border-[#7DF9FF]/30 text-white"
+                  />
+                </div>
               </div>
 
               <Button

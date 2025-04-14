@@ -20,7 +20,7 @@ export function DashboardLayout({ children }) {
   return (
     <div className="relative min-h-screen bg-cover bg-center">
       <div className="absolute inset-0 bg-black bg-opacity-60"></div>
-      <div className="relative text-white h-screen flex flex-col">
+      <div className="relative text-white min-h-screen flex flex-col">
         <Navbar />
         <div className="flex-1 overflow-hidden">
           {/* Main content area with padding adjustment for mobile */}

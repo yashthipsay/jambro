@@ -32,30 +32,44 @@ function JamRoomDetails() {
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [artistAlbums, setArtistAlbums] = useState([]);
+  // Add new state variables for slide-up modals
+  const [facilitiesModalOpen, setFacilitiesModalOpen] = useState(false);
+  const [additionalDetailsModalOpen, setAdditionalDetailsModalOpen] =
+    useState(false);
   // Add handleModalToggle function
   const handleModalToggle = () => setModalOpen(!modalOpen);
 
-  useEffect(() => {
-    if (
-      !window.history.state ||
-      window.history.state.page !== "jamroom-details"
-    ) {
-      window.history.pushState(
-        { page: "jamroom-details" },
-        document.title,
-        window.location.href
-      );
-    }
+  // useEffect(() => {
+  //   // Only push state if coming from finder or no state exists
+  //   if (!window.history.state || !window.history.state.page) {
+  //     window.history.pushState(
+  //       { page: "jamroom-details", source: "finder" },
+  //       document.title,
+  //       window.location.href
+  //     );
+  //   }
 
-    const handlePopState = (e) => {
-      e.preventDefault();
-      // Navigate back to the root finder page (or another desired route)
-      navigate("/");
-    };
+  //   const handlePopState = (e) => {
+  //     e.preventDefault();
+  //     // Get the previous page from history state
+  //     const previousPage = e.state?.page;
+  //     const source = e.state?.source;
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [navigate]);
+  //     if (previousPage === "booking" || previousPage === "final-review") {
+  //       // If coming back from booking or review, use natural back navigation
+  //       navigate(-1);
+  //     } else if (source === "finder" || !previousPage) {
+  //       // Only navigate to root if explicitly coming from finder or no state
+  //       navigate("/");
+  //     } else {
+  //       // For any other case, use natural back navigation
+  //       navigate(-1);
+  //     }
+  //   };
+
+  //   window.addEventListener("popstate", handlePopState);
+  //   return () => window.removeEventListener("popstate", handlePopState);
+  // }, [navigate]);
 
   // Using useMemo to fetch artist albums when selectedRoom changes
   useMemo(() => {
@@ -228,236 +242,58 @@ function JamRoomDetails() {
             <Divider className="my-4" />
 
             {/* Description */}
-            <Typography variant="body2" className="mb-4 text-gray-700">
+            <Typography variant="body2" className="mb-6 text-gray-700">
               {selectedRoom.description ||
                 "A cozy jam room perfect for your music sessions."}
             </Typography>
+            
+            {/* Spacer div */}
+            <div className="h-10"></div>
 
-            <Typography variant="subtitle2" className="text-gray-600 mb-2">
+            <Typography variant="subtitle2" className="text-gray-600 mb-3">
               Facilities
             </Typography>
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <div className="bg-gray-50 p-2 rounded-lg text-center">
-                <Typography variant="body2">Air Conditioned</Typography>
-              </div>
-              <div className="bg-gray-50 p-2 rounded-lg text-center">
-                <Typography variant="body2">Sound Proof</Typography>
-              </div>
-              <div className="bg-gray-50 p-2 rounded-lg text-center">
-                <Typography variant="body2">Instruments</Typography>
-              </div>
-              <div className="bg-gray-50 p-2 rounded-lg text-center">
-                <Typography variant="body2">Parking</Typography>
-              </div>
-            </div>
+            <Button 
+              variant="outlined" 
+              color="secondary" 
+              fullWidth 
+              onClick={() => setFacilitiesModalOpen(true)}
+              className="mb-6 bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+            >
+              View All Facilities
+            </Button>
+            
+            {/* Spacer div */}
+            <div className="h-10"></div>
 
-            <Typography variant="subtitle2" className="text-gray-600 mb-2">
+            {/* Additional details button */}
+            <Typography variant="subtitle2" className="text-gray-600 mb-3">
+              Additional Info
+            </Typography>
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              onClick={() => setAdditionalDetailsModalOpen(true)}
+              className="mb-6 bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+              startIcon={<Info className="w-4 h-4" />}
+            >
+              View Details
+            </Button>
+            
+            {/* Spacer div */}
+            <div className="h-10"></div>
+
+            <Typography variant="subtitle2" className="text-gray-600 mb-3">
               Price
             </Typography>
-            <div className="bg-gray-50 p-3 rounded-lg mb-4">
-              <div className="flex justify-between items-center">
-                <Typography variant="body2">Per Slot</Typography>
-                <Typography variant="body1" className="font-semibold">
-                  ₹{selectedRoom.feesPerSlot || "500"}
-                </Typography>
-              </div>
-            </div>
-
-            {/* Additional details dropdown */}
-            <div className="bg-gray-50 rounded-lg overflow-hidden mb-4">
-              <div
-                className="flex justify-between items-center p-3 cursor-pointer"
-                onClick={() => setExpanded(!expanded)}
-              >
-                <div className="flex items-center">
-                  <Info className="w-4 h-4 text-indigo-500 mr-2" />
-                  <Typography variant="subtitle2">
-                    Additional Details
-                  </Typography>
-                </div>
-                <IconButton size="small">
-                  {expanded ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </IconButton>
-              </div>
-
-              <Collapse in={expanded}>
-                <div className="px-3 pb-3 space-y-3">
-                  {/* Opening Hours */}
-                  <div>
-                    <Typography
-                      variant="body2"
-                      className="text-gray-500 font-medium flex items-center"
-                    >
-                      <Clock className="w-4 h-4 mr-1" /> Opening Hours
-                    </Typography>
-                    <Typography variant="body2" className="mt-1">
-                      {selectedRoom.openingHours || "9:00 AM - 10:00 PM"}
-                    </Typography>
-                  </div>
-
-                  {/* Social Media */}
-                  {selectedRoom.socialMedia?.instagram && (
-                    <div>
-                      <Typography
-                        variant="body2"
-                        className="text-gray-500 font-medium flex items-center"
-                      >
-                        <Instagram className="w-4 h-4 mr-1" /> Instagram
-                      </Typography>
-                      <a
-                        href={`https://instagram.com/${selectedRoom.socialMedia.instagram}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-1 flex items-center text-indigo-600"
-                      >
-                        @{selectedRoom.socialMedia.instagram}
-                      </a>
-                    </div>
-                  )}
-
-                  {/* Owner Information */}
-                  <div>
-                    <Typography
-                      variant="body2"
-                      className="text-gray-500 font-medium"
-                    >
-                      Owner
-                    </Typography>
-                    <Typography variant="body2" className="mt-1">
-                      {selectedRoom.ownerDetails.fullname ||
-                        "Music Studio Inc."}
-                    </Typography>
-                  </div>
-
-                  {/* Owner's Spotify Profile */}
-                  {hasSpotifyProfile && (
-                    <div className="mt-4">
-                      <Typography
-                        variant="body2"
-                        className="text-gray-500 font-medium flex items-center"
-                      >
-                        <svg
-                          className="w-4 h-4 mr-1 text-[#1DB954]"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                        </svg>
-                        Spotify Artist
-                      </Typography>
-
-                      <div className="mt-2 bg-black/5 rounded-lg p-3">
-                        <div className="flex items-center space-x-3">
-                          {selectedRoom.ownerDetails.spotify.images?.[0]
-                            ?.url ? (
-                            <img
-                              src={
-                                selectedRoom.ownerDetails.spotify.images[0].url
-                              }
-                              alt="Artist"
-                              className="w-12 h-12 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                              <Music className="w-6 h-6 text-indigo-500" />
-                            </div>
-                          )}
-                          <div>
-                            <Typography variant="body2" className="font-medium">
-                              <a
-                                href={
-                                  selectedRoom.ownerDetails.spotify.profileUrl
-                                }
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-indigo-600 hover:text-indigo-800 transition-colors"
-                              >
-                                {selectedRoom.ownerDetails.spotify.displayName}
-                              </a>
-                            </Typography>
-                            <div className="flex items-center text-gray-500 text-xs">
-                              <Users className="w-3 h-3 mr-1" />
-                              {selectedRoom.ownerDetails.spotify.followers.toLocaleString()}{" "}
-                              followers
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Artist Albums */}
-                        {artistAlbums.length > 0 && (
-                          <div className="mt-3 space-y-2">
-                            <Typography
-                              variant="body2"
-                              className="text-gray-500 text-xs"
-                            >
-                              Popular Albums
-                            </Typography>
-                            <div className="flex space-x-3 overflow-x-auto scrollbar-hide pb-3 -mx-3 px-3">
-                              {artistAlbums.map((album) => (
-                                <a
-                                  key={album.id}
-                                  href={album.external_urls.spotify}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="block flex-shrink-0 hover:opacity-80 transition-opacity"
-                                >
-                                  <div className="w-20 h-20 rounded shadow-sm">
-                                    {album.images?.[0]?.url ? (
-                                      <img
-                                        src={album.images[0].url}
-                                        alt={album.name}
-                                        className="w-full h-full object-cover rounded"
-                                        loading="lazy"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full bg-indigo-100 rounded flex items-center justify-center">
-                                        <Disc className="w-8 h-8 text-indigo-500" />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <Typography
-                                    variant="caption"
-                                    className="block text-center truncate mt-1 w-20"
-                                  >
-                                    {album.name}
-                                  </Typography>
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Amenities as tags */}
-                  {selectedRoom.amenities &&
-                    selectedRoom.amenities.length > 0 && (
-                      <div>
-                        <Typography
-                          variant="body2"
-                          className="text-gray-500 font-medium"
-                        >
-                          Amenities
-                        </Typography>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {selectedRoom.amenities.map((amenity, index) => (
-                            <div
-                              key={index}
-                              className="bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-full"
-                            >
-                              {amenity}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                </div>
-              </Collapse>
+            <div className="bg-gray-50 p-6 rounded-lg mb-10 text-center">
+              <Typography variant="h3" className="font-bold text-indigo-700">
+                ₹{selectedRoom.feesPerSlot || "500"}
+              </Typography>
+              <Typography variant="body2" color="textSecondary">
+                Per Slot
+              </Typography>
             </div>
           </CardContent>
         </Card>
@@ -523,6 +359,267 @@ function JamRoomDetails() {
             </ShareButton>
           </div>
         </div>
+
+        {/* Facilities Slide-up Modal */}
+        <Modal
+          open={facilitiesModalOpen}
+          onClose={() => setFacilitiesModalOpen(false)}
+          className="flex items-end justify-center"
+        >
+          <div className="bg-white w-full max-w-md rounded-t-xl shadow-lg transform transition-transform duration-300 ease-in-out animate-slide-up overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <Typography variant="h6">Facilities</Typography>
+              <IconButton
+                onClick={() => setFacilitiesModalOpen(false)}
+                size="small"
+              >
+                <X className="w-5 h-5" />
+              </IconButton>
+            </div>
+            <div className="p-4 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <Typography variant="body1">Air Conditioned</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Available
+                  </Typography>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <Typography variant="body1">Sound Proof</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Available
+                  </Typography>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <Typography variant="body1">Instruments</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    6 Available
+                  </Typography>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <Typography variant="body1">Parking</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Available
+                  </Typography>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <Typography variant="body1">Wi-Fi</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    High-Speed
+                  </Typography>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <Typography variant="body1">Restroom</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Available
+                  </Typography>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <Typography variant="body1">Water</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Free
+                  </Typography>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <Typography variant="body1">Recording</Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Optional Add-on
+                  </Typography>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Additional Details Slide-up Modal */}
+        <Modal
+          open={additionalDetailsModalOpen}
+          onClose={() => setAdditionalDetailsModalOpen(false)}
+          className="flex items-end justify-center"
+        >
+          <div className="bg-white w-full max-w-md rounded-t-xl shadow-lg transform transition-transform duration-300 ease-in-out animate-slide-up overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <Typography variant="h6">Additional Info</Typography>
+              <IconButton
+                onClick={() => setAdditionalDetailsModalOpen(false)}
+                size="small"
+              >
+                <X className="w-5 h-5" />
+              </IconButton>
+            </div>
+            <div className="p-4 max-h-[70vh] overflow-y-auto">
+              <div className="space-y-4">
+                {/* Opening Hours */}
+                <div>
+                  <Typography
+                    variant="body1"
+                    className="font-medium flex items-center"
+                  >
+                    <Clock className="w-5 h-5 mr-2 text-indigo-500" /> Opening
+                    Hours
+                  </Typography>
+                  <Typography variant="body2" className="mt-1 ml-7">
+                    {selectedRoom.openingHours || "9:00 AM - 10:00 PM"}
+                  </Typography>
+                </div>
+
+                {/* Owner Information */}
+                <div>
+                  <Typography
+                    variant="body1"
+                    className="font-medium flex items-center"
+                  >
+                    <Users className="w-5 h-5 mr-2 text-indigo-500" /> Owner
+                  </Typography>
+                  <Typography variant="body2" className="mt-1 ml-7">
+                    {selectedRoom.ownerDetails.fullname || "Music Studio Inc."}
+                  </Typography>
+                </div>
+
+                {/* Social Media */}
+                {selectedRoom.socialMedia?.instagram && (
+                  <div>
+                    <Typography
+                      variant="body1"
+                      className="font-medium flex items-center"
+                    >
+                      <Instagram className="w-5 h-5 mr-2 text-indigo-500" />{" "}
+                      Instagram
+                    </Typography>
+                    <a
+                      href={`https://instagram.com/${selectedRoom.socialMedia.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 ml-7 flex items-center text-indigo-600"
+                    >
+                      @{selectedRoom.socialMedia.instagram}
+                    </a>
+                  </div>
+                )}
+
+                {/* Owner's Spotify Profile */}
+                {hasSpotifyProfile && (
+                  <div className="mt-4">
+                    <Typography
+                      variant="body1"
+                      className="font-medium flex items-center"
+                    >
+                      <svg
+                        className="w-5 h-5 mr-2 text-[#1DB954]"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                      </svg>
+                      Spotify Artist
+                    </Typography>
+
+                    <div className="mt-2 bg-black/5 rounded-lg p-3">
+                      <div className="flex items-center space-x-3">
+                        {selectedRoom.ownerDetails.spotify.images?.[0]?.url ? (
+                          <img
+                            src={
+                              selectedRoom.ownerDetails.spotify.images[0].url
+                            }
+                            alt="Artist"
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <Music className="w-6 h-6 text-indigo-500" />
+                          </div>
+                        )}
+                        <div>
+                          <Typography variant="body2" className="font-medium">
+                            <a
+                              href={
+                                selectedRoom.ownerDetails.spotify.profileUrl
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-indigo-600 hover:text-indigo-800 transition-colors"
+                            >
+                              {selectedRoom.ownerDetails.spotify.displayName}
+                            </a>
+                          </Typography>
+                          <div className="flex items-center text-gray-500 text-xs">
+                            <Users className="w-3 h-3 mr-1" />
+                            {selectedRoom.ownerDetails.spotify.followers.toLocaleString()}{" "}
+                            followers
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Artist Albums */}
+                      {artistAlbums.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <Typography
+                            variant="body2"
+                            className="text-gray-500 text-xs"
+                          >
+                            Popular Albums
+                          </Typography>
+                          <div className="flex space-x-3 overflow-x-auto scrollbar-hide pb-3 -mx-3 px-3">
+                            {artistAlbums.map((album) => (
+                              <a
+                                key={album.id}
+                                href={album.external_urls.spotify}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block flex-shrink-0 hover:opacity-80 transition-opacity"
+                              >
+                                <div className="w-20 h-20 rounded shadow-sm">
+                                  {album.images?.[0]?.url ? (
+                                    <img
+                                      src={album.images[0].url}
+                                      alt={album.name}
+                                      className="w-full h-full object-cover rounded"
+                                      loading="lazy"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-indigo-100 rounded flex items-center justify-center">
+                                      <Disc className="w-8 h-8 text-indigo-500" />
+                                    </div>
+                                  )}
+                                </div>
+                                <Typography
+                                  variant="caption"
+                                  className="block text-center truncate mt-1 w-20"
+                                >
+                                  {album.name}
+                                </Typography>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Amenities as tags */}
+                {selectedRoom.amenities &&
+                  selectedRoom.amenities.length > 0 && (
+                    <div>
+                      <Typography variant="body1" className="font-medium">
+                        Amenities
+                      </Typography>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {selectedRoom.amenities.map((amenity, index) => (
+                          <div
+                            key={index}
+                            className="bg-indigo-50 text-indigo-700 text-sm px-3 py-1 rounded-full"
+                          >
+                            {amenity}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );

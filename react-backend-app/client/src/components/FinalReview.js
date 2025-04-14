@@ -61,55 +61,55 @@ const FinalReview = () => {
   }, []);
 
   // Add new effect to handle mobile navigation
-  useEffect(() => {
-    // On mount, push a custom history state if not already present.
-    if (!window.history.state || window.history.state.page !== "final-review") {
-      window.history.pushState(
-        { page: "final-review" },
-        document.title,
-        window.location.href
-      );
-    }
+  // useEffect(() => {
+  //   // Push state if not already present
+  //   if (!window.history.state || window.history.state.page !== "final-review") {
+  //     window.history.pushState(
+  //       { page: "final-review", source: "booking" },
+  //       document.title,
+  //       window.location.href
+  //     );
+  //   }
 
-    const handlePopState = (e) => {
-      e.preventDefault();
-      // If payment in progress, do not let user go back.
-      if (isPaymentInProgress) {
-        // Re-push our state so that native navigation doesn’t exit.
-        window.history.pushState(
-          { page: "final-review" },
-          document.title,
-          window.location.href
-        );
-        return;
-      }
+  //   const handlePopState = (e) => {
+  //     e.preventDefault();
+  //     // If payment in progress, prevent navigation
+  //     if (isPaymentInProgress) {
+  //       window.history.pushState(
+  //         { page: "final-review", source: "booking" },
+  //         document.title,
+  //         window.location.href
+  //       );
+  //       return;
+  //     }
 
-      // Trigger any cleanup logic (e.g. releasing reservation)
-      setIsLeaving(true);
-      fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jamRoomId: selectedRoomId,
-          date: selectedDate,
-          slots: selectedSlots,
-        }),
-      });
-      // Then use controlled navigation (same as custom back button)
-      navigate(-1);
-    };
+  //     // Release reservation and navigate back
+  //     setIsLeaving(true);
+  //     fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         jamRoomId: selectedRoomId,
+  //         date: selectedDate,
+  //         slots: selectedSlots,
+  //       }),
+  //     });
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [
-    selectedRoomId,
-    selectedDate,
-    selectedSlots,
-    isPaymentInProgress,
-    navigate,
-  ]);
+  //     // Use natural back navigation
+  //     navigate(-1);
+  //   };
 
-  // Handle back navigation
+  //   window.addEventListener("popstate", handlePopState);
+  //   return () => window.removeEventListener("popstate", handlePopState);
+  // }, [
+  //   isPaymentInProgress,
+  //   selectedRoomId,
+  //   selectedDate,
+  //   selectedSlots,
+  //   navigate,
+  // ]);
+
+  // Handle back button click
   const handleBack = () => {
     setIsLeaving(true);
     navigate(-1);
@@ -188,15 +188,14 @@ const FinalReview = () => {
         }
       );
 
-      
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Checkout API Error:", errorData);
-      throw new Error(
-        errorData.message || "Failed to initiate Razorpay checkout"
-      );
-    }
-    
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Checkout API Error:", errorData);
+        throw new Error(
+          errorData.message || "Failed to initiate Razorpay checkout"
+        );
+      }
+
       const data = await response.json();
       console.log(data);
 
