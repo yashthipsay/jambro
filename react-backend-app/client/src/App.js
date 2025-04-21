@@ -60,6 +60,7 @@ import PastBookings from "./components/PastBookings";
 import { useSubscription } from "./context/SubscriptionContext";
 import { SubscriptionProvider } from "./context/SubscriptionContext";
 import GroupSelectionModal from "./components/subscriptionComponents/GroupSelectionModal";
+import OneSignal from "react-onesignal";
 
 // Add this new styled component for the subscription card
 const SubscriptionCard = styled(Box)(({ theme }) => ({
@@ -127,13 +128,16 @@ function AppContent() {
       setIsLoadingGroups(true);
 
       // First get the database userId
-      const userResponse = await fetch("https://api.vision.gigsaw.co.in/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: user.email }),
-      });
+      const userResponse = await fetch(
+        "https://api.vision.gigsaw.co.in/api/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: user.email }),
+        }
+      );
 
       const userData = await userResponse.json();
       if (!userData.success) {
@@ -165,6 +169,118 @@ function AppContent() {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  useEffect(() => {
+    // Function to initialize OneSignal
+    const initializeOneSignal = async () => {
+      if (!isAuthenticated || !user) return;
+      
+      try {
+        // Initialize OneSignal with your app ID
+        await OneSignal.init({
+          appId: 'b9e55a3c-883e-4be8-b345-b5d771d75c62',
+          allowLocalhostAsSecureOrigin: true,
+          // Configure for slide prompt instead of notification button
+          notifyButton: {
+            enable: false, // Disable the bell icon
+          },
+          // Use slide prompt configuration
+          slidedown: {
+            prompts: [
+              {
+                type: "push", // This configures the push notification slidedown
+                autoPrompt: true,
+                text: {
+                  actionMessage: "Would you like to receive notifications about your bookings?",
+                  acceptButton: "Allow",
+                  cancelButton: "Maybe later"
+                },
+                delay: {
+                  pageViews: 1,
+                  timeDelay: 20
+                }
+              }
+            ]
+          }
+        });
+        
+  
+        // Check if the user is already subscribed
+        const isPushSupported =  OneSignal.Notifications.isPushSupported();
+        if (isPushSupported) {
+          const isSubscribed =  OneSignal.Notifications.permission === true;
+          
+          // Only show prompt if not already subscribed
+          if (!isSubscribed) {
+            await OneSignal.Notifications.requestPermission();
+          }
+        }
+  
+        /* 
+        // Get OneSignal user ID after subscription - COMMENTED OUT FOR LATER USE
+        const oneSignalId = OneSignal.User?.PushSubscription?.id;
+        if (oneSignalId) {
+          console.log('OneSignal user ID found:', oneSignalId);
+          
+          // Update backend with OneSignal ID
+          try {
+            const response = await fetch(
+              "https://api.vision.gigsaw.co.in/api/users/update-onesignal",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  email: user.email,
+                  oneSignalUserId: oneSignalId,
+                }),
+              }
+            );
+  
+            const data = await response.json();
+            if (data.success) {
+              console.log('OneSignal ID updated successfully');
+            } else {
+              console.error('Failed to update OneSignal ID:', data.message);
+            }
+          } catch (error) {
+            console.error('Error updating OneSignal ID:', error);
+          }
+        }
+        */
+  
+        /*
+        // Set up notification click handler - COMMENTED OUT FOR LATER USE
+        OneSignal.Notifications.addEventListener('click', (event) => {
+          console.log('Notification clicked:', event);
+          const bookingId = event?.notification?.additionalData?.bookingId;
+          if (bookingId) {
+            // Navigate to booking details
+            navigate(`/bookings?bookingId=${bookingId}`);
+          }
+        });
+        */
+      } catch (error) {
+        console.error('Error initializing OneSignal:', error);
+      }
+    };
+  
+    // Initialize OneSignal when user logs in
+    if (isAuthenticated && user) {
+      initializeOneSignal();
+    }
+  
+    // Cleanup function
+    return () => {
+      /* 
+      // COMMENTED OUT FOR LATER USE
+      if (OneSignal?.Notifications) {
+        OneSignal.Notifications.removeEventListener('click');
+      }
+      */
+    };
+  }, [isAuthenticated, user]); // Removed navigate from dependencies since it's no longer used
 
   useEffect(() => {
     const registerUser = async () => {
@@ -220,7 +336,7 @@ function AppContent() {
       console.error("Error fetching active group:", error);
     }
   };
-  
+
   useEffect(() => {
     if (subscription && subscription._id) {
       fetchActiveGroup();
