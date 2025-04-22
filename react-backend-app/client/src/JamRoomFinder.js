@@ -26,29 +26,38 @@ import { Guitar } from "lucide-react";
 
 // Event data - in a real app this would come from an API
 const events = [
+  // {
+  //   id: 1,
+  //   title: "Jazz Night at Hard Rock Cafe",
+  //   date: "March 15, 2024",
+  //   image: "https://i.ytimg.com/vi/hwcWIzlQiyw/maxresdefault.jpg",
+  //   category: "Jazz",
+  // },
+  // {
+  //   id: 2,
+  //   title: "Crescendo VIT Pune 2025",
+  //   date: "March 20, 2024",
+  //   image:
+  //     "https://viberate-upload.ams3.cdn.digitaloceanspaces.com/prod/entity/festival/crescendo-festival-HOUAE",
+  //   category: "Rock",
+  // },
+  // {
+  //   id: 3,
+  //   title: "Classical Symphony",
+  //   date: "March 25, 2024",
+  //   image:
+  //     "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=800&auto=format&fit=crop",
+  //   category: "Classical",
+  // },
   {
-    id: 1,
-    title: "Jazz Night at Hard Rock Cafe",
-    date: "March 15, 2024",
-    image: "https://i.ytimg.com/vi/hwcWIzlQiyw/maxresdefault.jpg",
-    category: "Jazz",
-  },
-  {
-    id: 2,
-    title: "Crescendo VIT Pune 2025",
-    date: "March 20, 2024",
+    id: 4,
+    title: "New Update Coming Soom",
+    date: "Events and Coaching Services",
     image:
-      "https://viberate-upload.ams3.cdn.digitaloceanspaces.com/prod/entity/festival/crescendo-festival-HOUAE",
-    category: "Rock",
-  },
-  {
-    id: 3,
-    title: "Classical Symphony",
-    date: "March 25, 2024",
-    image:
-      "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=800&auto=format&fit=crop",
-    category: "Classical",
-  },
+      "https://img.freepik.com/premium-vector/concert-art-painting-drawing-vector-isolated_1332469-1688.jpg?w=360",  
+    category: "Upcoming Update",  
+  }
+
 ];
 
 function EventCarousel() {
