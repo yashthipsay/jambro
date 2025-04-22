@@ -16,6 +16,7 @@ import FinalReview from "./components/FinalReview";
 import BookingConfirmation from "./components/BookingConfirmation";
 import SubscriptionsPage from "./components/subscriptionComponents/SubscriptionsPage";
 import GroupSetup from "./components/subscriptionComponents/GroupSetup";
+import RentalsPage from "./components/rentals/RentalsPage";
 import {
   Button,
   AppBar,
@@ -99,15 +100,17 @@ function AppContent() {
 
   const menuItems = [
     { text: "Past Bookings", icon: <History />, path: "/bookings" },
-    { text: "About Us", icon: <Info />, path: "/about" },
-    { text: "Contact", icon: <Mail />, path: "/contact" },
-    { text: "Support", icon: <Phone />, path: "/support" },
-    { text: "My Groups", path: "/my-groups", icon: <Users size={20} /> },
+    // Temporarily commented out unused menu items
+    // { text: "About Us", icon: <Info />, path: "/about" },
+    // { text: "Contact", icon: <Mail />, path: "/contact" },
+    // { text: "Support", icon: <Phone />, path: "/support" },
+    // { text: "My Groups", path: "/my-groups", icon: <Users size={20} /> },
   ];
 
   const footerItems = [
-    { text: "Terms & Conditions", icon: <Gavel />, path: "/terms" },
-    { text: "Privacy Policy", icon: <Shield />, path: "/privacy" },
+    // Temporarily commented out unused footer items
+    // { text: "Terms & Conditions", icon: <Gavel />, path: "/terms" },
+    // { text: "Privacy Policy", icon: <Shield />, path: "/privacy" },
   ];
 
   const toggleDrawer = (open) => (event) => {
@@ -174,11 +177,11 @@ function AppContent() {
     // Function to initialize OneSignal
     const initializeOneSignal = async () => {
       if (!isAuthenticated || !user) return;
-      
+
       try {
         // Initialize OneSignal with your app ID
         await OneSignal.init({
-          appId: 'b9e55a3c-883e-4be8-b345-b5d771d75c62',
+          appId: "b9e55a3c-883e-4be8-b345-b5d771d75c62",
           allowLocalhostAsSecureOrigin: true,
           // Configure for slide prompt instead of notification button
           notifyButton: {
@@ -191,31 +194,31 @@ function AppContent() {
                 type: "push", // This configures the push notification slidedown
                 autoPrompt: true,
                 text: {
-                  actionMessage: "Would you like to receive notifications about your bookings?",
+                  actionMessage:
+                    "Would you like to receive notifications about your bookings?",
                   acceptButton: "Allow",
-                  cancelButton: "Maybe later"
+                  cancelButton: "Maybe later",
                 },
                 delay: {
                   pageViews: 1,
-                  timeDelay: 20
-                }
-              }
-            ]
-          }
+                  timeDelay: 20,
+                },
+              },
+            ],
+          },
         });
-        
-  
+
         // Check if the user is already subscribed
-        const isPushSupported =  OneSignal.Notifications.isPushSupported();
+        const isPushSupported = OneSignal.Notifications.isPushSupported();
         if (isPushSupported) {
-          const isSubscribed =  OneSignal.Notifications.permission === true;
-          
+          const isSubscribed = OneSignal.Notifications.permission === true;
+
           // Only show prompt if not already subscribed
           if (!isSubscribed) {
             await OneSignal.Notifications.requestPermission();
           }
         }
-  
+
         /* 
         // Get OneSignal user ID after subscription - COMMENTED OUT FOR LATER USE
         const oneSignalId = OneSignal.User?.PushSubscription?.id;
@@ -249,7 +252,7 @@ function AppContent() {
           }
         }
         */
-  
+
         /*
         // Set up notification click handler - COMMENTED OUT FOR LATER USE
         OneSignal.Notifications.addEventListener('click', (event) => {
@@ -262,15 +265,15 @@ function AppContent() {
         });
         */
       } catch (error) {
-        console.error('Error initializing OneSignal:', error);
+        console.error("Error initializing OneSignal:", error);
       }
     };
-  
+
     // Initialize OneSignal when user logs in
     if (isAuthenticated && user) {
       initializeOneSignal();
     }
-  
+
     // Cleanup function
     return () => {
       /* 
@@ -534,7 +537,7 @@ function AppContent() {
               <Typography variant="body2" className="text-gray-500 mb-3">
                 No active subscription
               </Typography>
-              <Button
+              {/* <Button
                 variant="contained"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -545,7 +548,7 @@ function AppContent() {
                 size="small"
               >
                 View Plans
-              </Button>
+              </Button> */}
             </div>
           )}
         </SubscriptionCard>
@@ -718,6 +721,7 @@ function AppContent() {
         <Route path="/subscriptions" element={<SubscriptionsPage />} />
         <Route path="/group-setup" element={<GroupSetup />} />
         <Route path="/my-groups" element={<GroupSetup />} />
+        <Route path="/rentals" element={<RentalsPage />} />
       </Routes>
     </>
   );

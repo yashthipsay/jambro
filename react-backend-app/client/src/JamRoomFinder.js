@@ -309,13 +309,6 @@ function JamRoomFinder() {
   // Main service categories (superset)
   const mainServices = [
     {
-      id: "rentals",
-      name: "Rentals",
-      icon: <LibraryMusic sx={{ fontSize: 20 }} />,
-      active: false,
-    },
-
-    {
       id: "jamrooms_studios",
       name: "JamRooms/Studios",
       icon: <MusicNote sx={{ fontSize: 20 }} />,
@@ -327,22 +320,28 @@ function JamRoomFinder() {
       icon: <CardMembership sx={{ fontSize: 20 }} />,
       active: false,
     },
+    {
+      id: "rentals",
+      name: "Rentals",
+      icon: <LibraryMusic sx={{ fontSize: 20 }} />,
+      active: false,
+    },
 
-    {
-      id: "coaching",
-      name: "Coaching",
-      icon: <Guitar sx={{ fontSize: 20 }} />,
-      active: false,
-    },
-    {
-      id: "events",
-      name: "Events",
-      icon: <Event sx={{ fontSize: 20 }} />,
-      active: false,
-    },
+    // {
+    //   id: "coaching",
+    //   name: "Coaching",
+    //   icon: <Guitar sx={{ fontSize: 20 }} />,
+    //   active: false,
+    // },
+    // {
+    //   id: "events",
+    //   name: "Events",
+    //   icon: <Event sx={{ fontSize: 20 }} />,
+    //   active: false,
+    // },
   ];
 
-  const [activeService, setActiveService] = useState("jamrooms");
+  const [activeService, setActiveService] = useState("jamrooms_studios");
 
   // Categories for the horizontal scroll
   const categories = ["All", "Jamrooms", "Recording Studios", "Pass Eligible"];
@@ -438,8 +437,11 @@ function JamRoomFinder() {
       // This is the default view, so we can either do nothing or explicitly navigate to "/"
       // Setting it as active service is already handled above
       setSelectedCategory("All"); // Reset the category filter
+    } else if (serviceId === "rentals") {
+      // Navigate to rentals page
+      navigate("/rentals");
     } else {
-      // For other services (rentals, coaching, events),
+      // For other services (coaching, events),
       // just update state for now and reset the category filter
       // In the future you might want to navigate to specific pages for these services
       // e.g., navigate(`/${serviceId}`);
