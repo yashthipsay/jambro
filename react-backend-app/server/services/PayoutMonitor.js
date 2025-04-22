@@ -135,8 +135,10 @@ class PayoutMonitor {
       // Find payouts that failed and are eligible for retry
       const failedPayouts = await Payout.find({
         status: "FAILED",
-        retryCount: { $lt: this.maxRetryAttempts },
-        nextRetryAt: { $lte: new Date() },
+        $and: [
+          { $or: [ { retryCount: { $exists: false } }, { retryCount: { $lt: this.maxRetryAttempts } } ] },
+          { $or: [ { nextRetryAt: { $exists: false } }, { nextRetryAt: { $lte: new Date() } } ] }
+        ]
       });
 
       console.log(
