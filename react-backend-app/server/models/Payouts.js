@@ -17,6 +17,10 @@ const payoutSchema = new mongoose.Schema({
     ref: "JamRoom",
   },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date },
+  statusDetails: String,
+  retryCount: { type: Number, default: 0 },
+  nextRetryAt: { type: Date },
 });
 
 const Payouts = mongoose.model("Payouts", payoutSchema);

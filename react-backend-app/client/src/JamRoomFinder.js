@@ -300,33 +300,14 @@ function JamRoomFinder() {
   const [loading, setLoading] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
   const { isAuthenticated, loginWithRedirect } = useAuth0();
-  const [jamRooms, setJamRooms] = useState(() => {
-    // Initialize from localStorage if available
-    const savedRooms = localStorage.getItem("savedJamRooms");
-    return savedRooms ? JSON.parse(savedRooms) : [];
-  });
-  const [userLatitude, setUserLatitude] = useState(() => {
-    return localStorage.getItem("userLatitude")
-      ? parseFloat(localStorage.getItem("userLatitude"))
-      : null;
-  });
-  const [userLongitude, setUserLongitude] = useState(() => {
-    return localStorage.getItem("userLongitude")
-      ? parseFloat(localStorage.getItem("userLongitude"))
-      : null;
-  });
+  const [jamRooms, setJamRooms] = useState([]);
+  const [userLatitude, setUserLatitude] = useState(null);
+  const [userLongitude, setUserLongitude] = useState(null);
   const [filteredJamRooms, setFilteredJamRooms] = useState([]);
   const navigate = useNavigate();
 
   // Main service categories (superset)
   const mainServices = [
-    {
-      id: "rentals",
-      name: "Rentals",
-      icon: <LibraryMusic sx={{ fontSize: 20 }} />,
-      active: false,
-    },
-
     {
       id: "jamrooms_studios",
       name: "JamRooms/Studios",
@@ -339,22 +320,28 @@ function JamRoomFinder() {
       icon: <CardMembership sx={{ fontSize: 20 }} />,
       active: false,
     },
+    {
+      id: "rentals",
+      name: "Rentals",
+      icon: <LibraryMusic sx={{ fontSize: 20 }} />,
+      active: false,
+    },
 
-    {
-      id: "coaching",
-      name: "Coaching",
-      icon: <Guitar sx={{ fontSize: 20 }} />,
-      active: false,
-    },
-    {
-      id: "events",
-      name: "Events",
-      icon: <Event sx={{ fontSize: 20 }} />,
-      active: false,
-    },
+    // {
+    //   id: "coaching",
+    //   name: "Coaching",
+    //   icon: <Guitar sx={{ fontSize: 20 }} />,
+    //   active: false,
+    // },
+    // {
+    //   id: "events",
+    //   name: "Events",
+    //   icon: <Event sx={{ fontSize: 20 }} />,
+    //   active: false,
+    // },
   ];
 
-  const [activeService, setActiveService] = useState("jamrooms");
+  const [activeService, setActiveService] = useState("jamrooms_studios");
 
   // Categories for the horizontal scroll
   const categories = ["All", "Jamrooms", "Recording Studios", "Pass Eligible"];
@@ -380,12 +367,7 @@ function JamRoomFinder() {
       setUserLatitude(lat);
       setUserLongitude(lon);
       setJamRooms(rooms);
-      setTimeout(() => setHeaderVisible(false), 100); // Start fade out after rooms are loaded
-
-      // Save to localStorage
-      localStorage.setItem("savedJamRooms", JSON.stringify(rooms));
-      localStorage.setItem("userLatitude", lat.toString());
-      localStorage.setItem("userLongitude", lon.toString());
+      setTimeout(() => setHeaderVisible(false), 100);
     } catch (error) {
       console.error("Error finding jam rooms:", error);
     } finally {
@@ -417,17 +399,6 @@ function JamRoomFinder() {
   useEffect(() => {
     setFilteredJamRooms(jamRooms);
   }, [jamRooms]);
-
-  // Load saved data on mount if available
-  useEffect(() => {
-    if (
-      jamRooms.length === 0 &&
-      localStorage.getItem("userLatitude") &&
-      localStorage.getItem("userLongitude")
-    ) {
-      handleFindJamRooms();
-    }
-  }, []); // Empty dependency array means this runs once on mount
 
   const handleCardClick = (room) => {
     if (!isAuthenticated) {
@@ -466,8 +437,11 @@ function JamRoomFinder() {
       // This is the default view, so we can either do nothing or explicitly navigate to "/"
       // Setting it as active service is already handled above
       setSelectedCategory("All"); // Reset the category filter
+    } else if (serviceId === "rentals") {
+      // Navigate to rentals page
+      navigate("/rentals");
     } else {
-      // For other services (rentals, coaching, events),
+      // For other services (coaching, events),
       // just update state for now and reset the category filter
       // In the future you might want to navigate to specific pages for these services
       // e.g., navigate(`/${serviceId}`);
@@ -530,37 +504,35 @@ function JamRoomFinder() {
 
           {/* Main content - Takes up 3 columns */}
           <div className="lg:col-span-3">
-            {/* Find Button - Only show if no jam rooms are loaded */}
-            {jamRooms.length === 0 && (
-              <Button
-                variant="contained"
-                fullWidth
-                size="large"
-                onClick={handleFindJamRooms}
-                disabled={loading}
-                sx={{
-                  backgroundColor: primaryColor,
-                  color: "#ffffff",
-                  py: 2,
-                  mb: 4,
-                  borderRadius: 2,
-                  boxShadow: "0 4px 12px rgba(100, 52, 252, 0.3)",
-                  "&:hover": {
-                    backgroundColor: accentColor,
-                    boxShadow: "0 6px 16px rgba(100, 52, 252, 0.4)",
-                  },
-                }}
-                startIcon={
-                  loading ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <LocationOn fontSize="small" />
-                  )
-                }
-              >
-                {loading ? "Searching..." : "Find Nearby Music Spaces"}
-              </Button>
-            )}
+            {/* Find Button - Always visible */}
+            <Button
+              variant="contained"
+              fullWidth
+              size="large"
+              onClick={handleFindJamRooms}
+              disabled={loading}
+              sx={{
+                backgroundColor: primaryColor,
+                color: "#ffffff",
+                py: 2,
+                mb: 4,
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(100, 52, 252, 0.3)",
+                "&:hover": {
+                  backgroundColor: accentColor,
+                  boxShadow: "0 6px 16px rgba(100, 52, 252, 0.4)",
+                },
+              }}
+              startIcon={
+                loading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <LocationOn fontSize="small" />
+                )
+              }
+            >
+              {loading ? "Searching..." : "Find Nearby Music Spaces"}
+            </Button>
 
             {/* Jam Room Listing */}
             {jamRooms.length > 0 && (
