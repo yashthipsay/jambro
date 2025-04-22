@@ -1,10 +1,12 @@
 const cron = require("node-cron");
 const axios = require("axios");
 const Payout = require("../models/Payouts");
+const { createBulkPePayout } = require("../controller/payoutsController");
 
 class PayoutMonitor {
   constructor(io) {
     this.io = io;
+    this.maxRetryAttempts = 3; // Maximum number of retry attempts
   }
 
   start() {
@@ -12,6 +14,11 @@ class PayoutMonitor {
 
     cron.schedule("*/5 * * * *", async () => {
       await this.checkPayoutStatuses();
+    });
+
+    // Retry failed payouts every 5 minutes
+    cron.schedule("*/5 * * * *", async () => {
+      await this.retryFailedPayouts();
     });
   }
 
@@ -44,7 +51,9 @@ class PayoutMonitor {
 
   async fetchPayoutDetails(transactionId) {
     try {
-      console.log(`Fetching payout details for transaction ID: ${transactionId}`);
+      console.log(
+        `Fetching payout details for transaction ID: ${transactionId}`
+      );
 
       const response = await axios.post(
         "https://api.bulkpe.in/client/fetchStatus",
@@ -58,7 +67,9 @@ class PayoutMonitor {
       );
 
       if (response.data.status) {
-        console.log(`Fetched payout details for transaction ID: ${transactionId}`);
+        console.log(
+          `Fetched payout details for transaction ID: ${transactionId}`
+        );
         return response.data.data;
       } else {
         console.error(
@@ -84,7 +95,9 @@ class PayoutMonitor {
       let newStatus = payout.status;
       if (payoutDetails.status === "SUCCESS") {
         newStatus = "COMPLETED";
-      } else if (["FAILED", "CANCELLED", "REVERSED"].includes(payoutDetails.status)) {
+      } else if (
+        ["FAILED", "CANCELLED", "REVERSED"].includes(payoutDetails.status)
+      ) {
         newStatus = payoutDetails.status;
       } else {
         newStatus = "PENDING"; // Default to pending for other statuses
@@ -108,7 +121,81 @@ class PayoutMonitor {
         });
       }
     } catch (error) {
-      console.error(`Error updating payout status for payout ID: ${payout._id}`, error.message);
+      console.error(
+        `Error updating payout status for payout ID: ${payout._id}`,
+        error.message
+      );
+    }
+  }
+
+  async retryFailedPayouts() {
+    try {
+      console.log("Checking for failed payouts that need retry");
+
+      // Find payouts that failed and are eligible for retry
+      const failedPayouts = await Payout.find({
+        status: "FAILED",
+        retryCount: { $lt: this.maxRetryAttempts },
+        nextRetryAt: { $lte: new Date() },
+      });
+
+      console.log(
+        `Found ${failedPayouts.length} failed payouts eligible for retry`
+      );
+
+      for (const payout of failedPayouts) {
+        try {
+          console.log(
+            `Retrying payout ID: ${payout._id} (Attempt ${
+              payout.retryCount + 1
+            }/${this.maxRetryAttempts})`
+          );
+
+          // Mock response object for createBulkPePayout
+          const mockResponse = {
+            json: (data) => console.log("Payout retry response:", data),
+            status: (code) => ({
+              json: (data) => console.log("Retry Status:", code, "Data:", data),
+            }),
+          };
+
+          // Create a new payout attempt
+          await createBulkPePayout(
+            {
+              body: {
+                jamroomId: payout.jamroom,
+                amount: payout.amount,
+                purpose: "Retry: Jamroom session payout",
+                bookingId: payout.bookingId,
+              },
+            },
+            mockResponse
+          );
+
+          // Update the retry count and schedule next retry
+          payout.retryCount = (payout.retryCount || 0) + 1;
+
+          if (payout.retryCount >= this.maxRetryAttempts) {
+            payout.status = "MAX_RETRIES_REACHED";
+            payout.statusDetails = "Maximum retry attempts reached";
+          } else {
+            payout.nextRetryAt = new Date(Date.now() + 5 * 60 * 1000); // Schedule next retry in 5 minutes
+          }
+
+          await payout.save();
+
+          // Emit retry attempt event
+          this.io.emit("payoutRetryAttempt", {
+            payoutId: payout._id,
+            retryCount: payout.retryCount,
+            maxRetries: this.maxRetryAttempts,
+          });
+        } catch (error) {
+          console.error(`Error retrying payout ${payout._id}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error("Error in retryFailedPayouts:", error);
     }
   }
 }
