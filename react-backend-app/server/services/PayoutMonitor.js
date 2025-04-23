@@ -3,6 +3,8 @@ const axios = require("axios");
 const Payout = require("../models/Payouts");
 const { createBulkPePayout } = require("../controller/payoutsController");
 
+const BULKPE_API_URL = "https://api.bulkpe.in/client";
+
 class PayoutMonitor {
   constructor(io) {
     this.io = io;
