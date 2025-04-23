@@ -132,13 +132,23 @@ class PayoutMonitor {
     try {
       console.log("Checking for failed payouts that need retry");
 
-      // Find payouts that failed and are eligible for retry
+      // Find payouts that are marked as FAILED and are eligible for retry
       const failedPayouts = await Payout.find({
         status: "FAILED",
         $and: [
-          { $or: [ { retryCount: { $exists: false } }, { retryCount: { $lt: this.maxRetryAttempts } } ] },
-          { $or: [ { nextRetryAt: { $exists: false } }, { nextRetryAt: { $lte: new Date() } } ] }
-        ]
+          {
+            $or: [
+              { retryCount: { $exists: false } },
+              { retryCount: { $lt: this.maxRetryAttempts } },
+            ],
+          },
+          {
+            $or: [
+              { nextRetryAt: { $exists: false } },
+              { nextRetryAt: { $lte: new Date() } },
+            ],
+          },
+        ],
       });
 
       console.log(
@@ -153,35 +163,44 @@ class PayoutMonitor {
             }/${this.maxRetryAttempts})`
           );
 
-          // Mock response object for createBulkPePayout
-          const mockResponse = {
-            json: (data) => console.log("Payout retry response:", data),
-            status: (code) => ({
-              json: (data) => console.log("Retry Status:", code, "Data:", data),
-            }),
-          };
-
-          // Create a new payout attempt
-          await createBulkPePayout(
+          // Retry by directly calling the BulkPe API instead of createBulkPePayout.
+          // Use the existing payout record fields for reference.
+          const response = await axios.post(
+            `${BULKPE_API_URL}/initiatepayout`,
             {
-              body: {
-                jamroomId: payout.jamroom,
-                amount: payout.amount,
-                purpose: "Retry: Jamroom session payout",
-                bookingId: payout.bookingId,
-              },
+              amount: payout.amount,
+              // Retain the same reference_id so the backend recognizes this as a retry
+              reference_id: payout.reference_id,
+              transcation_note: "Retry: Jamroom session payout",
+              // You can also include additional required details here if needed
+              beneficiaryName: payout.beneficiaryName,
+              upi: payout.upiId,
             },
-            mockResponse
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.BULKPE_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+            }
           );
 
-          // Update the retry count and schedule next retry
-          payout.retryCount = (payout.retryCount || 0) + 1;
+          if (response.data.status) {
+            console.log(`Retry API succeeded for payout ${payout._id}`);
+            // Update the existing payout record with new details from the API
+            payout.status = response.data.data.status || "PENDING";
+            payout.bulkpeTransactionId = response.data.data.transcation_id;
+            payout.statusDetails = "Retry successful";
+          } else {
+            console.error(`Retry API failed for payout ${payout._id}`);
+          }
 
+          // Update retry count and schedule the next retry (if applicable)
+          payout.retryCount = (payout.retryCount || 0) + 1;
           if (payout.retryCount >= this.maxRetryAttempts) {
             payout.status = "MAX_RETRIES_REACHED";
             payout.statusDetails = "Maximum retry attempts reached";
           } else {
-            payout.nextRetryAt = new Date(Date.now() + 5 * 60 * 1000); // Schedule next retry in 5 minutes
+            payout.nextRetryAt = new Date(Date.now() + 5 * 60 * 1000); // next retry in 5 minutes
           }
 
           await payout.save();
