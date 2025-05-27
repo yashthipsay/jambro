@@ -73,7 +73,9 @@ export function Sidebar() {
         animate={{ x: 0 }}
         transition={{ type: 'spring', stiffness: 120 }}
       >
-        <div className={`flex flex-col gap-6 ${(!user || !isRegistered) && 'blur-sm'}`}>
+        <div
+          className={`flex flex-col gap-6 ${(!user || !isRegistered) && 'blur-sm'}`}
+        >
           {sidebarItems.map((item, index) => (
             <div key={index} className="relative">
               <Link href={item.path}>
@@ -122,7 +124,9 @@ export function Sidebar() {
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 120 }}
       >
-        <div className={`flex justify-around items-center ${(!user || !isRegistered) && 'blur-sm'}`}>
+        <div
+          className={`flex justify-around items-center ${(!user || !isRegistered) && 'blur-sm'}`}
+        >
           {/* Main Items */}
           {mainItems.map((item) => (
             <Link key={item.label} href={item.path}>
@@ -149,7 +153,10 @@ export function Sidebar() {
             <DropdownMenuContent className="bg-black/90 border border-[#7DF9FF]/20 mb-16">
               {dropdownItems.map((item) => (
                 <DropdownMenuItem key={item.label} asChild>
-                  <Link href={item.path} className="flex items-center gap-2 text-white p-3">
+                  <Link
+                    href={item.path}
+                    className="flex items-center gap-2 text-white p-3"
+                  >
                     <item.icon className="h-4 w-4" />
                     {item.label}
                   </Link>

@@ -195,7 +195,9 @@ const StudioServicesCard = ({ jamRoomId }) => {
               <Label className="text-[#7DF9FF]">Add Sub-parts</Label>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 space-y-2">
-                  <Label className="text-[#7DF9FF]/80 text-sm">Sub-part Name</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm">
+                    Sub-part Name
+                  </Label>
                   <Input
                     placeholder="Sub-part Name"
                     value={newSubPart.name}
@@ -221,7 +223,7 @@ const StudioServicesCard = ({ jamRoomId }) => {
                     className="bg-black/20 border-[#7DF9FF]/30 text-white"
                   />
                 </div>
-                
+
                 <div className="flex items-end">
                   <Button
                     onClick={handleAddSubPart}
@@ -243,8 +245,12 @@ const StudioServicesCard = ({ jamRoomId }) => {
                       className="flex justify-between items-center p-2 bg-black/20 rounded"
                     >
                       <div className="flex flex-col">
-                        <span className="text-white font-medium">{subPart.name}</span>
-                        <span className="text-[#7DF9FF]/70 text-sm">₹{subPart.price}</span>
+                        <span className="text-white font-medium">
+                          {subPart.name}
+                        </span>
+                        <span className="text-[#7DF9FF]/70 text-sm">
+                          ₹{subPart.price}
+                        </span>
                       </div>
                       <Button
                         variant="destructive"
@@ -553,7 +559,9 @@ const AddonsCard = ({ jamRoomId }) => {
 
               <div className="flex gap-4 flex-col sm:flex-row">
                 <div className="flex flex-col">
-                  <Label className="text-[#7DF9FF]/80 text-sm mb-1">Quantity</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm mb-1">
+                    Quantity
+                  </Label>
                   <Input
                     type="number"
                     placeholder="Qty"
@@ -570,7 +578,9 @@ const AddonsCard = ({ jamRoomId }) => {
                 </div>
 
                 <div className="flex flex-col">
-                  <Label className="text-[#7DF9FF]/80 text-sm mb-1">Price per hour</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm mb-1">
+                    Price per hour
+                  </Label>
                   <Input
                     type="number"
                     placeholder="₹/hr"

@@ -167,8 +167,12 @@ export default function BookingsPage() {
     };
 
     return (
-      <div className={`p-0.5 rounded ${statusColors[status]} text-white shadow-sm`}>
-        <div className="text-xs font-medium truncate">{eventInfo.event.title}</div>
+      <div
+        className={`p-0.5 rounded ${statusColors[status]} text-white shadow-sm`}
+      >
+        <div className="text-xs font-medium truncate">
+          {eventInfo.event.title}
+        </div>
         <div className="text-[10px] opacity-90">
           {moment(eventInfo.event.start).format('HH:mm')}
         </div>
@@ -287,7 +291,7 @@ export default function BookingsPage() {
         <h1 className="text-xl sm:text-2xl font-bold mb-4 text-[#7DF9FF] text-shadow">
           Bookings
         </h1>
-        
+
         {/* Filters Section */}
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -308,11 +312,13 @@ export default function BookingsPage() {
               className="w-full bg-black/30 border-[#7DF9FF]/30 text-white placeholder-white/70"
             />
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4">
             <Select
               value={filters.sortBy}
-              onValueChange={(value) => handleSortChange(value, filters.sortOrder)}
+              onValueChange={(value) =>
+                handleSortChange(value, filters.sortOrder)
+              }
               className="w-full sm:w-auto"
             >
               <SelectTrigger className="bg-black/30 border-[#7DF9FF]/30 text-white">
@@ -406,7 +412,7 @@ export default function BookingsPage() {
                             hour: '2-digit',
                             minute: '2-digit',
                             meridiem: false,
-                            hour12: false
+                            hour12: false,
                           }}
                           dayMaxEvents={3}
                           slotMinHeight={30}

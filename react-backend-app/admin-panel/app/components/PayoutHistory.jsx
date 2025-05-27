@@ -15,7 +15,7 @@ import {
 } from './ui/select';
 
 const PayoutHistory = () => {
-  const { jamRoomId } = useDashboard(); 
+  const { jamRoomId } = useDashboard();
   const router = useRouter();
 
   const [payouts, setPayouts] = useState([]);
@@ -35,8 +35,6 @@ const PayoutHistory = () => {
     total: 0,
   });
 
-
-
   const NoResults = () => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -54,7 +52,7 @@ const PayoutHistory = () => {
   );
 
   useEffect(() => {
-    if (!jamRoomId || jamRoomId === "null") {
+    if (!jamRoomId || jamRoomId === 'null') {
       setLoading(false);
       return;
     }
@@ -70,7 +68,7 @@ const PayoutHistory = () => {
           `https://api.vision.gigsaw.co.in/api/payouts/${jamRoomId}?${queryParams}`
         );
         const data = await response.json();
-        console.log("Payouts: ", data);
+        console.log('Payouts: ', data);
 
         if (data.success) {
           setPayouts(data.data);
@@ -249,7 +247,11 @@ const PayoutHistory = () => {
                       Date: {new Date(payout.createdAt).toLocaleDateString()}
                     </p>
                     <Button
-                      onClick={() => router.push(`/bookings/${jamRoomId}?bookingId=${payout.bookingId}`)}
+                      onClick={() =>
+                        router.push(
+                          `/bookings/${jamRoomId}?bookingId=${payout.bookingId}`
+                        )
+                      }
                       variant="outline"
                       className="w-full sm:w-auto mt-2 bg-gradient-to-r from-[#7DF9FF]/20 to-[#00BFFF]/40 hover:from-[#7DF9FF]/40 hover:to-[#00BFFF]/60 text-[#7DF9FF] border-[#7DF9FF]/30"
                     >

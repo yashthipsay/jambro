@@ -124,7 +124,9 @@ export function PlansAndPackages() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Plan Name</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                    Plan Name
+                  </Label>
                   <Input
                     value={newPlan.name}
                     onChange={(e) =>
@@ -135,7 +137,9 @@ export function PlansAndPackages() {
                   />
                 </div>
                 <div>
-                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Price (₹)</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                    Price (₹)
+                  </Label>
                   <Input
                     type="number"
                     value={newPlan.price}
@@ -153,7 +157,9 @@ export function PlansAndPackages() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Duration</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                    Duration
+                  </Label>
                   <Input
                     type="number"
                     value={newPlan.duration}
@@ -168,7 +174,9 @@ export function PlansAndPackages() {
                   />
                 </div>
                 <div>
-                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Duration Type</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                    Duration Type
+                  </Label>
                   <Select
                     value={newPlan.durationType}
                     onValueChange={(value) =>
@@ -188,7 +196,9 @@ export function PlansAndPackages() {
               </div>
 
               <div className="mb-4">
-                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Description</Label>
+                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                  Description
+                </Label>
                 <Input
                   value={newPlan.description}
                   onChange={(e) =>
@@ -200,7 +210,9 @@ export function PlansAndPackages() {
               </div>
 
               <div className="mb-4">
-                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Features</Label>
+                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                  Features
+                </Label>
                 <div className="flex flex-col sm:flex-row gap-2 mb-2">
                   <Input
                     value={newFeature}
@@ -260,7 +272,9 @@ export function PlansAndPackages() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Package Name</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                    Package Name
+                  </Label>
                   <Input
                     value={newPackage.name}
                     onChange={(e) =>
@@ -271,7 +285,9 @@ export function PlansAndPackages() {
                   />
                 </div>
                 <div>
-                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Discount (%)</Label>
+                  <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                    Discount (%)
+                  </Label>
                   <Input
                     type="number"
                     value={newPackage.discount}
@@ -290,7 +306,9 @@ export function PlansAndPackages() {
               </div>
 
               <div className="mb-4">
-                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Description</Label>
+                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                  Description
+                </Label>
                 <Input
                   value={newPackage.description}
                   onChange={(e) =>
@@ -305,7 +323,9 @@ export function PlansAndPackages() {
               </div>
 
               <div className="mb-4">
-                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">Select Plans</Label>
+                <Label className="text-[#7DF9FF]/80 text-sm sm:text-base">
+                  Select Plans
+                </Label>
                 <ScrollArea className="h-48 border border-[#7DF9FF]/30 rounded-md p-2">
                   {plans.map((plan) => (
                     <div
@@ -313,8 +333,12 @@ export function PlansAndPackages() {
                       className="flex flex-col sm:flex-row sm:items-center justify-between p-2 bg-black/20 rounded mb-1 gap-2"
                     >
                       <div className="text-center sm:text-left">
-                        <h3 className="text-[#7DF9FF] text-sm sm:text-base">{plan.name}</h3>
-                        <p className="text-white/60 text-xs sm:text-sm">₹{plan.price}</p>
+                        <h3 className="text-[#7DF9FF] text-sm sm:text-base">
+                          {plan.name}
+                        </h3>
+                        <p className="text-white/60 text-xs sm:text-sm">
+                          ₹{plan.price}
+                        </p>
                       </div>
                       <Button
                         variant="outline"
@@ -334,7 +358,9 @@ export function PlansAndPackages() {
                             : 'bg-transparent text-[#7DF9FF]'
                         }`}
                       >
-                        {newPackage.plans.includes(plan.id) ? 'Selected' : 'Select'}
+                        {newPackage.plans.includes(plan.id)
+                          ? 'Selected'
+                          : 'Select'}
                       </Button>
                     </div>
                   ))}

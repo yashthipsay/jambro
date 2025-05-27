@@ -24,11 +24,9 @@ export function DashboardLayout({ children }) {
         <Navbar />
         <div className="flex-1 overflow-hidden">
           {/* Main content area with padding adjustment for mobile */}
-          <div className="overflow-auto pb-6 md:pb-6 md:pl-72">
-            {children}
-          </div>
+          <div className="overflow-auto pb-6 md:pb-6 md:pl-72">{children}</div>
         </div>
-        
+
         {/* Sidebar handles its own responsive behavior */}
         <Sidebar />
       </div>

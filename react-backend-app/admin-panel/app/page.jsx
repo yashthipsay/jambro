@@ -36,7 +36,7 @@ export default function HomePage() {
 
         // Request notification permission
         await OneSignal.Notifications.requestPermission();
-        
+
         // Get the OneSignal user ID
         if (OneSignal.User?.PushSubscription?.id) {
           const oneSignalId = OneSignal.User.PushSubscription.id;
@@ -44,17 +44,20 @@ export default function HomePage() {
 
           // Update the backend with the OneSignal ID
           try {
-            const response = await fetch('https://api.vision.gigsaw.co.in/api/jamrooms/update-onesignal', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                email: user.email,
-                jamRoomId: jamRoomId,
-                oneSignalUserId: oneSignalId,
-              }),
-            });
+            const response = await fetch(
+              'https://api.vision.gigsaw.co.in/api/jamrooms/update-onesignal',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  email: user.email,
+                  jamRoomId: jamRoomId,
+                  oneSignalUserId: oneSignalId,
+                }),
+              }
+            );
 
             const data = await response.json();
             if (data.success) {
@@ -82,7 +85,7 @@ export default function HomePage() {
     if (user && jamRoomId) {
       initializeOneSignal();
     }
-    
+
     // Cleanup function
     return () => {
       if (OneSignal?.Notifications) {
