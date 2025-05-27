@@ -51,7 +51,10 @@ export function Navbar() {
       </Link>
       <div>
         {isLoading ? (
-          <Button variant="outline" className="btn-secondary text-sm md:text-base">
+          <Button
+            variant="outline"
+            className="btn-secondary text-sm md:text-base"
+          >
             Loading...
           </Button>
         ) : user ? (

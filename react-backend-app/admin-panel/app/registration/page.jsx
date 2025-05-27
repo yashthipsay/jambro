@@ -171,51 +171,50 @@ const JamRoomRegistration = () => {
 
     setUploadingImages(true);
     try {
-          // 1. Get presigned URLs for each file
-    const filesMetadata = imageFiles.map(file => ({
-      name: file.name,
-      type: file.type
-    }));
+      // 1. Get presigned URLs for each file
+      const filesMetadata = imageFiles.map((file) => ({
+        name: file.name,
+        type: file.type,
+      }));
 
-    const response = await fetch(
-      'https://api.vision.gigsaw.co.in/api/jamrooms/images',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ files: filesMetadata })
+      const response = await fetch(
+        'https://api.vision.gigsaw.co.in/api/jamrooms/images',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ files: filesMetadata }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to get presigned URLs');
       }
-    );
 
-    const result = await response.json();
+      // Assume the backend returns the presigned URLs in result.data
+      const presignedData = result.data;
 
-    if (!result.success) {
-      throw new Error(result.message || 'Failed to get presigned URLs');
-    }
-
-        // Assume the backend returns the presigned URLs in result.data
-        const presignedData = result.data;
-
-    // 2. Upload files directly to S3 using presigned URLs
-    const uploadPromises = imageFiles.map((file, index) => {
-      return fetch(presignedData[index].uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': file.type,
-        },
-        body: file
+      // 2. Upload files directly to S3 using presigned URLs
+      const uploadPromises = imageFiles.map((file, index) => {
+        return fetch(presignedData[index].uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type,
+          },
+          body: file,
+        });
       });
-    });
 
-    // Wait for all uploads to complete
-    await Promise.all(uploadPromises);
+      // Wait for all uploads to complete
+      await Promise.all(uploadPromises);
 
-    setUploadingImages(false);
+      setUploadingImages(false);
 
-    // 3. Return array of final URLs where the files can be accessed
-    return presignedData.map(item => item.finalUrl);
-
+      // 3. Return array of final URLs where the files can be accessed
+      return presignedData.map((item) => item.finalUrl);
     } catch (error) {
       setUploadingImages(false);
       console.error('Error uploading images:', error);
@@ -322,18 +321,23 @@ const JamRoomRegistration = () => {
                 <div className="relative mb-6 sm:mb-10 mt-2">
                   {/* Progress track */}
                   <div className="absolute left-0 top-[45%] sm:top-1/2 -translate-y-1/2 w-full h-1 bg-zinc-800 rounded-full hidden sm:block"></div>
-                  
+
                   {/* Mobile progress dots */}
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-zinc-800 rounded-full sm:hidden">
                     <div className="relative h-full">
                       {steps.map((_, index) => (
-                        <div 
+                        <div
                           key={index}
                           className={`absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full
-                            ${index <= steps.findIndex(s => s.id === currentStep) 
-                              ? 'bg-[#7DF9FF]' 
-                              : 'bg-zinc-600'}`}
-                          style={{ left: `${(index / (steps.length - 1)) * 100}%` }}
+                            ${
+                              index <=
+                              steps.findIndex((s) => s.id === currentStep)
+                                ? 'bg-[#7DF9FF]'
+                                : 'bg-zinc-600'
+                            }`}
+                          style={{
+                            left: `${(index / (steps.length - 1)) * 100}%`,
+                          }}
                         />
                       ))}
                     </div>
@@ -343,29 +347,33 @@ const JamRoomRegistration = () => {
                   <div
                     className="absolute left-0 top-[45%] sm:top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] rounded-full transition-all duration-300"
                     style={{
-                      width: `${(steps.findIndex(s => s.id === currentStep) / (steps.length - 1)) * 100}%`
+                      width: `${(steps.findIndex((s) => s.id === currentStep) / (steps.length - 1)) * 100}%`,
                     }}
                   ></div>
 
                   {/* Step indicators */}
                   <div className="relative flex justify-between items-start">
                     {steps.map((step, index) => (
-                      <div 
-                        key={step.id} 
+                      <div
+                        key={step.id}
                         className="flex flex-col items-center w-full max-w-[100px]"
                       >
                         <button
                           type="button"
                           onClick={() => setCurrentStep(step.id)}
                           className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center z-10
-                            ${currentStep === step.id
-                              ? 'bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] text-black'
-                              : index < steps.findIndex(s => s.id === currentStep)
-                                ? 'bg-gradient-to-r from-[#7DF9FF]/80 to-[#00BFFF]/80 text-black'
-                                : 'bg-zinc-800 text-white/60'
+                            ${
+                              currentStep === step.id
+                                ? 'bg-gradient-to-r from-[#7DF9FF] to-[#00BFFF] text-black'
+                                : index <
+                                    steps.findIndex((s) => s.id === currentStep)
+                                  ? 'bg-gradient-to-r from-[#7DF9FF]/80 to-[#00BFFF]/80 text-black'
+                                  : 'bg-zinc-800 text-white/60'
                             } transition-all duration-200`}
                         >
-                          <span className="text-xs sm:text-sm">{index + 1}</span>
+                          <span className="text-xs sm:text-sm">
+                            {index + 1}
+                          </span>
                         </button>
                         <span className="text-[10px] sm:text-sm font-medium mt-2 text-center text-white/60 line-clamp-1">
                           {step.label}
@@ -374,8 +382,11 @@ const JamRoomRegistration = () => {
                     ))}
                   </div>
                 </div>
-                
-                <TabsContent value="basic" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+
+                <TabsContent
+                  value="basic"
+                  className="mt-4 sm:mt-6 space-y-4 sm:space-y-6"
+                >
                   <div className="space-y-4 sm:space-y-6">
                     <Label className="text-white text-lg mb-4 block">
                       Venue Type
@@ -465,7 +476,10 @@ const JamRoomRegistration = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="owner" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+                <TabsContent
+                  value="owner"
+                  className="mt-4 sm:mt-6 space-y-4 sm:space-y-6"
+                >
                   <div className="space-y-4 sm:space-y-6">
                     <div>
                       <Label
@@ -549,7 +563,10 @@ const JamRoomRegistration = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="location" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+                <TabsContent
+                  value="location"
+                  className="mt-4 sm:mt-6 space-y-4 sm:space-y-6"
+                >
                   <div className="space-y-4 sm:space-y-6">
                     <div>
                       <div className="flex justify-between items-center mb-2">
@@ -696,7 +713,10 @@ const JamRoomRegistration = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="additional" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+                <TabsContent
+                  value="additional"
+                  className="mt-4 sm:mt-6 space-y-4 sm:space-y-6"
+                >
                   <div className="space-y-4 sm:space-y-6">
                     <div>
                       <Label

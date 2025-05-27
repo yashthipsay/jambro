@@ -31,7 +31,9 @@ const ProfileSection = ({
   <Card className="relative group glass-card bg-gradient-to-b from-white/10 to-purple-500/10">
     <CardHeader className="p-4 sm:p-6">
       <div className="flex justify-between items-center">
-        <CardTitle className="text-base sm:text-lg text-[#7DF9FF] font-audiowide">{title}</CardTitle>
+        <CardTitle className="text-base sm:text-lg text-[#7DF9FF] font-audiowide">
+          {title}
+        </CardTitle>
         {!isEditing && (
           <motion.button
             initial={{ opacity: 0 }}
@@ -139,55 +141,19 @@ export default function Profile() {
   };
 
   const handleSectionSave = async (section) => {
-    try {
-      const formData = watch();
+    try{
+    const formData = watch();
 
-      if (section === 'additional') {
-        const existingImages =
-          formData.images?.filter((image) => !image.startsWith('blob:')) || [];
+    if (section === 'additional') {
+      const existingImages =
+        formData.images?.filter((image) => !image.startsWith('blob:')) || [];
 
-        if (imageFiles.length > 0) {
-          const uploadFormData = new FormData();
-          formData.images?.forEach((image) => {
-            if (!image.startsWith('blob:'))
-              uploadFormData.append('existingImages', image);
-          });
-          imageFiles.forEach((file) => uploadFormData.append('images', file));
+      let finalImages = [...existingImages];
 
-          const imageUploadResponse = await fetch(
-            `https://api.vision.gigsaw.co.in/api/jamrooms/images`,
-            { method: 'POST', body: uploadFormData }
-          );
-          const imageData = await imageUploadResponse.json();
-          if (!imageData.success) throw new Error('Failed to upload images');
-
-          formData.images = [...existingImages, ...imageData.imageUrls];
-        }
-
-        const response = await fetch(
-          `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              feesPerSlot: parseInt(formData.feesPerSlot),
-              slots: formData.slots,
-              images: formData.images,
-            }),
-          }
-        );
-
-        const data = await response.json();
-        if (!data.success) throw new Error(data.message || 'Update failed');
-
-        setJamRoomData(data.data);
-        setEditingSection(null);
-        toast({
-          title: 'Success',
-          description: 'Changes saved.',
-          variant: 'default',
-        });
-        return;
+      if (imageFiles.length > 0) {
+        // Upload new images using presigned URLs
+        const uploadedImageUrls = await uploadImagesToS3();
+        finalImages = [...existingImages, ...uploadedImageUrls];
       }
 
       const response = await fetch(
@@ -195,30 +161,197 @@ export default function Profile() {
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ [section]: formData[section] }),
+          body: JSON.stringify({
+            feesPerSlot: parseInt(formData.feesPerSlot),
+            slots: formData.slots,
+            images: finalImages,
+          }),
         }
       );
 
       const data = await response.json();
-
       if (!data.success) throw new Error(data.message || 'Update failed');
 
       setJamRoomData(data.data);
       setEditingSection(null);
+
+      // Clear the temporary state
+      setImageFiles([]);
+      setImagePreviews([]);
+
       toast({
         title: 'Success',
         description: 'Changes saved.',
         variant: 'default',
       });
-    } catch (error) {
-      console.error('Error updating jam room:', error);
-      toast({
-        title: 'Error',
-        description: error?.message,
-        variant: 'destructive',
-      });
+      return;
     }
-  };
+
+    const response = await fetch(
+      `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [section]: formData[section] }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) throw new Error(data.message || 'Update failed');
+
+    setJamRoomData(data.data);
+    setEditingSection(null);
+    toast({
+      title: 'Success',
+      description: 'Changes saved.',
+      variant: 'default',
+    });
+  } catch (error) {
+    console.error('Error updating jam room:', error);
+    toast({
+      title: 'Error',
+      description: error?.message,
+      variant: 'destructive',
+    });
+  }
+}
+
+// Add this new function to handle S3 uploads using presigned URLs
+const uploadImagesToS3 = async () => {
+  if (imageFiles.length === 0) return [];
+
+  try {
+    // 1. Get presigned URLs for each file
+    const filesMetadata = imageFiles.map(file => ({
+      name: file.name,
+      type: file.type
+    }));
+
+    const response = await fetch(
+      'https://api.vision.gigsaw.co.in/api/jamrooms/images',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ files: filesMetadata })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to get presigned URLs');
+    }
+
+    // Assume the backend returns the presigned URLs in result.data
+    const presignedData = result.data;
+
+    // 2. Upload files directly to S3 using presigned URLs
+    const uploadPromises = imageFiles.map((file, index) => {
+      return fetch(presignedData[index].uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type,
+        },
+        body: file
+      });
+    });
+
+    // Wait for all uploads to complete
+    await Promise.all(uploadPromises);
+
+    // 3. Return array of final URLs where the files can be accessed
+    return presignedData.map(item => item.finalUrl);
+
+  } catch (error) {
+    console.error('Error uploading images:', error);
+    throw error;
+  }
+};
+
+  // const handleSectionSave = async (section) => {
+  //   try {
+  //     const formData = watch();
+
+  //     if (section === 'additional') {
+  //       const existingImages =
+  //         formData.images?.filter((image) => !image.startsWith('blob:')) || [];
+
+  //       if (imageFiles.length > 0) {
+  //         const uploadFormData = new FormData();
+  //         formData.images?.forEach((image) => {
+  //           if (!image.startsWith('blob:'))
+  //             uploadFormData.append('existingImages', image);
+  //         });
+  //         imageFiles.forEach((file) => uploadFormData.append('images', file));
+
+  //         const imageUploadResponse = await fetch(
+  //           `https://api.vision.gigsaw.co.in/api/jamrooms/images`,
+  //           { method: 'POST', body: uploadFormData }
+  //         );
+  //         const imageData = await imageUploadResponse.json();
+  //         if (!imageData.success) throw new Error('Failed to upload images');
+
+  //         formData.images = [...existingImages, ...imageData.imageUrls];
+  //       }
+
+  //       const response = await fetch(
+  //         `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
+  //         {
+  //           method: 'PUT',
+  //           headers: { 'Content-Type': 'application/json' },
+  //           body: JSON.stringify({
+  //             feesPerSlot: parseInt(formData.feesPerSlot),
+  //             slots: formData.slots,
+  //             images: formData.images,
+  //           }),
+  //         }
+  //       );
+
+  //       const data = await response.json();
+  //       if (!data.success) throw new Error(data.message || 'Update failed');
+
+  //       setJamRoomData(data.data);
+  //       setEditingSection(null);
+  //       toast({
+  //         title: 'Success',
+  //         description: 'Changes saved.',
+  //         variant: 'default',
+  //       });
+  //       return;
+  //     }
+
+  //     const response = await fetch(
+  //       `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
+  //       {
+  //         method: 'PUT',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({ [section]: formData[section] }),
+  //       }
+  //     );
+
+  //     const data = await response.json();
+
+  //     if (!data.success) throw new Error(data.message || 'Update failed');
+
+  //     setJamRoomData(data.data);
+  //     setEditingSection(null);
+  //     toast({
+  //       title: 'Success',
+  //       description: 'Changes saved.',
+  //       variant: 'default',
+  //     });
+  //   } catch (error) {
+  //     console.error('Error updating jam room:', error);
+  //     toast({
+  //       title: 'Error',
+  //       description: error?.message,
+  //       variant: 'destructive',
+  //     });
+  //   }
+  // };
 
   const handleSectionCancel = () => {
     reset(jamRoomData);
@@ -268,7 +401,7 @@ export default function Profile() {
                       value="basic"
                       className="flex-1 text-sm sm:text-base text-[#7DF9FF]/60 data-[state=active]:text-[#7DF9FF] font-syncopate whitespace-nowrap"
                     >
-                      Basic Info 
+                      Basic Info
                     </TabsTrigger>
                     <TabsTrigger
                       value="owner"
@@ -319,11 +452,15 @@ export default function Profile() {
                         )}
                       </div>
                       <div>
-                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Description</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">
+                          Description
+                        </Label>
                         {editingSection === 'jamRoomDetails' ? (
                           <Textarea
                             {...register('jamRoomDetails.description')}
-                            defaultValue={jamRoomData.jamRoomDetails.description}
+                            defaultValue={
+                              jamRoomData.jamRoomDetails.description
+                            }
                             className="mt-1 sm:mt-2"
                           />
                         ) : (
@@ -346,7 +483,9 @@ export default function Profile() {
                   >
                     <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Owner Name</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">
+                          Owner Name
+                        </Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
                             {...register('ownerDetails.fullname')}
@@ -360,7 +499,9 @@ export default function Profile() {
                         )}
                       </div>
                       <div>
-                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Email Address</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">
+                          Email Address
+                        </Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
                             {...register('ownerDetails.email')}
@@ -374,7 +515,9 @@ export default function Profile() {
                         )}
                       </div>
                       <div>
-                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Phone Number</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">
+                          Phone Number
+                        </Label>
                         {editingSection === 'ownerDetails' ? (
                           <Input
                             {...register('ownerDetails.phone')}
@@ -402,7 +545,9 @@ export default function Profile() {
                     {editingSection === 'location' ? (
                       <div className="space-y-3 sm:space-y-4">
                         <div className="flex justify-between items-center">
-                          <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Address</Label>
+                          <Label className="text-sm sm:text-base text-[#7DF9FF]/80">
+                            Address
+                          </Label>
                           <Button
                             type="button"
                             onClick={() => setUseAutocomplete(!useAutocomplete)}
@@ -450,7 +595,9 @@ export default function Profile() {
                   >
                     <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Images</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">
+                          Images
+                        </Label>
                         {editingSection === 'additional' ? (
                           <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4">
@@ -553,7 +700,9 @@ export default function Profile() {
                         )}
                       </div>
                       <div>
-                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Fees per Slot</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">
+                          Fees per Slot
+                        </Label>
                         {editingSection === 'additional' ? (
                           <Input
                             type="number"
@@ -568,7 +717,9 @@ export default function Profile() {
                         )}
                       </div>
                       <div>
-                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">Time Slots</Label>
+                        <Label className="text-sm sm:text-base text-[#7DF9FF]/80">
+                          Time Slots
+                        </Label>
                         {editingSection === 'additional' ? (
                           <TimeSlotSelector
                             selectedSlots={watch('slots') || jamRoomData.slots}

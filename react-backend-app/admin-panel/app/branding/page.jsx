@@ -151,7 +151,9 @@ export default function BrandingPage() {
                 >
                   <div className="flex items-center space-x-3 text-[#7DF9FF]">
                     <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span className="text-sm sm:text-base">Verified Spotify Profile</span>
+                    <span className="text-sm sm:text-base">
+                      Verified Spotify Profile
+                    </span>
                   </div>
                   <div className="rounded-lg bg-[#7DF9FF]/5 p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:space-x-6">
@@ -166,7 +168,8 @@ export default function BrandingPage() {
                       )}
                       <div className="text-center sm:text-left">
                         <h3 className="text-lg sm:text-xl font-bold text-[#7DF9FF]">
-                          {spotifyProfile.displayName || spotifyProfile.username}
+                          {spotifyProfile.displayName ||
+                            spotifyProfile.username}
                         </h3>
                         <p className="text-sm text-[#7DF9FF]/60">
                           {spotifyProfile.followers} followers
