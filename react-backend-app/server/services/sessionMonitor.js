@@ -139,8 +139,8 @@ class SessionMonitor {
       // deduct 10% of the total amount, for actual production
       // const amount = booking.totalAmount * 0.9;
 
-      // for testing
-      const amount = booking.totalAmount;
+      // Deduct 2% platform fee, send 98% as payout
+      const amount = booking.totalAmount * 0.98;
       console.log(`Payout amount for booking ID: ${booking._id} is ${amount}`);
 
       const mockResponse = {

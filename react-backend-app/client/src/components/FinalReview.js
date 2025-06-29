@@ -148,6 +148,10 @@ const FinalReview = () => {
     return () => clearInterval(timer);
   }, [reservationExpiresAt, navigate, isPaymentInProgress]);
 
+  // Calculate convenience fee and new total
+  const convenienceFee = Math.round(totalAmount * 0.025);
+  const totalWithConvenience = totalAmount + convenienceFee;
+
   const checkoutHandler = async (amount) => {
     try {
       setIsPaymentInProgress(true);
@@ -184,7 +188,7 @@ const FinalReview = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount }),
+          body: JSON.stringify({ amount: totalWithConvenience }),
         }
       );
 
@@ -515,6 +519,13 @@ const FinalReview = () => {
               </div>
             )}
             <Divider className="my-2" />
+            <div className="flex justify-between items-center mb-2">
+              <Typography variant="body2" className="text-gray-600">
+                Convenience Fee (2.5%)
+              </Typography>
+              <Typography variant="body2">₹{convenienceFee}</Typography>
+            </div>
+            <Divider className="my-2" />
             <div className="flex justify-between items-center">
               <Typography variant="subtitle1" className="font-semibold">
                 Total Amount
@@ -536,7 +547,7 @@ const FinalReview = () => {
             fullWidth
             size="large"
             className="rounded-lg py-3"
-            onClick={() => checkoutHandler(totalAmount)}
+            onClick={() => checkoutHandler(totalWithConvenience)}
             startIcon={<CreditCard className="w-5 h-5" />}
             disabled={isPaymentDisabled}
           >
