@@ -531,7 +531,7 @@ const FinalReview = () => {
                 Total Amount
               </Typography>
               <Typography variant="h6" className="font-bold text-indigo-700">
-                ₹{totalAmount}
+                ₹{totalWithConvenience}
               </Typography>
             </div>
           </CardContent>
