@@ -8,8 +8,9 @@ import {
   Collapse,
   IconButton,
   Modal,
+  CircularProgress
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   MapPin,
   Music,
@@ -25,19 +26,75 @@ import {
   Disc,
 } from "lucide-react";
 import ShareButton from "./buttons/ShareButton";
+import { useJamRoomDetails, useSpotifyAlbums } from '../hooks/useJamroom';
 
 function JamRoomDetails() {
   const navigate = useNavigate();
-  const selectedRoom = JSON.parse(localStorage.getItem("selectedJamRoom"));
+  const { id: jamRoomId } = useParams();
+    // Get initial data from localStorage for immediate display
+  const localStorageRoom = JSON.parse(localStorage.getItem("selectedJamRoom"));
+
+    // Use SWR to fetch fresh data
+  const { data: jamRoomData, isLoading: roomLoading, error: roomError } = useJamRoomDetails(jamRoomId);
+
+  // Determine which room data to use - prefer fresh data from SWR, fallback to localStorage
+  const selectedRoom = jamRoomData?.success ? {
+    id: jamRoomData.data._id,
+    name: jamRoomData.data.jamRoomDetails.name,
+    description: jamRoomData.data.jamRoomDetails.description,
+    type: jamRoomData.data.type,
+    location: jamRoomData.data.location,
+    slots: jamRoomData.data.slots,
+    feesPerSlot: jamRoomData.data.feesPerSlot,
+    ownerDetails: jamRoomData.data.ownerDetails,
+    images: jamRoomData.data.images,
+    // Keep user location from localStorage since it's not in the API response
+    userLatitude: localStorageRoom?.userLatitude,
+    userLongitude: localStorageRoom?.userLongitude,
+    distance: localStorageRoom?.distance, // Keep calculated distance
+  } : localStorageRoom;
+
+  // Use SWR for Spotify albums
+  const spotifyUsername = selectedRoom?.ownerDetails?.spotify?.username;
+  const { data: albumsData, isLoading: albumsLoading } = useSpotifyAlbums(spotifyUsername);
+
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [artistAlbums, setArtistAlbums] = useState([]);
   // Add new state variables for slide-up modals
   const [facilitiesModalOpen, setFacilitiesModalOpen] = useState(false);
   const [additionalDetailsModalOpen, setAdditionalDetailsModalOpen] =
     useState(false);
+
+  // Handle albums data
+  const artistAlbums = albumsData?.success ? albumsData.albums?.slice(0, 3) || [] : [];
   // Add handleModalToggle function
   const handleModalToggle = () => setModalOpen(!modalOpen);
+
+  // Update localStorage when fresh data is available
+  useEffect(() => {
+    if (jamRoomData?.success && localStorageRoom) {
+      const updatedRoom = {
+        ...selectedRoom,
+        // Keep user location and distance from localStorage
+        userLatitude: localStorageRoom.userLatitude,
+        userLongitude: localStorageRoom.userLongitude,
+        distance: localStorageRoom.distance,
+      };
+      localStorage.setItem("selectedJamRoom", JSON.stringify(updatedRoom));
+    }
+  }, [jamRoomData, localStorageRoom]);
+
+  // Show loading state only if we don't have localStorage data
+  if (!selectedRoom && roomLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <CircularProgress size={40} />
+        <Typography variant="body1" className="mt-4">
+          Loading jam room details...
+        </Typography>
+      </div>
+    );
+  }
 
   // useEffect(() => {
   //   // Only push state if coming from finder or no state exists
@@ -72,25 +129,50 @@ function JamRoomDetails() {
   // }, [navigate]);
 
   // Using useMemo to fetch artist albums when selectedRoom changes
-  useMemo(() => {
-    const fetchArtistAlbums = async (artistId) => {
-      try {
-        const response = await fetch(
-          `https://api.vision.gigsaw.co.in/api/spotify/artist-albums/${artistId}`
-        );
-        const data = await response.json();
-        if (data.success) {
-          setArtistAlbums(data.albums?.slice(0, 3) || []);
-        }
-      } catch (error) {
-        console.error("Error fetching albums:", error);
-      }
-    };
+  // useMemo(() => {
+  //   const fetchArtistAlbums = async (artistId) => {
+  //     try {
+  //       const response = await fetch(
+  //         `https://api.vision.gigsaw.co.in/api/spotify/artist-albums/${artistId}`
+  //       );
+  //       const data = await response.json();
+  //       if (data.success) {
+  //         setArtistAlbums(data.albums?.slice(0, 3) || []);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching albums:", error);
+  //     }
+  //   };
 
-    if (selectedRoom?.ownerDetails?.spotify?.username) {
-      fetchArtistAlbums(selectedRoom.ownerDetails.spotify.username);
-    }
-  }, [selectedRoom]);
+  //   if (selectedRoom?.ownerDetails?.spotify?.username) {
+  //     fetchArtistAlbums(selectedRoom.ownerDetails.spotify.username);
+  //   }
+  // }, [selectedRoom]);
+
+  if (roomError && !selectedRoom) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="rounded-xl shadow-md p-6 w-full max-w-md text-center">
+          <Music className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-gray-800 mb-4">
+            Error loading jam room
+          </h1>
+          <Typography variant="body2" className="text-gray-600 mb-4">
+            {roomError.message || "Something went wrong"}
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={() => navigate("/")}
+            startIcon={<ArrowLeft className="w-4 h-4" />}
+          >
+            Go Back to Finder
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!selectedRoom) {
     return (
@@ -136,6 +218,18 @@ function JamRoomDetails() {
       }}
     >
       <div className="max-w-md mx-auto">
+        {/* Show a subtle loading indicator when fetching fresh data */}
+        {roomLoading && selectedRoom && (
+          <div className="fixed top-4 right-4 z-50">
+            <div className="bg-white rounded-lg p-2 shadow-md flex items-center">
+              <CircularProgress size={16} />
+              <Typography variant="caption" className="ml-2">
+                Updating...
+              </Typography>
+            </div>
+          </div>
+        )}
+
         <div className="mb-4 flex items-center">
           <Button
             variant="text"

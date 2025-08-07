@@ -1,5 +1,6 @@
 "use client";
-
+import { useJamRooms, calculateDistance } from "./utils/jamRoomUtils";
+import { useAPI, CACHE_KEYS } from "./utils/apiFetcher";
 import { useState, useEffect } from "react";
 import {
   Button,
@@ -315,6 +316,39 @@ function JamRoomFinder() {
   const [filteredJamRooms, setFilteredJamRooms] = useState([]);
   const navigate = useNavigate();
 
+  // Use SWR for jam rooms data
+  const { data: jamRoomsData, isLoading: jamRoomsLoading, error: jamRoomsError } = useJamRooms();
+
+  // Process jam rooms data when it changes
+  useEffect(() => {
+    if (jamRoomsData?.success && userLatitude && userLongitude) {
+      const jamRoomsWithDistance = jamRoomsData.data.map((room) => ({
+        id: room._id,
+        type: room.type,
+        name: room.jamRoomDetails.name,
+        description: room.jamRoomDetails.description,
+        location: room.location,
+        slots: room.slots,
+        distance: calculateDistance(
+          userLatitude, 
+          userLongitude, 
+          room.location.latitude, 
+          room.location.longitude
+        ),
+        feesPerSlot: room.feesPerSlot,
+        ownerDetails: room.ownerDetails,
+        images: room.images
+      }));
+
+      const sortedJamRooms = jamRoomsWithDistance.sort(
+        (a, b) => a.distance - b.distance
+      );
+
+      setFilteredJamRooms(sortedJamRooms);
+      setTimeout(() => setHeaderVisible(false), 100);
+    }
+  }, [jamRoomsData, userLatitude, userLongitude]);
+
   // Main service categories (superset)
   const mainServices = [
     {
@@ -368,18 +402,21 @@ function JamRoomFinder() {
   const handleFindJamRooms = async () => {
     setLoading(true);
     try {
-      const {
-        userLatitude: lat,
-        userLongitude: lon,
-        jamRooms: rooms,
-      } = await findClosestJamRooms();
-      setUserLatitude(lat);
-      setUserLongitude(lon);
-      setJamRooms(rooms);
-      setTimeout(() => setHeaderVisible(false), 100);
+      // Get user location
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLatitude(latitude);
+          setUserLongitude(longitude);
+          setLoading(false);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setLoading(false);
+        }
+      );
     } catch (error) {
       console.error("Error finding jam rooms:", error);
-    } finally {
       setLoading(false);
     }
   };
@@ -544,7 +581,7 @@ function JamRoomFinder() {
             </Button>
 
             {/* Jam Room Listing */}
-            {jamRooms.length > 0 && (
+            {filteredJamRooms.length > 0 && (
               <div className="space-y-4">
                 {/* Horizontal scrollable categories */}
                 <div className="flex space-x-3 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-6">

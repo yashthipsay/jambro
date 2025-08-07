@@ -10,6 +10,8 @@ import {
 } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import JamRoomFinder from "./JamRoomFinder";
+import { SWRConfig } from 'swr';
+import { fetcher } from './utils/apiFetcher';
 import JamRoomDetails from "./components/JamRoomDetails";
 import Booking from "./components/Booking";
 import FinalReview from "./components/FinalReview";
@@ -729,9 +731,18 @@ function AppContent() {
 
 function App() {
   return (
+    <SWRConfig
+      value={{
+        fetcher,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: true,
+        dedupingInterval: 30000,
+      }}
+    >
     <SubscriptionProvider>
       <AppContent />
     </SubscriptionProvider>
+  </SWRConfig>
   );
 }
 

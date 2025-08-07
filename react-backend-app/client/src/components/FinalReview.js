@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Card,
@@ -10,6 +10,17 @@ import {
 } from "@mui/material";
 import { ChevronLeft, CreditCard } from "lucide-react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { apiClient, CACHE_KEYS, useAPI } from '../utils/apiFetcher';
+
+
+// Add new reservation-related cache keys
+const RESERVATION_CACHE_KEYS = {
+  EXTEND: '/reservations/extend',
+  RELEASE: '/reservations/release',
+  CHECKOUT: '/payments/checkout',
+  VERIFY: '/payments/verify',
+  CREATE_BOOKING: '/bookings'
+};
 
 const FinalReview = () => {
   const [isLeaving, setIsLeaving] = useState(false);
@@ -32,22 +43,42 @@ const FinalReview = () => {
   } = location.state;
   const { user } = useAuth0();
 
+
+  // Use SWR for user data
+  const { data: userData } = useAPI(
+    user?.email ? `${CACHE_KEYS.USER_PROFILE}?email=${user.email}` : null,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000, // Cache for 1 minute
+    }
+  );
+
+  // Release reservation using apiClient
+  const releaseReservation = useCallback(async () => {
+    if (!selectedRoomId || !selectedDate || !selectedSlots) return;
+    
+    try {
+      await apiClient.post(RESERVATION_CACHE_KEYS.RELEASE, {
+        jamRoomId: selectedRoomId,
+        date: selectedDate,
+        slots: selectedSlots,
+      }, {
+        // Invalidate jam room details cache when we release a reservation
+        invalidateCache: [CACHE_KEYS.JAM_ROOM_DETAILS(selectedRoomId)]
+      });
+    } catch (error) {
+      console.error('Error releasing reservation:', error);
+    }
+  }, [selectedRoomId, selectedDate, selectedSlots]);
+
   // Cleanup to release reservation when component unmounts if leaving
   useEffect(() => {
     return () => {
       if (isLeaving) {
-        fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jamRoomId: selectedRoomId,
-            date: selectedDate,
-            slots: selectedSlots,
-          }),
-        });
+        releaseReservation();
       }
     };
-  }, [isLeaving, selectedRoomId, selectedDate, selectedSlots]);
+  }, [isLeaving, releaseReservation]);
 
   // Warn user when they try to close or reload the page
   useEffect(() => {
@@ -115,6 +146,7 @@ const FinalReview = () => {
     navigate(-1);
   };
 
+
   useEffect(() => {
     if (!reservationExpiresAt) return;
 
@@ -152,76 +184,53 @@ const FinalReview = () => {
   const convenienceFee = Math.round(totalAmount * 0.025);
   const totalWithConvenience = totalAmount + convenienceFee;
 
-  const checkoutHandler = async (amount) => {
+  // Enhanced checkout handler using apiClient
+  const checkoutHandler = async () => {
     try {
       setIsPaymentInProgress(true);
 
-      // Calculate remaining time and needed extension
-
+      // 1. Extend the reservation first
       const extensionMinutes = 3;
+      const extensionData = await apiClient.post(RESERVATION_CACHE_KEYS.EXTEND, {
+        jamRoomId: selectedRoomId,
+        date: selectedDate,
+        slots: selectedSlots,
+        additionalMinutes: extensionMinutes,
+      });
 
-      // Extend the reservation
-      const extensionResponse = await fetch(
-        "https://api.vision.gigsaw.co.in/api/reservations/extend",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jamRoomId: selectedRoomId,
-            date: selectedDate,
-            slots: selectedSlots,
-            additionalMinutes: extensionMinutes,
-          }),
-        }
-      );
-
-      const extensionData = await extensionResponse.json();
       if (extensionData.success) {
         // Update local expiry time
         const newTimeRemaining = extensionMinutes * 60; // Convert minutes to seconds
-        console.log("New time remaining:", newTimeRemaining);
         setTimeRemaining(newTimeRemaining);
       }
 
-      const response = await fetch(
-        "https://api.vision.gigsaw.co.in/api/payments/checkout",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: totalWithConvenience }),
-        }
-      );
+      // 2. Create checkout session
+      const checkoutData = await apiClient.post(RESERVATION_CACHE_KEYS.CHECKOUT, {
+        amount: totalWithConvenience
+      });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Checkout API Error:", errorData);
-        throw new Error(
-          errorData.message || "Failed to initiate Razorpay checkout"
-        );
+      if (!checkoutData.success) {
+        throw new Error(checkoutData.message || "Failed to initiate checkout");
       }
 
-      const data = await response.json();
-      console.log(data);
-
-      // Open Razorpay Checkout
+      // 3. Configure Razorpay
       const options = {
         key: process.env.REACT_APP_RAZORPAY_API_KEY,
-        amount: data.order.amount * 100,
+        amount: checkoutData.order.amount * 100,
         currency: "INR",
         name: jamRoomName,
         description: "Jam Room Booking",
-        order_id: data.order.id,
-        // callback_url: `https://localhost:3000/payment-success`,
+        order_id: checkoutData.order.id,
         prefill: {
-          name: user.name,
-          email: user.email,
+          name: userData?.data?.name || user?.name,
+          email: user?.email,
           contact: phoneNumber,
         },
         timeout: 180,
         modal: {
           escape: false,
           animation: true,
-          backdropClose: false, // Prevent closing on backdrop click
+          backdropClose: false,
           ondismiss: function () {
             setIsPaymentInProgress(false);
             setIsLeaving(true);
@@ -229,62 +238,57 @@ const FinalReview = () => {
           },
         },
         handler: async (response) => {
-          console.log(response);
           setIsPaymentInProgress(false);
-          const verificationResponse = await fetch(
-            "https://api.vision.gigsaw.co.in/api/payments/verify",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                email: user.email,
+          
+          // 4. Verify payment and create booking
+          const verificationData = await apiClient.post(RESERVATION_CACHE_KEYS.VERIFY, {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            email: user.email,
+            jamRoomId: selectedRoomId,
+            date: selectedDate,
+            slots: selectedSlots,
+            totalAmount,
+            addonsCost,
+            selectedAddons,
+            selectedService,
+          }, {
+            // Invalidate jamroom and booking caches when we create a booking
+            invalidateCache: [
+              CACHE_KEYS.JAM_ROOM_DETAILS(selectedRoomId),
+              CACHE_KEYS.USER_BOOKINGS(userData?.data?._id || ''),
+              CACHE_KEYS.JAM_ROOM_BOOKINGS(selectedRoomId)
+            ]
+          });
+
+          if (verificationData.success) {
+            // 5. Create the booking
+            if (userData?.data?._id) {
+              const userId = userData.data._id;
+              
+              await apiClient.post(RESERVATION_CACHE_KEYS.CREATE_BOOKING, {
+                userId,
                 jamRoomId: selectedRoomId,
                 date: selectedDate,
                 slots: selectedSlots,
-                totalAmount,
-                addonsCost,
-                selectedAddons,
-                selectedService,
-              }),
-            }
-          );
-
-          const verificationData = await verificationResponse.json();
-          console.log("Verification data:", verificationData);
-          if (verificationData.success) {
-            const userResponse = await fetch(
-              "https://api.vision.gigsaw.co.in/api/users",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: user.email }),
-              }
-            );
-            console.log("verificationData", verificationData);
-            const userData = await userResponse.json();
-            if (userData.success) {
-              const userId = userData.data._id;
-              console.log("selected date", selectedDate);
-              await fetch("https://api.vision.gigsaw.co.in/api/bookings", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  userId,
-                  jamRoomId: selectedRoomId,
-                  date: selectedDate,
-                  slots: selectedSlots,
-                  totalAmount: totalAmount,
-                  paymentId: response.razorpay_payment_id,
-                  service: selectedService,
-                }),
+                totalAmount: totalAmount,
+                paymentId: response.razorpay_payment_id,
+                service: selectedService,
+              }, {
+                // Invalidate user bookings cache
+                invalidateCache: [
+                  CACHE_KEYS.USER_BOOKINGS(userId),
+                  CACHE_KEYS.JAM_ROOM_BOOKINGS(selectedRoomId)
+                ]
               });
+              
               navigate(`/confirmation/${verificationData.invoiceId}`);
             } else {
-              alert("Payment verification failed");
+              alert("User data not available");
             }
+          } else {
+            alert("Payment verification failed");
           }
         },
       };
