@@ -65,7 +65,7 @@ const PayoutHistory = () => {
           limit: pagination.limit,
         }).toString();
         const response = await fetch(
-          `https://api.vision.gigsaw.co.in/api/payouts/${jamRoomId}?${queryParams}`
+          `http://localhost:5000/api/payouts/${jamRoomId}?${queryParams}`
         );
         const data = await response.json();
         console.log('Payouts: ', data);

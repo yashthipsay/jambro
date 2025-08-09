@@ -56,7 +56,7 @@ export default function BookingsPage() {
           limit: pagination.limit,
         }).toString();
         const response = await fetch(
-          `https://api.vision.gigsaw.co.in/api/bookings/jamroom/${jamroom_id}?${queryParams}`
+          `http://localhost:5000/api/bookings/jamroom/${jamroom_id}?${queryParams}`
         );
         const data = await response.json();
         console.log(data);
@@ -120,7 +120,7 @@ export default function BookingsPage() {
     try {
       setSelectedBookingId(bookingId); // Track which booking was clicked
       const response = await fetch(
-        `https://api.vision.gigsaw.co.in/api/bookings/user/${bookingId}`
+        `http://localhost:5000/api/bookings/user/${bookingId}`
       );
       const data = await response.json();
       console.log(data);

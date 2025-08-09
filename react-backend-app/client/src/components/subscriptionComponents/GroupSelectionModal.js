@@ -18,12 +18,11 @@ import { useNavigate } from "react-router-dom";
 const GroupSelectionModal = ({ open, onClose, archivedGroups, isLoading }) => {
   const navigate = useNavigate();
 
-
   const handleSelectGroup = async (group) => {
     try {
       // Reactivate the group
       const response = await fetch(
-        `https://api.vision.gigsaw.co.in/api/groups/${group.groupId}/reactivate`,
+        `http://localhost:5000/api/groups/${group.groupId}/reactivate`,
         {
           method: "POST",
         }

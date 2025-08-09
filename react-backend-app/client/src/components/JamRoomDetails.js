@@ -8,7 +8,7 @@ import {
   Collapse,
   IconButton,
   Modal,
-  CircularProgress
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -26,37 +26,44 @@ import {
   Disc,
 } from "lucide-react";
 import ShareButton from "./buttons/ShareButton";
-import { useJamRoomDetails, useSpotifyAlbums } from '../hooks/useJamroom';
+import { useJamRoomDetails, useSpotifyAlbums } from "../hooks/useJamroom";
 
 function JamRoomDetails() {
   const navigate = useNavigate();
   const { id: jamRoomId } = useParams();
-    // Get initial data from localStorage for immediate display
+  // Get initial data from localStorage for immediate display
   const localStorageRoom = JSON.parse(localStorage.getItem("selectedJamRoom"));
 
-    // Use SWR to fetch fresh data
-  const { data: jamRoomData, isLoading: roomLoading, error: roomError } = useJamRoomDetails(jamRoomId);
+  // Use SWR to fetch fresh data
+  const {
+    data: jamRoomData,
+    isLoading: roomLoading,
+    error: roomError,
+  } = useJamRoomDetails(jamRoomId);
 
   // Determine which room data to use - prefer fresh data from SWR, fallback to localStorage
-  const selectedRoom = jamRoomData?.success ? {
-    id: jamRoomData.data._id,
-    name: jamRoomData.data.jamRoomDetails.name,
-    description: jamRoomData.data.jamRoomDetails.description,
-    type: jamRoomData.data.type,
-    location: jamRoomData.data.location,
-    slots: jamRoomData.data.slots,
-    feesPerSlot: jamRoomData.data.feesPerSlot,
-    ownerDetails: jamRoomData.data.ownerDetails,
-    images: jamRoomData.data.images,
-    // Keep user location from localStorage since it's not in the API response
-    userLatitude: localStorageRoom?.userLatitude,
-    userLongitude: localStorageRoom?.userLongitude,
-    distance: localStorageRoom?.distance, // Keep calculated distance
-  } : localStorageRoom;
+  const selectedRoom = jamRoomData?.success
+    ? {
+        id: jamRoomData.data._id,
+        name: jamRoomData.data.jamRoomDetails.name,
+        description: jamRoomData.data.jamRoomDetails.description,
+        type: jamRoomData.data.type,
+        location: jamRoomData.data.location,
+        slots: jamRoomData.data.slots,
+        feesPerSlot: jamRoomData.data.feesPerSlot,
+        ownerDetails: jamRoomData.data.ownerDetails,
+        images: jamRoomData.data.images,
+        // Keep user location from localStorage since it's not in the API response
+        userLatitude: localStorageRoom?.userLatitude,
+        userLongitude: localStorageRoom?.userLongitude,
+        distance: localStorageRoom?.distance, // Keep calculated distance
+      }
+    : localStorageRoom;
 
   // Use SWR for Spotify albums
   const spotifyUsername = selectedRoom?.ownerDetails?.spotify?.username;
-  const { data: albumsData, isLoading: albumsLoading } = useSpotifyAlbums(spotifyUsername);
+  const { data: albumsData, isLoading: albumsLoading } =
+    useSpotifyAlbums(spotifyUsername);
 
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -66,7 +73,9 @@ function JamRoomDetails() {
     useState(false);
 
   // Handle albums data
-  const artistAlbums = albumsData?.success ? albumsData.albums?.slice(0, 3) || [] : [];
+  const artistAlbums = albumsData?.success
+    ? albumsData.albums?.slice(0, 3) || []
+    : [];
   // Add handleModalToggle function
   const handleModalToggle = () => setModalOpen(!modalOpen);
 
@@ -133,7 +142,7 @@ function JamRoomDetails() {
   //   const fetchArtistAlbums = async (artistId) => {
   //     try {
   //       const response = await fetch(
-  //         `https://api.vision.gigsaw.co.in/api/spotify/artist-albums/${artistId}`
+  //         `http://localhost:5000/api/spotify/artist-albums/${artistId}`
   //       );
   //       const data = await response.json();
   //       if (data.success) {
@@ -340,23 +349,23 @@ function JamRoomDetails() {
               {selectedRoom.description ||
                 "A cozy jam room perfect for your music sessions."}
             </Typography>
-            
+
             {/* Spacer div */}
             <div className="h-10"></div>
 
             <Typography variant="subtitle2" className="text-gray-600 mb-3">
               Facilities
             </Typography>
-            <Button 
-              variant="outlined" 
-              color="secondary" 
-              fullWidth 
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
               onClick={() => setFacilitiesModalOpen(true)}
               className="mb-6 bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
             >
               View All Facilities
             </Button>
-            
+
             {/* Spacer div */}
             <div className="h-10"></div>
 
@@ -374,7 +383,7 @@ function JamRoomDetails() {
             >
               View Details
             </Button>
-            
+
             {/* Spacer div */}
             <div className="h-10"></div>
 

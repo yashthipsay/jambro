@@ -10,8 +10,8 @@ import {
 } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import JamRoomFinder from "./JamRoomFinder";
-import { SWRConfig } from 'swr';
-import { fetcher } from './utils/apiFetcher';
+import { SWRConfig } from "swr";
+import { fetcher } from "./utils/apiFetcher";
 import JamRoomDetails from "./components/JamRoomDetails";
 import Booking from "./components/Booking";
 import FinalReview from "./components/FinalReview";
@@ -133,16 +133,13 @@ function AppContent() {
       setIsLoadingGroups(true);
 
       // First get the database userId
-      const userResponse = await fetch(
-        "https://api.vision.gigsaw.co.in/api/users",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: user.email }),
-        }
-      );
+      const userResponse = await fetch("http://localhost:5000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: user.email }),
+      });
 
       const userData = await userResponse.json();
       if (!userData.success) {
@@ -153,7 +150,7 @@ function AppContent() {
 
       // Fetch archived groups
       const response = await fetch(
-        `https://api.vision.gigsaw.co.in/api/groups/archived/${userId}`
+        `http://localhost:5000/api/groups/archived/${userId}`
       );
 
       const data = await response.json();
@@ -230,7 +227,7 @@ function AppContent() {
           // Update backend with OneSignal ID
           try {
             const response = await fetch(
-              "https://api.vision.gigsaw.co.in/api/users/update-onesignal",
+              "http://localhost:5000/api/users/update-onesignal",
               {
                 method: "POST",
                 headers: {
@@ -292,7 +289,7 @@ function AppContent() {
       if (isAuthenticated && user) {
         try {
           const response = await fetch(
-            "https://api.vision.gigsaw.co.in/api/users/register",
+            "http://localhost:5000/api/users/register",
             {
               method: "POST",
               headers: {
@@ -326,7 +323,7 @@ function AppContent() {
     if (!subscription?._id) return;
     try {
       const response = await fetch(
-        `https://api.vision.gigsaw.co.in/api/groups/active/${subscription._id}`
+        `http://localhost:5000/api/groups/active/${subscription._id}`
       );
       const data = await response.json();
       if (data.success) {
@@ -739,10 +736,10 @@ function App() {
         dedupingInterval: 30000,
       }}
     >
-    <SubscriptionProvider>
-      <AppContent />
-    </SubscriptionProvider>
-  </SWRConfig>
+      <SubscriptionProvider>
+        <AppContent />
+      </SubscriptionProvider>
+    </SWRConfig>
   );
 }
 

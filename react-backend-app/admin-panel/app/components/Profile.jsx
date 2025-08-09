@@ -102,7 +102,7 @@ export default function Profile() {
       try {
         setLoading(true);
         const response = await fetch(
-          `https://api.vision.gigsaw.co.in/api/jamrooms/email/${user.email}`
+          `http://localhost:5000/api/jamrooms/email/${user.email}`
         );
         const data = await response.json();
         if (data.success) {
@@ -157,7 +157,7 @@ export default function Profile() {
       }
 
       const response = await fetch(
-        `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
+        `http://localhost:5000/api/jamrooms/id/${jamRoomData._id}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -188,7 +188,7 @@ export default function Profile() {
     }
 
     const response = await fetch(
-      `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
+      `http://localhost:5000/api/jamrooms/id/${jamRoomData._id}`,
       {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -229,7 +229,7 @@ const uploadImagesToS3 = async () => {
     }));
 
     const response = await fetch(
-      'https://api.vision.gigsaw.co.in/api/jamrooms/images',
+      'http://localhost:5000/api/jamrooms/images',
       {
         method: 'POST',
         headers: {
@@ -288,7 +288,7 @@ const uploadImagesToS3 = async () => {
   //         imageFiles.forEach((file) => uploadFormData.append('images', file));
 
   //         const imageUploadResponse = await fetch(
-  //           `https://api.vision.gigsaw.co.in/api/jamrooms/images`,
+  //           `http://localhost:5000/api/jamrooms/images`,
   //           { method: 'POST', body: uploadFormData }
   //         );
   //         const imageData = await imageUploadResponse.json();
@@ -298,7 +298,7 @@ const uploadImagesToS3 = async () => {
   //       }
 
   //       const response = await fetch(
-  //         `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
+  //         `http://localhost:5000/api/jamrooms/id/${jamRoomData._id}`,
   //         {
   //           method: 'PUT',
   //           headers: { 'Content-Type': 'application/json' },
@@ -324,7 +324,7 @@ const uploadImagesToS3 = async () => {
   //     }
 
   //     const response = await fetch(
-  //       `https://api.vision.gigsaw.co.in/api/jamrooms/id/${jamRoomData._id}`,
+  //       `http://localhost:5000/api/jamrooms/id/${jamRoomData._id}`,
   //       {
   //         method: 'PUT',
   //         headers: { 'Content-Type': 'application/json' },

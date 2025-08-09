@@ -26,57 +26,67 @@ import {
 } from "lucide-react";
 import moment from "moment-timezone";
 import html2canvas from "html2canvas";
+import { useAPI, apiClient, CACHE_KEYS } from "../utils/apiFetcher";
 
 const PastBookings = () => {
   const navigate = useNavigate();
   const { user } = useAuth0();
   const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isUserLoading, setIsUserLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const invoiceRef = useRef(null);
+  const [userId, setUserId] = useState(null);
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        if (!user?.email) return;
+ useEffect(() => {
+   let mounted = true;
+   const run = async () => {
+     try {
+       if (!user?.email) {
+         if (mounted) setIsUserLoading(false);
+         return;
+       }
+       const res = await apiClient.post(CACHE_KEYS.USER_PROFILE, { email: user.email }, {
+         mutateKey: CACHE_KEYS.USER_PROFILE
+       });
+       if (mounted) {
+         if (res?.success && res?.data?._id) {
+           setUserId(res.data._id);
+         } else {
+           setError(res?.message || "User not found");
+         }
+       }
+     } catch (e) {
+       if (mounted) setError("Failed to load user");
+     } finally {
+       if (mounted) setIsUserLoading(false);
+     }
+   };
+   run();
+   return () => { mounted = false; };
+ }, [user]);
 
-        // Get user ID
-        const userResponse = await fetch("https://api.vision.gigsaw.co.in/api/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: user.email }),
-        });
+ // SWR: fetch and cache bookings once we have userId
+ const {
+   data: bookingsResp,
+  isLoading: bookingsLoading,
+   error: bookingsFetchError,
+ } = useAPI(userId ? CACHE_KEYS.USER_BOOKINGS(userId) : null, {
+   revalidateOnFocus: false,
+   dedupingInterval: 60000,
+ });
 
-        const userData = await userResponse.json();
-        if (!userData.success) throw new Error("User not found");
+ // Reflect SWR data into local state for minimal UI changes
+ useEffect(() => {
+   if (bookingsResp?.success) {
+     setBookings(bookingsResp.data || []);
+   }
+ }, [bookingsResp]);
 
-        const userId = userData.data._id;
-
-        // Fetch bookings with the user ID
-        const bookingsResponse = await fetch(
-          `https://api.vision.gigsaw.co.in/api/bookings/users/${userId}/`
-        );
-        const bookingsData = await bookingsResponse.json();
-
-        if (bookingsData.success) {
-          setBookings(bookingsData.data);
-        } else {
-          setError(bookingsData.message || "Failed to load bookings");
-        }
-      } catch (error) {
-        console.error("Error fetching bookings:", error);
-        setError("Something went wrong while fetching your bookings");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBookings();
-  }, [user]);
+ const loading = isUserLoading || bookingsLoading;
+ const displayError =
+   error || (bookingsFetchError ? (bookingsFetchError.info?.message || "Failed to load bookings") : null);
 
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
@@ -93,11 +103,7 @@ const PastBookings = () => {
           logging: false,
           useCORS: true, // Enable if you have images from external sources
         });
-
-        // Convert the canvas to a data URL
         const imageData = canvas.toDataURL("image/png");
-
-        // Create a download link and trigger it
         const link = document.createElement("a");
         link.href = imageData;
         link.download = `booking-${selectedBooking._id.slice(-6)}.png`;

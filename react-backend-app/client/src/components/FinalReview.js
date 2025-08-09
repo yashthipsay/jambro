@@ -10,16 +10,15 @@ import {
 } from "@mui/material";
 import { ChevronLeft, CreditCard } from "lucide-react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { apiClient, CACHE_KEYS, useAPI } from '../utils/apiFetcher';
-
+import { apiClient, CACHE_KEYS, useAPI } from "../utils/apiFetcher";
 
 // Add new reservation-related cache keys
 const RESERVATION_CACHE_KEYS = {
-  EXTEND: '/reservations/extend',
-  RELEASE: '/reservations/release',
-  CHECKOUT: '/payments/checkout',
-  VERIFY: '/payments/verify',
-  CREATE_BOOKING: '/bookings'
+  EXTEND: "/reservations/extend",
+  RELEASE: "/reservations/release",
+  CHECKOUT: "/payments/checkout",
+  VERIFY: "/payments/verify",
+  CREATE_BOOKING: "/bookings",
 };
 
 const FinalReview = () => {
@@ -43,31 +42,39 @@ const FinalReview = () => {
   } = location.state;
   const { user } = useAuth0();
 
-
   // Use SWR for user data
-  const { data: userData } = useAPI(
-    user?.email ? `${CACHE_KEYS.USER_PROFILE}?email=${user.email}` : null,
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 60000, // Cache for 1 minute
-    }
-  );
+  const [userProfile, setUserProfile] = useState(null);
+  useEffect(() => {
+    if (!user?.email) return;
+    let cancelled = false;
+    apiClient
+      .post(CACHE_KEYS.USER_PROFILE, { email: user.email }, { mutateKey: CACHE_KEYS.USER_PROFILE })
+      .then((res) => {
+        if (!cancelled && res?.success) setUserProfile(res.data);
+      })
+      .catch(console.error);
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.email]);
 
   // Release reservation using apiClient
   const releaseReservation = useCallback(async () => {
     if (!selectedRoomId || !selectedDate || !selectedSlots) return;
-    
+
     try {
-      await apiClient.post(RESERVATION_CACHE_KEYS.RELEASE, {
-        jamRoomId: selectedRoomId,
-        date: selectedDate,
-        slots: selectedSlots,
-      }, {
-        // Invalidate jam room details cache when we release a reservation
-        invalidateCache: [CACHE_KEYS.JAM_ROOM_DETAILS(selectedRoomId)]
+      await fetch("http://localhost:5000/api/reservations/release", {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+        body: JSON.stringify({
+          jamRoomId: selectedRoomId,
+          date: selectedDate,
+          slots: selectedSlots,
+        }),
       });
     } catch (error) {
-      console.error('Error releasing reservation:', error);
+      console.error("Error releasing reservation:", error);
     }
   }, [selectedRoomId, selectedDate, selectedSlots]);
 
@@ -116,7 +123,7 @@ const FinalReview = () => {
 
   //     // Release reservation and navigate back
   //     setIsLeaving(true);
-  //     fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
+  //     fetch("http://localhost:5000/api/reservations/release", {
   //       method: "POST",
   //       headers: { "Content-Type": "application/json" },
   //       body: JSON.stringify({
@@ -145,7 +152,6 @@ const FinalReview = () => {
     setIsLeaving(true);
     navigate(-1);
   };
-
 
   useEffect(() => {
     if (!reservationExpiresAt) return;
@@ -191,12 +197,18 @@ const FinalReview = () => {
 
       // 1. Extend the reservation first
       const extensionMinutes = 3;
-      const extensionData = await apiClient.post(RESERVATION_CACHE_KEYS.EXTEND, {
-        jamRoomId: selectedRoomId,
-        date: selectedDate,
-        slots: selectedSlots,
-        additionalMinutes: extensionMinutes,
+      const extendResp = await fetch("http://localhost:5000/api/reservations/extend", {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+        body: JSON.stringify({
+          jamRoomId: selectedRoomId,
+          date: selectedDate,
+          slots: selectedSlots,
+          additionalMinutes: extensionMinutes,
+        }),
       });
+      const extensionData = await extendResp.json();
 
       if (extensionData.success) {
         // Update local expiry time
@@ -205,9 +217,12 @@ const FinalReview = () => {
       }
 
       // 2. Create checkout session
-      const checkoutData = await apiClient.post(RESERVATION_CACHE_KEYS.CHECKOUT, {
-        amount: totalWithConvenience
-      });
+      const checkoutData = await apiClient.post(
+        RESERVATION_CACHE_KEYS.CHECKOUT,
+        {
+          amount: totalWithConvenience,
+        }
+      );
 
       if (!checkoutData.success) {
         throw new Error(checkoutData.message || "Failed to initiate checkout");
@@ -222,7 +237,7 @@ const FinalReview = () => {
         description: "Jam Room Booking",
         order_id: checkoutData.order.id,
         prefill: {
-          name: userData?.data?.name || user?.name,
+          name: userProfile?.name || user?.name,
           email: user?.email,
           contact: phoneNumber,
         },
@@ -239,50 +254,58 @@ const FinalReview = () => {
         },
         handler: async (response) => {
           setIsPaymentInProgress(false);
-          
+
           // 4. Verify payment and create booking
-          const verificationData = await apiClient.post(RESERVATION_CACHE_KEYS.VERIFY, {
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            email: user.email,
-            jamRoomId: selectedRoomId,
-            date: selectedDate,
-            slots: selectedSlots,
-            totalAmount,
-            addonsCost,
-            selectedAddons,
-            selectedService,
-          }, {
-            // Invalidate jamroom and booking caches when we create a booking
-            invalidateCache: [
-              CACHE_KEYS.JAM_ROOM_DETAILS(selectedRoomId),
-              CACHE_KEYS.USER_BOOKINGS(userData?.data?._id || ''),
-              CACHE_KEYS.JAM_ROOM_BOOKINGS(selectedRoomId)
-            ]
-          });
+          const verificationData = await apiClient.post(
+            RESERVATION_CACHE_KEYS.VERIFY,
+            {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              email: user.email,
+              jamRoomId: selectedRoomId,
+              date: selectedDate,
+              slots: selectedSlots,
+              totalAmount,
+              addonsCost,
+              selectedAddons,
+              selectedService,
+            },
+            {
+              // Invalidate jamroom and booking caches when we create a booking
+              invalidateCache: [
+                CACHE_KEYS.JAM_ROOM_DETAILS(selectedRoomId),
+                CACHE_KEYS.USER_BOOKINGS(userProfile?._id || ""),
+                CACHE_KEYS.JAM_ROOM_BOOKINGS(selectedRoomId),
+              ],
+            }
+          );
 
           if (verificationData.success) {
             // 5. Create the booking
-            if (userData?.data?._id) {
-              const userId = userData.data._id;
-              
-              await apiClient.post(RESERVATION_CACHE_KEYS.CREATE_BOOKING, {
-                userId,
-                jamRoomId: selectedRoomId,
-                date: selectedDate,
-                slots: selectedSlots,
-                totalAmount: totalAmount,
-                paymentId: response.razorpay_payment_id,
-                service: selectedService,
-              }, {
-                // Invalidate user bookings cache
-                invalidateCache: [
-                  CACHE_KEYS.USER_BOOKINGS(userId),
-                  CACHE_KEYS.JAM_ROOM_BOOKINGS(selectedRoomId)
-                ]
-              });
-              
+            if (userProfile?._id) {
+              const userId = userProfile._id;
+
+              await apiClient.post(
+                RESERVATION_CACHE_KEYS.CREATE_BOOKING,
+                {
+                  userId,
+                  jamRoomId: selectedRoomId,
+                  date: selectedDate,
+                  slots: selectedSlots,
+                  totalAmount: totalAmount,
+                  paymentId: response.razorpay_payment_id,
+                  service: selectedService,
+                },
+                {
+                  // Invalidate user bookings cache
+                  invalidateCache: [
+                    CACHE_KEYS.USER_BOOKINGS(userId),
+                    CACHE_KEYS.JAM_ROOM_BOOKINGS(selectedRoomId),
+                  ],
+                }
+              );
+
               navigate(`/confirmation/${verificationData.invoiceId}`);
             } else {
               alert("User data not available");

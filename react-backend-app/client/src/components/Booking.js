@@ -47,10 +47,10 @@ import {
   convertTo12HourFormat,
   groupSlotsByCategory,
 } from "../utils/timeUtils";
-import { useJamRoomAddons, useJamRoomServices } from '../hooks/useJamroom';
-import { apiClient, CACHE_KEYS } from '../utils/apiFetcher';
+import { useJamRoomAddons, useJamRoomServices } from "../hooks/useJamroom";
+import { apiClient, CACHE_KEYS } from "../utils/apiFetcher";
 
-const socket = io("https://api.vision.gigsaw.co.in");
+const socket = io("http://localhost:5000");
 
 function Booking() {
   const { id } = useParams();
@@ -78,8 +78,12 @@ function Booking() {
   const [savedNumbersModalOpen, setSavedNumbersModalOpen] = useState(false);
 
   // Use SWR for addons and services
-  const { data: addonsData, isLoading: addonsLoading } = useJamRoomAddons(selectedRoom?.id);
-  const { data: servicesData, isLoading: servicesLoading } = useJamRoomServices(selectedRoom?.id);
+  const { data: addonsData, isLoading: addonsLoading } = useJamRoomAddons(
+    selectedRoom?.id
+  );
+  const { data: servicesData, isLoading: servicesLoading } = useJamRoomServices(
+    selectedRoom?.id
+  );
 
   // Update state when SWR data changes
   useEffect(() => {
@@ -100,7 +104,7 @@ function Booking() {
       const fetchAddons = async () => {
         try {
           const response = await fetch(
-            `https://api.vision.gigsaw.co.in/api/jamrooms/${selectedRoom.id}/addons`
+            `http://localhost:5000/api/jamrooms/${selectedRoom.id}/addons`
           );
           const data = await response.json();
           if (data.success) {
@@ -138,7 +142,7 @@ function Booking() {
         console.log("Fetching services for room:", selectedRoom.id);
 
         const response = await fetch(
-          `https://api.vision.gigsaw.co.in/api/jamrooms/${selectedRoom.id}/services`
+          `http://localhost:5000/api/jamrooms/${selectedRoom.id}/services`
         );
 
         if (!response.ok) {
@@ -161,7 +165,7 @@ function Booking() {
 
   useEffect(() => {
     if (user) {
-      fetch("https://api.vision.gigsaw.co.in/api/users", {
+      fetch("http://localhost:5000/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -200,9 +204,12 @@ function Booking() {
 
     try {
       const response = await fetch(
-        `https://api.vision.gigsaw.co.in/api/reservations/check/${
-          selectedRoom.id
-        }/${moment(selectedDate).format("YYYY-MM-DD")}`
+        `http://localhost:5000/api/reservations/check/${selectedRoom.id}/${moment(selectedDate).format("YYYY-MM-DD")}`,
+        {
+          method: "GET",
+          cache: "no-store",
+          headers: { "Cache-Control": "no-store" },
+        }
       );
 
       if (!response.ok) {
@@ -411,10 +418,11 @@ function Booking() {
 
     try {
       setIsSaving(true);
-      const data = await apiClient.post('/users/save-number', 
+      const data = await apiClient.post(
+        "/users/save-number",
         { email: user.email, phoneNumber },
-        { 
-          invalidateCache: [CACHE_KEYS.USER_PROFILE] 
+        {
+          invalidateCache: [CACHE_KEYS.USER_PROFILE],
         }
       );
 
@@ -434,7 +442,7 @@ function Booking() {
   const handleDeleteNumber = async (number) => {
     try {
       const response = await fetch(
-        "https://api.vision.gigsaw.co.in/api/users/delete-number",
+        "http://localhost:5000/api/users/delete-number",
         {
           method: "POST",
           headers: {
@@ -528,21 +536,19 @@ function Booking() {
 
       // Create the reservation in a separate step - this might be the slow part
       console.time("reservation-api-call");
-      const reservationResponse = await fetch(
-        "https://api.vision.gigsaw.co.in/api/reservations/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jamRoomId: selectedRoom.id,
-            date: formattedDate,
-            slots: slotsDetails,
-            selectedAddons: selectedAddonsDetails,
-            userId: user.sub,
-            service: serviceDetails,
-          }),
-        }
-      );
+      const reservationResponse = await fetch("http://localhost:5000/api/reservations/create", {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+        body: JSON.stringify({
+          jamRoomId: selectedRoom.id,
+          date: formattedDate,
+          slots: slotsDetails,
+          selectedAddons: selectedAddonsDetails,
+          userId: user.sub,
+          service: serviceDetails,
+        }),
+      });
 
       const reservation = await reservationResponse.json();
       console.timeEnd("reservation-api-call");
@@ -671,7 +677,7 @@ function Booking() {
 
                         return (
                           <div
-                            key={`${slot.slotId}-${slot.startTime}`} 
+                            key={`${slot.slotId}-${slot.startTime}`}
                             onClick={() =>
                               !isDisabled && handleSlotChange(slot.slotId)
                             }
@@ -979,7 +985,7 @@ function Booking() {
                           );
                           return (
                             <div
-                              key={`${slot.slotId}-${slot.startTime}`} 
+                              key={`${slot.slotId}-${slot.startTime}`}
                               className="bg-white border border-indigo-200 rounded-lg px-2 py-1 flex items-center"
                             >
                               <Typography variant="caption">
