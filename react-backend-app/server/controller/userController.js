@@ -17,6 +17,7 @@ const createUser = async (req, res) => {
       user = new User({
         email,
         name: name || "NA",
+        bookings: [],
       });
       await user.save();
     }

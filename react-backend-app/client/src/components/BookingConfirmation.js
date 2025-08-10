@@ -223,12 +223,32 @@ const BookingConfirmation = () => {
                         <span className="font-medium">₹{invoiceData.service.subPart.price}</span>
                       </div>
                     )}
-                    {invoiceData.taxAmount > 0 && (
+
+                    {/* New: Discounts */}
+                    {invoiceData.discountAmount > 0 && (
                       <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                        <span className="text-gray-700">Tax</span>
-                        <span className="font-medium">₹{invoiceData.taxAmount}</span>
+                        <span className="text-gray-700">Discounts</span>
+                        <span className="font-medium text-green-700">-₹{invoiceData.discountAmount}</span>
                       </div>
                     )}
+                    {/* List applied discounts */}
+                    {invoiceData.appliedDiscounts?.length > 0 && (
+                      <div className="px-4 pb-3 border-t border-gray-100">
+                        <Typography variant="caption" className="text-gray-500">
+                          {invoiceData.appliedDiscounts
+                            .map(d => `${d.label} (${Math.round(d.percent * 100)}%)`)
+                            .join(", ")}
+                        </Typography>
+                      </div>
+                    )}
+                    {/* Convenience Fee */}
+                    {invoiceData.convenienceFee > 0 && (
+                      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+                        <span className="text-gray-700">Convenience Fee</span>
+                        <span className="font-medium">₹{invoiceData.convenienceFee}</span>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-indigo-50/60 rounded-b-xl">
                       <span className="font-semibold text-gray-900">Total</span>
                       <span className="font-bold text-indigo-700">₹{invoiceData.totalAmount}</span>

@@ -36,6 +36,21 @@ const bookingSchema = new mongoose.Schema({
     type: Number,
     required: false
   },
+  discountAmount: {
+    type: Number,
+    default: 0
+  },
+  convenienceFee: {
+    type: Number,
+    default: 0
+  },
+  appliedDiscounts: [
+    {
+      id: String,
+      label: String,
+      percent: Number
+    }
+  ],
   refundDetails: refundDetailsSchema,
   paymentId: {
     type: String,

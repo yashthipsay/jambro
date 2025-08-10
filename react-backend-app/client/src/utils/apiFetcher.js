@@ -55,6 +55,7 @@ export const CACHE_KEYS = {
   JAM_ROOM_SERVICES: (id) => `/jamrooms/${id}/services`,
   USER_BOOKINGS: (userId) => `/bookings/users/${userId}`,
   JAM_ROOM_BOOKINGS: (jamRoomId) => `/bookings/jamroom/${jamRoomId}`,
+  DISCOUNTS_EVALUATE: "/discounts/evaluate",
   PAYOUTS: (jamRoomId) => `/payouts/${jamRoomId}`,
   USER_PROFILE: "/users",
   SUBSCRIPTIONS: "/subscriptions",

@@ -6,7 +6,17 @@ const {sendBookingNotification} = require("../services/notificationService");
 
 const createBooking = async (req, res) => {
   try {
-    const { userId, jamRoomId, date, slots, totalAmount, paymentId } = req.body;
+    const {
+      userId,
+      jamRoomId,
+      date,
+      slots,
+      totalAmount,
+      paymentId,
+      discountAmount = 0,
+      convenienceFee = 0,
+      appliedDiscounts = []
+    } = req.body;
 
     console.log("req.body:", req.body);
     // Convert date to the correct timezone
@@ -45,7 +55,10 @@ const createBooking = async (req, res) => {
       jamRoom: jamRoomId,
       date: bookingDate,
       slots,
-      totalAmount,
+      totalAmount,        // this will now be the net‐payable
+      discountAmount,
+      convenienceFee,
+      appliedDiscounts,
       paymentId,
       status: "NOT_STARTED",
     });
@@ -53,6 +66,12 @@ const createBooking = async (req, res) => {
     // 4. Save the booking
     const savedBooking = await newBooking.save();
 
+      // 4.1 Attach to user document (denormalized)
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { bookings: savedBooking._id },
+    });
+
+    
     // 5. Send notification to the owner - handle separately from main flow
     if (jamRoom && jamRoom.ownerDetails && jamRoom.ownerDetails.oneSignalUserId) {
       try {

@@ -24,19 +24,11 @@ const userSchema = new mongoose.Schema(
         message: "Invalid phone number format",
       },
     },
-    bookings: [
-      {
-        jamRoomId: { type: mongoose.Schema.Types.ObjectId, ref: "JamRoom" },
-        date: { type: Date, required: true },
-        slots: [
-          {
-            slotId: { type: Number, required: true },
-            startTime: { type: String, required: true },
-            endTime: { type: String, required: true },
-          },
-        ],
-      },
-    ],
+    bookings: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Booking" }],
+      default: [],
+    },
+    completedBookingsCount: { type: Number, default: 0 },
     createdAt: {
       type: Date,
       default: Date.now,
