@@ -29,7 +29,9 @@ export const useSubscriptionLogic = () => {
   useEffect(() => {
     const fetchSKUs = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/skus/skus");
+        const response = await fetch(
+          "https://api.vision.gigsaw.co.in/api/skus/skus"
+        );
         const data = await response.json();
 
         if (data.success) {
@@ -192,7 +194,7 @@ export const useSubscriptionLogic = () => {
 
       // Create new plan first
       const createPlanResponse = await fetch(
-        "http://localhost:5000/api/subscriptions/create-plan",
+        "https://api.vision.gigsaw.co.in/api/subscriptions/create-plan",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -213,7 +215,7 @@ export const useSubscriptionLogic = () => {
 
       // Update subscription with new plan
       const response = await fetch(
-        "http://localhost:5000/api/subscriptions/update",
+        "https://api.vision.gigsaw.co.in/api/subscriptions/update",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -283,13 +285,16 @@ export const useSubscriptionLogic = () => {
       }
 
       // First get the database userId
-      const userResponse = await fetch("http://localhost:5000/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: user.email }),
-      });
+      const userResponse = await fetch(
+        "https://api.vision.gigsaw.co.in/api/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: user.email }),
+        }
+      );
 
       const userData = await userResponse.json();
       if (!userData.success) {
@@ -303,7 +308,7 @@ export const useSubscriptionLogic = () => {
 
       // Create subscription through backend
       const response = await fetch(
-        "http://localhost:5000/api/subscriptions/purchase",
+        "https://api.vision.gigsaw.co.in/api/subscriptions/purchase",
         {
           method: "POST",
           headers: {
@@ -346,7 +351,7 @@ export const useSubscriptionLogic = () => {
           try {
             // Verify payment
             const verifyResponse = await fetch(
-              "http://localhost:5000/api/subscriptions/verify-payment",
+              "https://api.vision.gigsaw.co.in/api/subscriptions/verify-payment",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

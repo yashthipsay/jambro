@@ -50,7 +50,7 @@ import {
 import { useJamRoomAddons, useJamRoomServices } from "../hooks/useJamroom";
 import { apiClient, CACHE_KEYS } from "../utils/apiFetcher";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://api.vision.gigsaw.co.in");
 
 function Booking() {
   const { id } = useParams();
@@ -104,7 +104,7 @@ function Booking() {
       const fetchAddons = async () => {
         try {
           const response = await fetch(
-            `http://localhost:5000/api/jamrooms/${selectedRoom.id}/addons`
+            `https://api.vision.gigsaw.co.in/api/jamrooms/${selectedRoom.id}/addons`
           );
           const data = await response.json();
           if (data.success) {
@@ -142,7 +142,7 @@ function Booking() {
         console.log("Fetching services for room:", selectedRoom.id);
 
         const response = await fetch(
-          `http://localhost:5000/api/jamrooms/${selectedRoom.id}/services`
+          `https://api.vision.gigsaw.co.in/api/jamrooms/${selectedRoom.id}/services`
         );
 
         if (!response.ok) {
@@ -165,7 +165,7 @@ function Booking() {
 
   useEffect(() => {
     if (user) {
-      fetch("http://localhost:5000/api/users", {
+      fetch("https://api.vision.gigsaw.co.in/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -204,7 +204,9 @@ function Booking() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reservations/check/${selectedRoom.id}/${moment(selectedDate).format("YYYY-MM-DD")}`,
+        `https://api.vision.gigsaw.co.in/api/reservations/check/${
+          selectedRoom.id
+        }/${moment(selectedDate).format("YYYY-MM-DD")}`,
         {
           method: "GET",
           cache: "no-store",
@@ -442,7 +444,7 @@ function Booking() {
   const handleDeleteNumber = async (number) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/users/delete-number",
+        "https://api.vision.gigsaw.co.in/api/users/delete-number",
         {
           method: "POST",
           headers: {
@@ -536,19 +538,25 @@ function Booking() {
 
       // Create the reservation in a separate step - this might be the slow part
       console.time("reservation-api-call");
-      const reservationResponse = await fetch("http://localhost:5000/api/reservations/create", {
-        method: "POST",
-        cache: "no-store",
-        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
-        body: JSON.stringify({
-          jamRoomId: selectedRoom.id,
-          date: formattedDate,
-          slots: slotsDetails,
-          selectedAddons: selectedAddonsDetails,
-          userId: user.sub,
-          service: serviceDetails,
-        }),
-      });
+      const reservationResponse = await fetch(
+        "https://api.vision.gigsaw.co.in/api/reservations/create",
+        {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+          },
+          body: JSON.stringify({
+            jamRoomId: selectedRoom.id,
+            date: formattedDate,
+            slots: slotsDetails,
+            selectedAddons: selectedAddonsDetails,
+            userId: user.sub,
+            service: serviceDetails,
+          }),
+        }
+      );
 
       const reservation = await reservationResponse.json();
       console.timeEnd("reservation-api-call");

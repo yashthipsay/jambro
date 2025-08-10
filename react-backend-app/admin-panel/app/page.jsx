@@ -45,7 +45,7 @@ export default function HomePage() {
           // Update the backend with the OneSignal ID
           try {
             const response = await fetch(
-              'http://localhost:5000/api/jamrooms/update-onesignal',
+              'https://api.vision.gigsaw.co.in/api/jamrooms/update-onesignal',
               {
                 method: 'POST',
                 headers: {

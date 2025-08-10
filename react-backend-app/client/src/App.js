@@ -133,13 +133,16 @@ function AppContent() {
       setIsLoadingGroups(true);
 
       // First get the database userId
-      const userResponse = await fetch("http://localhost:5000/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: user.email }),
-      });
+      const userResponse = await fetch(
+        "https://api.vision.gigsaw.co.in/api/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: user.email }),
+        }
+      );
 
       const userData = await userResponse.json();
       if (!userData.success) {
@@ -150,7 +153,7 @@ function AppContent() {
 
       // Fetch archived groups
       const response = await fetch(
-        `http://localhost:5000/api/groups/archived/${userId}`
+        `https://api.vision.gigsaw.co.in/api/groups/archived/${userId}`
       );
 
       const data = await response.json();
@@ -227,7 +230,7 @@ function AppContent() {
           // Update backend with OneSignal ID
           try {
             const response = await fetch(
-              "http://localhost:5000/api/users/update-onesignal",
+              "https://api.vision.gigsaw.co.in/api/users/update-onesignal",
               {
                 method: "POST",
                 headers: {
@@ -289,7 +292,7 @@ function AppContent() {
       if (isAuthenticated && user) {
         try {
           const response = await fetch(
-            "http://localhost:5000/api/users/register",
+            "https://api.vision.gigsaw.co.in/api/users/register",
             {
               method: "POST",
               headers: {
@@ -323,7 +326,7 @@ function AppContent() {
     if (!subscription?._id) return;
     try {
       const response = await fetch(
-        `http://localhost:5000/api/groups/active/${subscription._id}`
+        `https://api.vision.gigsaw.co.in/api/groups/active/${subscription._id}`
       );
       const data = await response.json();
       if (data.success) {

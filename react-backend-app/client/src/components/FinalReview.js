@@ -53,7 +53,11 @@ const FinalReview = () => {
     if (!user?.email) return;
     let cancelled = false;
     apiClient
-      .post(CACHE_KEYS.USER_PROFILE, { email: user.email }, { mutateKey: CACHE_KEYS.USER_PROFILE })
+      .post(
+        CACHE_KEYS.USER_PROFILE,
+        { email: user.email },
+        { mutateKey: CACHE_KEYS.USER_PROFILE }
+      )
       .then((res) => {
         if (!cancelled && res?.success) setUserProfile(res.data);
       })
@@ -68,10 +72,13 @@ const FinalReview = () => {
     if (!selectedRoomId || !selectedDate || !selectedSlots) return;
 
     try {
-      await fetch("http://localhost:5000/api/reservations/release", {
+      await fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
         method: "POST",
         cache: "no-store",
-        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        },
         body: JSON.stringify({
           jamRoomId: selectedRoomId,
           date: selectedDate,
@@ -86,11 +93,11 @@ const FinalReview = () => {
   const evaluateDiscounts = async (code = couponCode) => {
     try {
       const resp = await apiClient.post(CACHE_KEYS.DISCOUNTS_EVALUATE, {
-        userId: userProfile?._id,               // we load this above in this file
+        userId: userProfile?._id, // we load this above in this file
         jamRoomId: selectedRoomId,
-        date: selectedDate,                     // 'YYYY-MM-DD'
-        slots: selectedSlots,                   // [{slotId, startTime, endTime}]
-        totalAmount,                            // current pre-fee total
+        date: selectedDate, // 'YYYY-MM-DD'
+        slots: selectedSlots, // [{slotId, startTime, endTime}]
+        totalAmount, // current pre-fee total
         couponCode: code || undefined,
       });
       if (resp?.success) {
@@ -105,7 +112,12 @@ const FinalReview = () => {
 
   useEffect(() => {
     // Auto-evaluate without a code to apply welcome/off-peak/bulk/etc.
-    if (userProfile?._id && selectedRoomId && selectedDate && selectedSlots?.length) {
+    if (
+      userProfile?._id &&
+      selectedRoomId &&
+      selectedDate &&
+      selectedSlots?.length
+    ) {
       evaluateDiscounts("");
     }
   }, [userProfile?._id, selectedRoomId, selectedDate, selectedSlots]);
@@ -155,7 +167,7 @@ const FinalReview = () => {
 
   //     // Release reservation and navigate back
   //     setIsLeaving(true);
-  //     fetch("http://localhost:5000/api/reservations/release", {
+  //     fetch("https://api.vision.gigsaw.co.in/api/reservations/release", {
   //       method: "POST",
   //       headers: { "Content-Type": "application/json" },
   //       body: JSON.stringify({
@@ -219,7 +231,7 @@ const FinalReview = () => {
   }, [reservationExpiresAt, navigate, isPaymentInProgress]);
 
   // Calculate convenience fee after discount
-  const convenienceFee = Math.round((discountedTotal) * 0.025);
+  const convenienceFee = Math.round(discountedTotal * 0.025);
   const totalWithConvenience = discountedTotal + convenienceFee;
 
   // Enhanced checkout handler using apiClient
@@ -229,17 +241,23 @@ const FinalReview = () => {
 
       // 1. Extend the reservation first
       const extensionMinutes = 3;
-      const extendResp = await fetch("http://localhost:5000/api/reservations/extend", {
-        method: "POST",
-        cache: "no-store",
-        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
-        body: JSON.stringify({
-          jamRoomId: selectedRoomId,
-          date: selectedDate,
-          slots: selectedSlots,
-          additionalMinutes: extensionMinutes,
-        }),
-      });
+      const extendResp = await fetch(
+        "https://api.vision.gigsaw.co.in/api/reservations/extend",
+        {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+          },
+          body: JSON.stringify({
+            jamRoomId: selectedRoomId,
+            date: selectedDate,
+            slots: selectedSlots,
+            additionalMinutes: extensionMinutes,
+          }),
+        }
+      );
       const extensionData = await extendResp.json();
 
       if (extensionData.success) {
@@ -302,9 +320,9 @@ const FinalReview = () => {
               addonsCost,
               selectedAddons,
               selectedService,
-              discountAmount,                    // ← include
-              convenienceFee,                    // ← include
-              appliedDiscounts, 
+              discountAmount, // ← include
+              convenienceFee, // ← include
+              appliedDiscounts,
             },
             {
               // Invalidate jamroom and booking caches when we create a booking
@@ -328,10 +346,10 @@ const FinalReview = () => {
                   jamRoomId: selectedRoomId,
                   date: selectedDate,
                   slots: selectedSlots,
-                  totalAmount: totalWithConvenience,  // send the net payable
-                  discountAmount,                     // include discount line
-                  convenienceFee,                     // include fee line
-                  appliedDiscounts,                   // list of applied rules/coupons
+                  totalAmount: totalWithConvenience, // send the net payable
+                  discountAmount, // include discount line
+                  convenienceFee, // include fee line
+                  appliedDiscounts, // list of applied rules/coupons
                   service: selectedService,
                   paymentId: response.razorpay_payment_id,
                 },
@@ -546,14 +564,20 @@ const FinalReview = () => {
                 placeholder="Enter coupon code"
                 className="flex-1 border rounded-md px-3 py-2 text-sm"
               />
-              <Button variant="outlined" onClick={() => evaluateDiscounts()} size="small">
+              <Button
+                variant="outlined"
+                onClick={() => evaluateDiscounts()}
+                size="small"
+              >
                 Apply
               </Button>
             </div>
 
             {appliedDiscounts?.length > 0 ? (
               <div className="bg-green-50 p-3 rounded-lg text-sm">
-                <div className="font-medium text-green-700 mb-1">Discounts Applied</div>
+                <div className="font-medium text-green-700 mb-1">
+                  Discounts Applied
+                </div>
                 <ul className="list-disc pl-5 text-green-700">
                   {appliedDiscounts.map((d) => (
                     <li key={d.id}>
@@ -586,12 +610,17 @@ const FinalReview = () => {
                 Jam Room Fee ({selectedSlots.length} slots)
               </Typography>
               <Typography variant="body2">
-                ₹{totalAmount - addonsCost - (selectedService?.subPart?.price || 0)}
+                ₹
+                {totalAmount -
+                  addonsCost -
+                  (selectedService?.subPart?.price || 0)}
               </Typography>
             </div>
             {addonsCost > 0 && (
               <div className="flex justify-between items-center mb-2">
-                <Typography variant="body2" className="text-gray-600">Add-on Instruments</Typography>
+                <Typography variant="body2" className="text-gray-600">
+                  Add-on Instruments
+                </Typography>
                 <Typography variant="body2">₹{addonsCost}</Typography>
               </div>
             )}
@@ -600,27 +629,39 @@ const FinalReview = () => {
                 <Typography variant="body2" className="text-gray-600">
                   Studio Service ({selectedService.name})
                 </Typography>
-                <Typography variant="body2">₹{selectedService.subPart.price}</Typography>
+                <Typography variant="body2">
+                  ₹{selectedService.subPart.price}
+                </Typography>
               </div>
             )}
 
             {/* New: discounts and convenience fee */}
             {discountAmount > 0 && (
               <div className="flex justify-between items-center mb-2">
-                <Typography variant="body2" className="text-gray-600">Discounts</Typography>
-                <Typography variant="body2" className="text-green-700">-₹{discountAmount}</Typography>
+                <Typography variant="body2" className="text-gray-600">
+                  Discounts
+                </Typography>
+                <Typography variant="body2" className="text-green-700">
+                  -₹{discountAmount}
+                </Typography>
               </div>
             )}
             <div className="flex justify-between items-center mb-2">
-              <Typography variant="body2" className="text-gray-600">Convenience Fee (2.5%)</Typography>
+              <Typography variant="body2" className="text-gray-600">
+                Convenience Fee (2.5%)
+              </Typography>
               <Typography variant="body2">₹{convenienceFee}</Typography>
             </div>
 
             <Divider className="my-2" />
 
             <div className="flex justify-between items-center">
-              <Typography variant="subtitle1" className="font-semibold">Total Payable</Typography>
-              <Typography variant="h6" className="font-bold text-indigo-700">₹{totalWithConvenience}</Typography>
+              <Typography variant="subtitle1" className="font-semibold">
+                Total Payable
+              </Typography>
+              <Typography variant="h6" className="font-bold text-indigo-700">
+                ₹{totalWithConvenience}
+              </Typography>
             </div>
           </CardContent>
         </Card>

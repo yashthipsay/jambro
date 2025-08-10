@@ -43,7 +43,7 @@ FinalReview.js
 ```javascript
 const checkoutHandler = async (amount) => {
   // 1. Create Razorpay order
-  const response = await fetch('http://localhost:5000/api/payments/checkout', {...});
+  const response = await fetch('https://api.vision.gigsaw.co.in/api/payments/checkout', {...});
   
   // 2. Open Razorpay payment window
   const options = {

@@ -1,6 +1,6 @@
 import useSWR, { mutate } from "swr";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "https://api.vision.gigsaw.co.in/api";
 
 // Global fetcher function for GET requests
 export const fetcher = async (url) => {
