@@ -1,5 +1,6 @@
+import { useAPI, CACHE_KEYS } from './apiFetcher';
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
+export function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371 // Radius of the Earth in km
   const dLat = (lat2 - lat1) * (Math.PI / 180)
   const dLon = (lon2 - lon1) * (Math.PI / 180)
@@ -10,6 +11,14 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c
 }
 
+// Hook for fetching jam rooms with caching
+export function useJamRooms() {
+  return useAPI(CACHE_KEYS.JAM_ROOMS, {
+    refreshInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+    dedupingInterval: 2 * 60 * 1000, // 2 minutes deduping
+  });
+}
+
 export function findClosestJamRooms() {
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(
@@ -18,8 +27,7 @@ export function findClosestJamRooms() {
 
         try {
           // Fetch jam rooms from MongoDB API
-          const response = await fetch('https://api.vision.gigsaw.co.in/api/jamrooms');
-          const data = await response.json();
+          const { data } = useJamRooms();
           console.log(data);
 
           if (!data || !data.success) {

@@ -18,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 const GroupSelectionModal = ({ open, onClose, archivedGroups, isLoading }) => {
   const navigate = useNavigate();
 
-
   const handleSelectGroup = async (group) => {
     try {
       // Reactivate the group

@@ -2,6 +2,7 @@ const cron = require("node-cron");
 const moment = require("moment-timezone");
 const BookingSchema = require("../models/BookingSchema");
 const { createBulkPePayout } = require("../controller/payoutsController");
+const User = require("../models/User");
 
 class SessionMonitor {
   constructor(io) {
@@ -107,6 +108,10 @@ class SessionMonitor {
             booking.status = "COMPLETED";
             await booking.save();
 
+            // Denormalized counter on user
+            await User.findByIdAndUpdate(booking.user, { $inc: { completedBookingsCount: 1 } });
+
+            
             this.io.emit("sessionStatusUpdate", {
               bookingId: booking._id,
               status: "COMPLETED",

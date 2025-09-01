@@ -48,6 +48,9 @@ const paymentVerification = async (req, res) => {
       totalAmount: req.body.totalAmount,
       addonsCost: req.body.addonsCost,
       selectedAddons: req.body.selectedAddons,
+      discountAmount: req.body.discountAmount || 0,
+      convenienceFee: req.body.convenienceFee || 0,
+      appliedDiscounts: req.body.appliedDiscounts || [],
       paymentId: razorpay_payment_id,
     });
 
@@ -148,24 +151,34 @@ const getInvoiceData = async (req, res) => {
     }
     
     // Format the invoice data using the Invoice model structure
-    const invoiceData = {
-      invoiceNumber: invoice._id,
-      createdAt: invoice.createdAt,
-      customerName: invoice.userId.name,
-      customerEmail: invoice.userId.email,
-      customerPhone: invoice.userId.phoneNumber || '', // Add fallback if not available
-      jamRoomName: invoice.jamRoomId.jamRoomDetails.name,
-      jamRoomLocation: invoice.jamRoomId.location.address,
-      bookingDate: invoice.date,
-      slots: invoice.slots,
-      jamRoomFee: invoice.totalAmount - (invoice.addonsFee || 0),
-      addonsFee: invoice.addonsFee || 0,
-      taxAmount: invoice.taxAmount || 0,
-      totalAmount: invoice.totalAmount,
-      paymentMethod: 'Razorpay',
-      paymentId: invoice.paymentId,
-      status: invoice.status || 'Paid'
-    };
+  const invoiceData = {
+    invoiceNumber: invoice._id,
+    createdAt: invoice.createdAt,
+    customerName: invoice.userId.name,
+    customerEmail: invoice.userId.email,
+    customerPhone: invoice.userId.phoneNumber || "",
+    jamRoomName: invoice.jamRoomId.jamRoomDetails.name,
+    jamRoomLocation: invoice.jamRoomId.location.address,
+    bookingDate: invoice.date,
+    slots: invoice.slots,
+
+    // compute base room fee (before addons/discount/fee)
+    jamRoomFee:
+      invoice.totalAmount -
+      (invoice.addonsCost || 0) +
+      (invoice.discountAmount || 0) -
+      (invoice.convenienceFee || 0),
+
+    addonsFee: invoice.addonsCost || 0,
+    discountAmount: invoice.discountAmount || 0,
+    appliedDiscounts: invoice.appliedDiscounts || [],
+    convenienceFee: invoice.convenienceFee || 0,
+
+    totalAmount: invoice.totalAmount,
+    paymentMethod: "Razorpay",
+    paymentId: invoice.paymentId,
+    status: invoice.status || "Paid",
+  };
     
     res.status(200).json({
       success: true,

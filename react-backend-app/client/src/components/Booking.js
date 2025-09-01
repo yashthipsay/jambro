@@ -47,6 +47,8 @@ import {
   convertTo12HourFormat,
   groupSlotsByCategory,
 } from "../utils/timeUtils";
+import { useJamRoomAddons, useJamRoomServices } from "../hooks/useJamroom";
+import { apiClient, CACHE_KEYS } from "../utils/apiFetcher";
 
 const socket = io("https://api.vision.gigsaw.co.in");
 
@@ -74,6 +76,27 @@ function Booking() {
   const [studioServicesModalOpen, setStudioServicesModalOpen] = useState(false);
   const [addonsModalOpen, setAddonsModalOpen] = useState(false);
   const [savedNumbersModalOpen, setSavedNumbersModalOpen] = useState(false);
+
+  // Use SWR for addons and services
+  const { data: addonsData, isLoading: addonsLoading } = useJamRoomAddons(
+    selectedRoom?.id
+  );
+  const { data: servicesData, isLoading: servicesLoading } = useJamRoomServices(
+    selectedRoom?.id
+  );
+
+  // Update state when SWR data changes
+  useEffect(() => {
+    if (addonsData?.success) {
+      setAddons(addonsData.data || []);
+    }
+  }, [addonsData]);
+
+  useEffect(() => {
+    if (servicesData?.success) {
+      setServices(servicesData.data || []);
+    }
+  }, [servicesData]);
 
   useEffect(() => {
     // Only fetch if we have a selectedRoom and haven't fetched addons yet
@@ -183,7 +206,12 @@ function Booking() {
       const response = await fetch(
         `https://api.vision.gigsaw.co.in/api/reservations/check/${
           selectedRoom.id
-        }/${moment(selectedDate).format("YYYY-MM-DD")}`
+        }/${moment(selectedDate).format("YYYY-MM-DD")}`,
+        {
+          method: "GET",
+          cache: "no-store",
+          headers: { "Cache-Control": "no-store" },
+        }
       );
 
       if (!response.ok) {
@@ -392,18 +420,14 @@ function Booking() {
 
     try {
       setIsSaving(true);
-      const response = await fetch(
-        "https://api.vision.gigsaw.co.in/api/users/save-number",
+      const data = await apiClient.post(
+        "/users/save-number",
+        { email: user.email, phoneNumber },
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: user.email, phoneNumber }),
+          invalidateCache: [CACHE_KEYS.USER_PROFILE],
         }
       );
 
-      const data = await response.json();
       if (data.success) {
         setSavedNumbers(data.data.savedNumbers);
         setPhoneNumber("");
@@ -518,7 +542,11 @@ function Booking() {
         "https://api.vision.gigsaw.co.in/api/reservations/create",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+          },
           body: JSON.stringify({
             jamRoomId: selectedRoom.id,
             date: formattedDate,
@@ -657,7 +685,7 @@ function Booking() {
 
                         return (
                           <div
-                            key={slot.slotId}
+                            key={`${slot.slotId}-${slot.startTime}`}
                             onClick={() =>
                               !isDisabled && handleSlotChange(slot.slotId)
                             }
@@ -758,7 +786,7 @@ function Booking() {
 
                         return (
                           <div
-                            key={slot.slotId}
+                            key={`${slot.slotId}-${slot.startTime}`}
                             onClick={() =>
                               !isDisabled && handleSlotChange(slot.slotId)
                             }
@@ -860,7 +888,7 @@ function Booking() {
 
                         return (
                           <div
-                            key={slot.slotId}
+                            key={`${slot.slotId}-${slot.startTime}`}
                             onClick={() =>
                               !isDisabled && handleSlotChange(slot.slotId)
                             }
@@ -965,7 +993,7 @@ function Booking() {
                           );
                           return (
                             <div
-                              key={slotId}
+                              key={`${slot.slotId}-${slot.startTime}`}
                               className="bg-white border border-indigo-200 rounded-lg px-2 py-1 flex items-center"
                             >
                               <Typography variant="caption">

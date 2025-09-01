@@ -14,6 +14,7 @@ const payoutRoutes = require("./routes/payoutRoutes");
 const subscriptionRoutes = require('./routes/subscriptions/subscriptionRoutes');
 const authRoutes = require("./routes/authRoutes");
 const skuRoutes = require("./routes/subscriptions/skuAdminRoutes");
+const discountRoutes = require("./routes/discountRoutes")
 const createReservationRouter = require("./routes/reservationRoutes");
 const Booking = require("./models/BookingSchema");
 const groupRoutes = require('./routes/subscriptions/groupRoutes');
@@ -50,6 +51,7 @@ app.use('/api/spotify', spotifyRoutes);
 app.use('/api/groups', groupRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/discounts', discountRoutes);
 app.use('/api/skus', skuRoutes);
 app.use('/api/reservations', createReservationRouter(io));
 app.use("/proxy", async (req, res) => {

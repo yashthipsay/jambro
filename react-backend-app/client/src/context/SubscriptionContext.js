@@ -31,13 +31,16 @@ export function SubscriptionProvider({ children }) {
         setError(null);
 
         // First get userId from database
-        const userResponse = await fetch("https://api.vision.gigsaw.co.in/api/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: user.email }),
-        });
+        const userResponse = await fetch(
+          "https://api.vision.gigsaw.co.in/api/users",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: user.email }),
+          }
+        );
 
         const userData = await userResponse.json();
         if (!userData.success || !userData.data._id) {
@@ -165,7 +168,7 @@ export function SubscriptionProvider({ children }) {
         showCancelDialog,
         setShowCancelDialog,
         loading,
-        error
+        error,
       }}
     >
       {children}

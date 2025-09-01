@@ -40,6 +40,15 @@ const invoiceSchema = new mongoose.Schema({
       pricePerHour: Number,
       hours: Number
     }],
+    discountAmount: { type: Number, default: 0 },
+    convenienceFee: { type: Number, default: 0 },
+    appliedDiscounts: [
+      {
+        id: String,
+        label: String,
+        percent: Number
+      }
+    ],
     createdAt: {
       type: Date,
       default: Date.now,
