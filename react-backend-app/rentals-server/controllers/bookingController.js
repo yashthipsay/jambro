@@ -1,7 +1,10 @@
 // src/controllers/bookingController.js
 import RentalBooking from "../models/RentalsBooking.js";
+import RentalInstrument from "../models/RentalInstruments.js";
+import RentalShop from "../models/RentalsShops.js";
 import borzoService from "../services/borzoService.js";
 import { publishJob } from "../services/rabbitmq.js";
+import { ObjectId } from "mongodb";
 
 // Get booking by ID
 export const getBooking = async (req, res) => {
@@ -12,6 +15,66 @@ export const getBooking = async (req, res) => {
       .populate("owner_shop_id");
     if (!booking) return res.status(404).json({ error: "Booking not found" });
     res.json(booking);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Add this function to create a test booking
+export const createTestBooking = async (req, res) => {
+  try {
+    // Create test shop first
+    const testShop = new RentalShop({
+      name: "Test Music Shop",
+      contact: {
+        name: "Shop Owner",
+        phone: "+919175668567",
+        email: "shop@test.com"
+      }
+    });
+    await testShop.save();
+
+    // Create test instrument
+    const testInstrument = new RentalInstrument({
+      owner_shop_id: testShop._id,
+      name: "Drum Set",
+      type: "Percussion",
+      price_per_day: 100,
+      description: "Professional drum set for rental",
+      shipping_details: {
+        weight_kg: 15,
+        fragile: true,
+        declared_value: 50000
+      }
+    });
+    await testInstrument.save();
+
+    // Create booking
+    const booking = new RentalBooking({
+      user_id: new ObjectId("507f1f77bcf86cd799439012"), // fake user ID
+      instrument_id: testInstrument._id,
+      owner_shop_id: testShop._id,
+      rental: {
+        start_date: new Date(),
+        end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        days: 7,
+        price_per_day_snapshot: 100,
+        rental_amount: 700
+      },
+      status: "approved",
+      customer: {
+        name: "Test Customer",
+        phone: "+919175668567",
+        address: "Katraj, Pune - 411046"
+      },
+      shop: {
+        pickup_address: "Test Shop Address, Pune - 411001",
+        contact_person: { name: "Shop Owner", phone: "+919175668567" }
+      }
+    });
+    
+    await booking.save();
+    res.json({ success: true, booking });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

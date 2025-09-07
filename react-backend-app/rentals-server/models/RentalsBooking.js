@@ -79,4 +79,5 @@ const rentalBookingSchema = new Schema({
 
 }, { timestamps: true });
 
-export default mongoose.model('Booking', rentalBookingSchema);
+// Change the collection name from 'Booking' to 'rentalsBookings'
+export default mongoose.model('Booking', rentalBookingSchema, 'rentalsBookings');

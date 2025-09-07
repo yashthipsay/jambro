@@ -53,3 +53,17 @@ const res = await api.post(`/order/${orderId}/return`);
 return res.data;
 }
 };
+
+export const borzoService = {
+  async getOrderStatus(orderId) {
+    const res = await axios.get(
+      `https://robotapitest-in.borzodelivery.com/api/business/1.6/orders?order_id=${orderId}`,
+      {
+        headers: {
+          "X-DV-Auth-Token": process.env.BORZO_AUTH_TOKEN,
+        },
+      }
+    );
+    return res.data;
+  },
+};

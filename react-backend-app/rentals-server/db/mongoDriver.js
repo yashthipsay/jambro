@@ -1,18 +1,14 @@
 import mongoose from 'mongoose';
 
 export default async function connectDB() {
-  const uri = process.env.MONGODB_URI;
-  if (typeof uri !== 'string' || uri.trim() === '') {
-    throw new Error('Environment variable MONGODB_URI must be set and non-empty');
+  try {
+    await mongoose.connect("mongodb+srv://ythipsay:2ChUNuXD94tFmZis@jambro.fhlfx.mongodb.net/?retryWrites=true&w=majority&appName=jambro", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB connected successfully');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
   }
-
-  if (mongoose.connection.readyState === 1) {
-    console.log('[rentals-server] MongoDB already connected');
-    return;
-  }
-
-  await mongoose.connect(uri, {
-    autoIndex: true
-  });
-  console.log('[rentals-server] MongoDB connected to', uri);
 }

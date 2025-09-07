@@ -1,0 +1,43 @@
+POST http://localhost:5001/api/borzo/calculatePriceAsync
+Content-Type: application/json
+
+{
+  "type": "standard",
+  "matter": "Musical instrument delivery - Drum-set - fragile, handle with care",
+  "vehicle_type_id": 8,
+  "total_weight_kg": 15,
+  "is_route_optimizer_enabled": true,
+  "points": [
+    {
+      "address": "Katraj, Pune - 411046",
+      "contact_person": {
+        "phone": "+919175668567",
+        "name": "Yash Thipsay"
+      },
+      "required_start_datetime": "2025-09-15T12:00:00+05:30",
+      "required_finish_datetime": "2025-09-15T18:00:00+05:30"
+    },
+    {
+      "address": "Odela Lohia Jain Group, Bavdhan, Pune - 411021",
+      "contact_person": {
+        "phone": "+918623948904",
+        "name": "Om Joshi"
+      }
+    }
+  ]
+}
+
+### Create a test booking
+POST http://localhost:5001/api/bookings/test
+Content-Type: application/json
+
+{}
+
+### Create an order
+POST http://localhost:5001/api/borzo/createOrder
+Content-Type: application/json
+
+{
+  "bookingId": "68bdd495a12b492c533f13f2"  
+
+}
