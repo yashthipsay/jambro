@@ -9,7 +9,7 @@ Content-Type: application/json
   "is_route_optimizer_enabled": true,
   "points": [
     {
-      "address": "Katraj, Pune - 411046",
+      "address": "KK Market, Bibwewadi, Pune",
       "contact_person": {
         "phone": "+919175668567",
         "name": "Yash Thipsay"
@@ -18,7 +18,7 @@ Content-Type: application/json
       "required_finish_datetime": "2025-09-15T18:00:00+05:30"
     },
     {
-      "address": "Odela Lohia Jain Group, Bavdhan, Pune - 411021",
+      "address": "Viman Nagar, Pune",
       "contact_person": {
         "phone": "+918623948904",
         "name": "Om Joshi"

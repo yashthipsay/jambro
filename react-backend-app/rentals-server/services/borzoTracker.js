@@ -4,7 +4,7 @@ import { consumeJobs } from "../services/rabbitmq.js";
 import { borzoService } from "../services/borzoService.js";
 import { emitToClient } from "../services/socket.js";
 
-const statusMap = {
+export const statusMap = {
   // Order-level
   new: "pending",
   available: "ready_to_ship",

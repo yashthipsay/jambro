@@ -17,6 +17,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mongoose": "^8.5.0",
+    "node-cron": "^4.2.1",
     "nodemon": "^3.1.10",
     "razorpay": "^2.9.3",
     "socket.io": "^4.7.5",

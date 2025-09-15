@@ -80,6 +80,73 @@ export const createTestBooking = async (req, res) => {
   }
 };
 
+export const createBooking = async (req, res) => {
+  try {
+    const {userId, 
+      instrumentId,
+      startDate,
+      shopId,
+      endDate,
+      customerDetails
+    } = req.body;
+
+    // Find the instrument with the instrument id
+    const instrument = await RentalInstrument.findById(instrumentId);
+    if (!instrument) return res.status(404).json({ error: "Instrument not found" });
+
+    const shop = await RentalShop.findById(shopId);
+    if (!shop) return res.status(404).json({ error: "Shop not found" });
+
+    // Create booking with initial state
+    const booking = new RentalBooking({
+      user_id: userId,
+      instrument_id: instrumentId,
+      owner_shop_id: instrument.owner_shop_id,
+      rental: {
+        start_date: new Date(startDate),
+        end_date: new Date(endDate),
+        days: Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)),
+        price_per_day_snapshot: instrument.price_per_day,
+        rental_amount: Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) * instrument.price_per_day
+      },
+      status: "pending",
+      customer: {
+        name: customerDetails.name,
+        phone: customerDetails.phone,
+        address: customerDetails.address
+      },
+      shop: {
+        pickup_address: shop.pickup_address,
+        contact_person: shop.contact
+      }
+    });
+    await booking.save();
+ 
+    // 2. Queue async operations (Borzo shipment creation)
+    await publishJob("borzo_jobs", {
+      type: "createShipment",
+      bookingId: booking._id.toString(),
+      meta: { 
+        clientSocketId: req.body.clientSocketId 
+      }
+    });
+
+    // 3. Return immediate response
+    res.status(201).json({
+      success: true,
+      booking: booking._id,
+      message: "Booking created, shipment being arranged"
+    });
+
+
+  } catch (err) {
+    console.error("Create booking error:", err);
+    res.status(500).json({ error: err.message });
+
+    }
+  
+}
+
 // Admin approval of booking + schedule Borzo shipment
 export const approveBooking = async (req, res) => {
   try {

@@ -27,8 +27,30 @@ const rentalShopSchema = new Schema({
   },
   razorpay: {
     linked_account_id: String,
+    // current overall account status on Razorpay
     status: String,
-    route_config: Object,
+    // details we store at creation/update time
+    account_details: {
+      legal_business_name: String,
+      contact_name: String,
+      email: String,
+      phone: String,
+      status: String,
+      created_at: Date,
+      updated_at: Date
+    },
+    // route product activation details
+    route_config: {
+      product_id: String,
+      status: String,
+      error: String,
+      // Add bank verification status
+      bank_details_verified: Boolean,
+      bank_verification_error: String,
+      bank_verified_at: Date
+    },
+    // last time we polled Razorpay for status
+    last_status_check: Date
   },
   borzo: {
     client_code: String,

@@ -1,5 +1,8 @@
-import Razorpay from "razorpay";
-import crypto from "crypto";
+import express from 'express';
+import razorpay, { verifyWebhookSignature as svcVerify } from '../services/razorpayService.js';
+import RentalShop from '../models/RentalsShops.js';
+
+const router = express.Router();
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -7,14 +10,7 @@ const razorpay = new Razorpay({
 });
 
 // Create an order for rental + deposit
-export async function createOrder({ amount, currency = "INR", receipt, notes }) {
-  return razorpay.orders.create({
-    amount: Math.round(amount * 100), // in paise
-    currency,
-    receipt,
-    notes,
-  });
-}
+export async function linkAccount
 
 const capturePaymentAndTransfer = async (paymentId, totalAmount, rentalOwnerId) => {
   try {

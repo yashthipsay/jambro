@@ -126,15 +126,68 @@ async function handleTrackingJob(job) {
   console.log('[tracker] processing tracking for order:', borzo_order_id);
 
   try {
-    const tracking = await borzoServiceTracker.getOrderStatus(borzo_order_id);
-    console.log('[tracker] fetched tracking data:', tracking);
+    const trackingResponse = await borzoServiceTracker.getOrderStatus(borzo_order_id);
+
+    if (!trackingResponse.is_successful || !trackingResponse.orders?.length) {
+      console.warn('[tracker] No valid tracking data for order:', borzo_order_id);
+      return;
+    }
+
+    const order = trackingResponse.orders[0];
+    const orderStatus = order.status;
+    const deliveryStatuses = order.points
+      ?.map(p => p.delivery?.status)
+      .filter(Boolean) || [];
+
+    console.log('[tracker] Order status:', orderStatus, 'Delivery statuses:', deliveryStatuses);
+
+    // Map Borzo → internal booking statuses
+    const orderStatusMap = {
+      new: "new",
+      available: "ready_to_ship",
+      active: "in_transit",
+      completed: "delivered",
+      canceled: "canceled",
+      delayed: "delayed"
+    };
+
+    const deliveryStatusMap = {
+      planned: "pickup_scheduled",
+      courier_assigned: "pickup_assigned",
+      courier_departed: "pickup_enroute",
+      courier_at_pickup: "pickup_arrived",
+      parcel_picked_up: "in_transit",
+      active: "in_transit",
+      courier_arrived: "out_for_delivery",
+      finished: "delivered",
+      return_planned: "return_scheduled",
+      return_courier_assigned: "return_assigned",
+      return_courier_departed: "return_enroute",
+      return_courier_picked_up: "return_in_transit",
+      return_finished: "returned",
+      canceled: "canceled",
+      delayed: "delayed"
+    };
+
+    // Pick the most relevant status: prefer delivery if exists, else order
+    const mostRelevantStatus =
+      deliveryStatuses.find(s => deliveryStatusMap[s]) || orderStatus;
+
+    const mappedStatus =
+      deliveryStatusMap[mostRelevantStatus] || orderStatusMap[mostRelevantStatus];
+
+    if (!mappedStatus) {
+      console.warn('[tracker] Unmapped status:', mostRelevantStatus);
+      return;
+    }
+
+    // Update booking
     const booking = await RentalBooking.findById(bookingId);
     if (!booking) return;
 
-    const mappedStatus = statusMap[tracking.status];
-    if (mappedStatus && booking.status !== mappedStatus) {
+    if (booking.status !== mappedStatus) {
       booking.status = mappedStatus;
-      booking.shipment.tracking_status = tracking.status;
+      booking.shipment.tracking_status = mostRelevantStatus;
       booking.shipment.last_tracked_at = new Date();
       await booking.save();
 
@@ -143,8 +196,8 @@ async function handleTrackingJob(job) {
         data: {
           bookingId: booking._id,
           status: mappedStatus,
-          rawStatus: tracking.status,
-        }
+          rawStatus: mostRelevantStatus,
+        },
       });
 
       console.log(`[tracker] Booking ${booking._id} updated to ${mappedStatus}`);
