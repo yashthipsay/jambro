@@ -5,6 +5,7 @@ import RentalShop from "../models/RentalsShops.js";
 import borzoService from "../services/borzoService.js";
 import { publishJob } from "../services/rabbitmq.js";
 import { ObjectId } from "mongodb";
+import { fromZonedTime, toZonedTime, formatInTimeZone } from "date-fns-tz";
 
 // Get booking by ID
 export const getBooking = async (req, res) => {
@@ -82,12 +83,14 @@ export const createTestBooking = async (req, res) => {
 
 export const createBooking = async (req, res) => {
   try {
-    const {userId, 
+    const {
+      userId, 
       instrumentId,
       startDate,
       shopId,
       endDate,
-      customerDetails
+      customerDetails,
+      shipmentDetails 
     } = req.body;
 
     // Find the instrument with the instrument id
@@ -126,17 +129,32 @@ export const createBooking = async (req, res) => {
     await publishJob("borzo_jobs", {
       type: "createShipment",
       bookingId: booking._id.toString(),
+      payload: {
+        type: shipmentDetails?.type || "standard",
+        matter: `Rental: ${instrument.name}`,
+        vehicle_type_id: shipmentDetails?.vehicle_type_id || 8,
+        total_weight_kg: instrument.shipping_details?.weight_kg || 15,
+        is_route_optimizer_enabled: shipmentDetails?.is_route_optimizer_enabled ?? true,
+        pickup_start_time: shipmentDetails?.pickup_start_time,
+        pickup_end_time: shipmentDetails?.pickup_end_time,
+        pickup_address: shop.pickup_address,
+        pickup_phone: shop.contact?.phone,
+        pickup_name: shop.contact?.name,
+        delivery_address: customerDetails.address,
+        delivery_phone: customerDetails.phone,
+        delivery_name: customerDetails.name
+      },
       meta: { 
         clientSocketId: req.body.clientSocketId 
       }
     });
 
-    // 3. Return immediate response
     res.status(201).json({
       success: true,
       booking: booking._id,
       message: "Booking created, shipment being arranged"
     });
+
 
 
   } catch (err) {
@@ -146,6 +164,127 @@ export const createBooking = async (req, res) => {
     }
   
 }
+
+export const createScheduledBooking = async (req, res) => {
+  try {
+    const {
+      userId,
+      instrumentId,
+      startDate,    // Comes in as IST string
+      endDate,      // Comes in as IST string
+      shopId,
+      customerDetails,
+      shipmentDetails
+    } = req.body;
+
+    console.log("[createScheduledBooking] Raw startDate:", startDate);
+    console.log("[createScheduledBooking] Raw endDate:", endDate);
+
+    // Convert IST → UTC
+    const rentalStartDateUTC = fromZonedTime(startDate, "Asia/Kolkata");
+    const rentalEndDateUTC = fromZonedTime(endDate, "Asia/Kolkata");
+
+    console.log("[createScheduledBooking] rentalStartDateUTC:", rentalStartDateUTC.toISOString());
+    console.log("[createScheduledBooking] rentalEndDateUTC:", rentalEndDateUTC.toISOString());
+
+    // Validate future booking
+    const now = new Date();
+    const hoursUntilRental = (rentalStartDateUTC - now) / (1000 * 60 * 60);
+    console.log("[createScheduledBooking] Now UTC:", now.toISOString());
+    console.log("[createScheduledBooking] Hours until rental:", hoursUntilRental);
+
+    if (hoursUntilRental <= 6) {
+      return res.status(400).json({
+        error: "Use createBooking for rentals starting within 6 hours"
+      });
+    }
+
+    // Find instrument and shop
+    const instrument = await RentalInstrument.findById(instrumentId);
+    if (!instrument) return res.status(404).json({ error: "Instrument not found" });
+    const shop = await RentalShop.findById(shopId);
+    if (!shop) return res.status(404).json({ error: "Shop not found" });
+
+    // Shipment creation time (6h before rental start)
+    const shipmentCreateTime = new Date(rentalStartDateUTC);
+    shipmentCreateTime.setHours(shipmentCreateTime.getHours() - 6);
+
+    console.log("[createScheduledBooking] shipmentCreateTime (UTC):", shipmentCreateTime.toISOString());
+    console.log(
+      "[createScheduledBooking] shipmentCreateTime (IST):",
+      formatInTimeZone(shipmentCreateTime, "Asia/Kolkata", "yyyy-MM-dd HH:mm:ssXXX")
+    );
+
+    // Create booking
+    const booking = new RentalBooking({
+      user_id: userId,
+      instrument_id: instrumentId,
+      owner_shop_id: instrument.owner_shop_id,
+      rental: {
+        start_date: rentalStartDateUTC,
+        end_date: rentalEndDateUTC,
+        days: Math.ceil((rentalEndDateUTC - rentalStartDateUTC) / (1000 * 60 * 60 * 24)),
+        price_per_day_snapshot: instrument.price_per_day,
+        rental_amount:
+          Math.ceil((rentalEndDateUTC - rentalStartDateUTC) / (1000 * 60 * 60 * 24)) *
+          instrument.price_per_day
+      },
+      status: "rider_not_assigned",
+      customer: {
+        name: customerDetails.name,
+        phone: customerDetails.phone,
+        address: customerDetails.address
+      },
+      shop: {
+        pickup_address: shop.pickup_address,
+        contact_person: shop.contact
+      },
+      scheduled_shipment: {
+        create_at: shipmentCreateTime,
+        details: {
+          type: shipmentDetails?.type || "standard",
+          matter: `Rental: ${instrument.name}`,
+          vehicle_type_id: shipmentDetails?.vehicle_type_id || 8,
+          total_weight_kg: instrument.shipping_details?.weight_kg || 15,
+          is_route_optimizer_enabled: shipmentDetails?.is_route_optimizer_enabled ?? true,
+          pickup_address: shop.pickup_address,
+          pickup_phone: shop.contact?.phone,
+          pickup_name: shop.contact?.name,
+          delivery_address: customerDetails.address,
+          delivery_phone: customerDetails.phone,
+          delivery_name: customerDetails.name,
+          pickup_start_time: shipmentDetails?.pickup_start_time
+            ? fromZonedTime(shipmentDetails.pickup_start_time, "Asia/Kolkata").toISOString()
+            : undefined,
+          pickup_end_time: shipmentDetails?.pickup_end_time
+            ? fromZonedTime(shipmentDetails.pickup_end_time, "Asia/Kolkata").toISOString()
+            : undefined
+        }
+      }
+    });
+
+    await booking.save();
+
+    res.status(201).json({
+      success: true,
+      booking: booking._id,
+      message: `Booking scheduled! Delivery will be arranged on ${formatInTimeZone(
+        shipmentCreateTime,
+        "Asia/Kolkata",
+        "yyyy-MM-dd HH:mm:ssXXX"
+      )}`,
+      rental_start: formatInTimeZone(rentalStartDateUTC, "Asia/Kolkata", "yyyy-MM-dd HH:mm:ssXXX"),
+      shipment_creation_time: formatInTimeZone(
+        shipmentCreateTime,
+        "Asia/Kolkata",
+        "yyyy-MM-dd HH:mm:ssXXX"
+      )
+    });
+  } catch (err) {
+    console.error("Create scheduled booking error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
 
 // Admin approval of booking + schedule Borzo shipment
 export const approveBooking = async (req, res) => {

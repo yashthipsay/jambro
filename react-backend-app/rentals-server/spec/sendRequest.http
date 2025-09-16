@@ -9,16 +9,16 @@ Content-Type: application/json
   "is_route_optimizer_enabled": true,
   "points": [
     {
-      "address": "KK Market, Bibwewadi, Pune",
+      "address": "Kumar Pacific Mall, Pune",
       "contact_person": {
         "phone": "+919175668567",
         "name": "Yash Thipsay"
       },
-      "required_start_datetime": "2025-09-15T12:00:00+05:30",
-      "required_finish_datetime": "2025-09-15T18:00:00+05:30"
+    "required_start_datetime": "2025-09-18T10:00:00+05:30",
+    "required_finish_datetime": "2025-09-18T18:00:00+05:30"
     },
     {
-      "address": "Viman Nagar, Pune",
+      "address": "Phoenix Market City, Pune",
       "contact_person": {
         "phone": "+918623948904",
         "name": "Om Joshi"
@@ -40,4 +40,67 @@ Content-Type: application/json
 {
   "bookingId": "68bdd495a12b492c533f13f2"  
 
+}
+
+### Create a new booking
+POST http://localhost:5001/api/bookings
+Content-Type: application/json
+
+{
+  "userId": "507f1f77bcf86cd799439012",
+  "instrumentId": "68bdd34d04ba86c528b0e01a",
+  "shopId": "68bdd34c04ba86c528b0e018",
+  "startDate": "2024-03-25T10:00:00+05:30",
+  "endDate": "2024-04-01T10:00:00+05:30",
+  "customerDetails": {
+    "name": "John Doe",
+    "phone": "+919175668567",
+    "address": "Phoenix Market City, Pune"
+  },
+  "shipmentDetails": {
+    "type": "standard",
+    "vehicle_type_id": 8,
+    "is_route_optimizer_enabled": true,
+    "pickup_start_time": "2025-09-18T10:00:00+05:30",
+    "pickup_end_time": "2025-09-18T18:00:00+05:30"
+  },
+  "clientSocketId": "socket123"
+}
+
+
+### Create a new booking
+POST http://localhost:5001/api/bookings/scheduled
+Content-Type: application/json
+
+{
+  "userId": "507f1f77bcf86cd799439012",
+  "instrumentId": "68bdd34d04ba86c528b0e01a",
+  "shopId": "68bdd34c04ba86c528b0e018",
+"startDate": "2025-09-16T20:57:00+05:30",
+"endDate": "2025-09-23T20:57:00+05:30",
+  "customerDetails": {
+    "name": "John Doe",
+    "phone": "+919175668567",
+    "address": "Phoenix Market City, Pune"
+  },
+  "shipmentDetails": {
+    "type": "standard",
+    "vehicle_type_id": 8,
+    "is_route_optimizer_enabled": true,
+"pickup_start_time": "2025-09-16T20:57:00+05:30",
+"pickup_end_time": "2025-09-17T04:57:00+05:30"
+  },
+  "clientSocketId": "socket123"
+}
+
+### Create a Razorpay payment order with transfers
+POST http://localhost:5001/api/razorpay/create-order
+Content-Type: application/json
+
+{
+  "amount": 10000,                      
+  "currency": "INR",                   
+  "vendorAccountId": "acc_RIE7tsq66eZWC3",  
+  "depositAmount": 3000,                
+  "platformFee": 1000                   
 }

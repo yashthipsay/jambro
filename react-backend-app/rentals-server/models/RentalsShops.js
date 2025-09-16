@@ -3,6 +3,7 @@ const { Schema } = mongoose;
 
 const rentalShopSchema = new Schema({
   name: { type: String, required: true },
+  pickup_address: { type: String },
   legal_name: String,
   contact: {
     name: String,

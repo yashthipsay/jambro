@@ -10,6 +10,8 @@ import connectDB from './db/mongoDriver.js';
 import { connectRabbit } from './services/rabbitmq.js';
 import { initSocket } from './services/socket.js';
 import { startShipmentStatusMonitor } from './services/shipmentStatusMonitor.js';
+import shopRoutes from './routes/shopRoutes.js';
+import { startScheduledShipmentWorker } from "./services/scheduledShipmentWorker.js";
 
 const app = express();
 app.use(cors());
@@ -19,6 +21,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/borzo', borzoRoutes);
 app.use('/api/razorpay', razorpayRoutes);
+app.use('/api/shops', shopRoutes);
 const server = http.createServer(app);
 const io = initSocket(server); // Initialize socket.io
 
@@ -26,6 +29,7 @@ async function start() {
   await connectDB();
   await connectRabbit();
   startShipmentStatusMonitor(); 
+  startScheduledShipmentWorker();
   const port = process.env.PORT || 3000;
   server.listen(port, () => console.log('[server] listening on', port));
 }

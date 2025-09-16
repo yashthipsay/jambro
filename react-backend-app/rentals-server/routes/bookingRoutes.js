@@ -8,4 +8,7 @@ router.get("/:bookingId", bookingController.getBooking);
 router.post("/:bookingId/approve", bookingController.approveBooking);
 router.post("/:bookingId/shipment", bookingController.createShipment);
 
+router.post("/", bookingController.createBooking);
+router.post("/scheduled", bookingController.createScheduledBooking);
+
 export default router;

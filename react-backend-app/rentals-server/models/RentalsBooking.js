@@ -31,11 +31,12 @@ const rentalBookingSchema = new Schema({
 
   status: {
     type: String,
-    enum: [
-      'pending','payment_pending','paid','approved','ready_to_ship','pickup_scheduled',
-      'in_transit','delivered','return_requested','return_pickup_scheduled',
-      'returned','completed','cancelled'
-    ],
+   enum: [
+     'pending','payment_pending','paid','approved','ready_to_ship','rider_not_assigned',
+     'pickup_scheduled','in_transit','delivered','return_requested','return_pickup_scheduled',
+     'returned','completed','cancelled',
+     'arranging_pickup','shipment_creation_failed'
+   ],
     default: 'pending'
   },
 
@@ -48,6 +49,26 @@ const rentalBookingSchema = new Schema({
     scheduled_pickup_slot: String,
     tracking_status: String,
     last_tracked_at: Date,
+  },
+
+  // Scheduled‐shipment trigger info
+  scheduled_shipment: {
+    create_at: { type: Date },
+    details: {
+      type: { type: String },
+      matter: String,
+      vehicle_type_id: Number,
+      total_weight_kg: Number,
+      is_route_optimizer_enabled: Boolean,
+      pickup_address: String,
+      pickup_phone: String,
+      pickup_name: String,
+      delivery_address: String,
+      delivery_phone: String,
+      delivery_name: String,
+      pickup_start_time: Date,
+      pickup_end_time: Date
+    }
   },
 
   return_shipment: {

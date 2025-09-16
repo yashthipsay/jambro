@@ -16,16 +16,16 @@ const statusMap = {
   canceled: "cancelled",
   delayed: "pending",
   planned: "ready_to_ship",
-  courier_assigned: "pickup_scheduled",
-  courier_departed: "in_transit",
-  courier_at_pickup: "in_transit",
+  courier_assigned: "courier_assigned",
+  courier_departed: "courier_departed",
+  courier_at_pickup: "courier_arrived_for_pickup",
   parcel_picked_up: "in_transit",
-  courier_arrived: "in_transit",
+  courier_arrived: "courier_arrived_for_delivery",
   finished: "delivered",
-  return_planned: "return_requested",
-  return_courier_assigned: "return_pickup_scheduled",
-  return_courier_departed: "return_pickup_scheduled",
-  return_courier_picked_up: "return_pickup_scheduled",
+  return_planned: "return_courier_assigned",
+  return_courier_assigned: "delivery_reattempt_assigned",
+  return_courier_departed: "return_courier_departed",
+  return_courier_picked_up: "return_in_transit",
   return_finished: "returned",
 };
 
@@ -62,36 +62,53 @@ async function handleBorzoJob(job) {
     case "create":
     case "createShipment": {
       if (!job.bookingId) throw new Error("bookingId missing");
-      const booking = await RentalBooking.findById(job.bookingId).populate("instrument_id owner_shop_id");
+      const booking = await RentalBooking.findById(job.bookingId)
+        .populate("instrument_id")
+        .populate("owner_shop_id");
       if (!booking) throw new Error("Booking not found");
 
-      const borzoPayload = {
-        type: "standard",
-        matter: `Rental: ${booking.instrument_id?.name}`,
-        vehicle_type_id: 8,
-        total_weight_kg: booking.instrument_id?.shipping_details?.weight_kg || 15,
-        is_route_optimizer_enabled: true,
-        points: [
-          {
-            address: booking.shop?.pickup_address || "Test Shop Address, Pune - 411001",
-            contact_person: {
-              phone: booking.shop?.contact_person?.phone || "+919175668567",
-              name: booking.shop?.contact_person?.name || "Shop Owner"
-            },
-            required_start_datetime: "2025-09-15T12:00:00+05:30",
-            required_finish_datetime: "2025-09-15T18:00:00+05:30"
-          },
-          {
-            address: booking.customer?.address || "Katraj, Pune - 411046",
-            contact_person: {
-              phone: booking.customer?.phone || "+919175668567",
-              name: booking.customer?.name || "Customer"
-            }
-          }
-        ]
-      };
+      // Extract payload from job or use booking details as fallback
+      const payload = job.payload || {};
+      console.log('[worker] pickup address:', payload.pickup_address || booking.owner_shop_id?.pickup_address);
+     const borzoPayload = {
+       type: payload.type || "standard",
+       matter: payload.matter || `Rental: ${booking.instrument_id?.name}`,
+       vehicle_type_id: payload.vehicle_type_id || 8,
+       total_weight_kg: payload.total_weight_kg || booking.instrument_id?.shipping_details?.weight_kg || 15,
+       is_route_optimizer_enabled: payload.is_route_optimizer_enabled ?? true,
+       points: [
+         {
+           address: booking.shop?.pickup_address || payload.pickup_address || "Test Shop Address, Pune - 411001",
+           contact_person: {
+             phone: booking.shop?.contact_person?.phone || payload.pickup_phone || "+919175668567",
+             name: booking.shop?.contact_person?.name || payload.pickup_name || "Shop Owner"
+           },
+           required_start_datetime: payload.pickup_start_time || "2025-09-18T10:00:00+05:30",
+           required_finish_datetime: payload.pickup_end_time || "2025-09-18T18:00:00+05:30"
+         },
+         {
+           address: booking.customer?.address || payload.delivery_address || "Katraj, Pune - 411046",
+           contact_person: {
+             phone: booking.customer?.phone || payload.delivery_phone || "+919175668567",
+             name: booking.customer?.name || payload.delivery_name || "Customer"
+           }
+         }
+       ]
+     };
 
-      // Call createOrder instead of createShipment (they do the same thing)
+      console.log('[worker] creating Borzo shipment with payload:', JSON.stringify(borzoPayload, null, 2));
+
+      // Validate required fields
+      const requiredFields = ['address', 'contact_person.phone', 'contact_person.name'];
+      for (const point of borzoPayload.points) {
+        for (const field of requiredFields) {
+          const value = field.split('.').reduce((obj, key) => obj?.[key], point);
+          if (!value) {
+            throw new Error(`Missing required field: ${field} for ${point === borzoPayload.points[0] ? 'pickup' : 'delivery'} point`);
+          }
+        }
+      }
+
       const shipment = await borzoService.createOrder(borzoPayload);
 
       booking.shipment = {
@@ -104,15 +121,25 @@ async function handleBorzoJob(job) {
       };
       booking.status = "ready_to_ship";
       await booking.save();
-      console.log('[worker] shipment created for booking', booking._id.toString());
-      
+
+      if (job.meta?.clientSocketId) {
+        emitToClient(job.meta.clientSocketId, {
+          type: 'shipment_created',
+          data: {
+            bookingId: booking._id,
+            shipment: booking.shipment
+          }
+        });
+      }
+
+      // Queue tracking job
       if (shipment.order?.order_id) {
         await publishJob(
           "borzo_tracking",
           { bookingId: booking._id.toString(), borzo_order_id: shipment.order.order_id }
         );
-        console.log('[worker] tracking job enqueued for order', shipment.order.order_id);
       }
+      
       break;
     }
 
@@ -156,6 +183,7 @@ async function handleTrackingJob(job) {
       courier_assigned: "pickup_assigned",
       courier_departed: "pickup_enroute",
       courier_at_pickup: "pickup_arrived",
+      rider_not_assigned: "rider_unassigned",
       parcel_picked_up: "in_transit",
       active: "in_transit",
       courier_arrived: "out_for_delivery",
