@@ -24,4 +24,9 @@ router.post("/create-order", createOrder);
 router.post("/verify-payment", verifyPayment);
 router.get("/transfers/:payment_id", getTransfers);
 
+// Refunds
+router.post('/refund/:payment_id', processRefund);
+router.get('/refunds/:refund_id', getRefund);
+router.get('/payments/:payment_id/refunds', getPaymentRefunds);
+
 export default router;

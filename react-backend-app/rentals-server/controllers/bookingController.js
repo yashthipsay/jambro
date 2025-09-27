@@ -286,6 +286,112 @@ export const createScheduledBooking = async (req, res) => {
   }
 };
 
+// When we extend a booking, we will have add additional amount, create a razorpay order, and add that payment id to the schema.
+export const extendBooking = async (req, res) => {
+  try {
+    const {bookingId} = req.params;
+    const {newEndDate} = req.body;
+
+    const booking = await RentalBooking.findById(bookingId).populate("instrument_id");
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+
+    // Convert IST input to UTC for comparison
+    const newEndUTC = fromZonedTime(newEndDate, "Asia/Kolkata");
+    const currentEndUTC = new Date(booking.rental.end_date);
+
+    if (newEnd <= booking.rental.end_date) {
+      return res.status(400).json({ error: "New end date must be after current end date" });
+    }
+
+    // Basic validations
+    if (newEndUTC <= currentEndUTC) {
+      return res.status(400).json({ 
+        error: "New end date must be after current end date",
+        current_end_date: formatInTimeZone(
+          currentEndUTC,
+          "Asia/Kolkata",
+          "yyyy-MM-dd HH:mm:ssXXX"
+        )
+      });
+    }
+
+    // Calculate additional days and amount
+    const additionalDays = Math.ceil(
+      (newEndUTC - currentEndUTC) / (1000 * 60 * 60 * 24)
+    );
+    const additionalAmount = additionalDays * booking.rental.price_per_day_snapshot;
+
+    // Update booking
+    booking.rental.end_date = newEndUTC;
+    booking.rental.days += additionalDays;
+    booking.rental.rental_amount += additionalAmount;
+
+    // Add audit trail
+    booking.audit = booking.audit || {};
+    booking.audit.events = booking.audit.events || [];
+    booking.audit.events.push({
+      type: "booking_extended",
+      by: req.user?.id || "system",
+      at: new Date(),
+      payload_hash: JSON.stringify({
+        previous_end_date: formatInTimeZone(
+          currentEndUTC,
+          "Asia/Kolkata", 
+          "yyyy-MM-dd HH:mm:ssXXX"
+        ),
+        new_end_date: formatInTimeZone(
+          newEndUTC,
+          "Asia/Kolkata",
+          "yyyy-MM-dd HH:mm:ssXXX"
+        ),
+        additional_days: additionalDays,
+        additional_amount: additionalAmount
+      })
+    });
+
+    await booking.save();
+
+    // Format response with IST dates
+    res.json({
+      success: true,
+      booking: {
+        ...booking.toJSON(),
+        rental: {
+          ...booking.rental.toJSON(),
+          start_date: formatInTimeZone(
+            booking.rental.start_date,
+            "Asia/Kolkata",
+            "yyyy-MM-dd HH:mm:ssXXX"
+          ),
+          end_date: formatInTimeZone(
+            booking.rental.end_date,
+            "Asia/Kolkata",
+            "yyyy-MM-dd HH:mm:ssXXX"
+          )
+        }
+      },
+      extension_details: {
+        additional_days: additionalDays,
+        additional_amount: additionalAmount,
+        previous_end_date: formatInTimeZone(
+          currentEndUTC,
+          "Asia/Kolkata",
+          "yyyy-MM-dd HH:mm:ssXXX"
+        ),
+        new_end_date: formatInTimeZone(
+          newEndUTC,
+          "Asia/Kolkata",
+          "yyyy-MM-dd HH:mm:ssXXX"
+        )
+      },
+      message: `Booking extended by ${additionalDays} days. Additional amount: ₹${additionalAmount}`
+    });
+  } catch (err) {
+    console.error("Extend booking error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Admin approval of booking + schedule Borzo shipment
 export const approveBooking = async (req, res) => {
   try {

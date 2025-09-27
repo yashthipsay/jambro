@@ -11,4 +11,7 @@ router.post("/:bookingId/shipment", bookingController.createShipment);
 router.post("/", bookingController.createBooking);
 router.post("/scheduled", bookingController.createScheduledBooking);
 
+// Add extend booking route
+router.post("/:bookingId/extend", bookingController.extendBooking);
+
 export default router;

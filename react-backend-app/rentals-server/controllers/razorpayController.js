@@ -749,3 +749,153 @@ export const getTransfers = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+export const refundService = {
+  /**
+   * Process a refund (full or partial)
+   * @param {string} paymentId - Razorpay payment ID
+   * @param {number} amount - Amount in rupees (will be converted to paise)
+   * @param {object} options - Additional options 
+   * @returns {Promise<Object>} Refund details
+   */
+
+  async processRefund(paymentId, amount = null, options = {}) {
+    const refundOptions = {
+      speed: options.speed || 'normal',
+      notes: options.notes || {},
+      receipt: options.receipt
+    };
+
+    // If amount specified, convert to paise and add to options
+    if (amount) {
+      refundOptions.amount = Math.round(amount * 100); // Convert to paise
+    }
+
+    // Create refund
+    return razorpay.payments.refund(paymentId, refundOptions);
+  },
+
+  /**
+   * Get refund details by ID
+   */
+  async getRefundById(refundId) {
+    return razorpay.refunds.fetch(refundId);
+  },
+
+  /**
+   * List all refunds for a payment
+   */
+  async getRefundsForPayment(paymentId) {
+    return razorpay.payments.fetchRefunds(paymentId);
+  }
+};
+
+/**
+ * POST /refund/:payment_id
+ * Process a refund (full or partial)
+ * body: { 
+ *   amount?: number,       // Optional: amount in rupees for partial refund
+ *   speed?: string,       // Optional: 'normal' or 'optimum'
+ *   notes?: object,       // Optional: key-value pairs
+ *   receipt?: string      // Optional: your reference number
+ * }
+ */
+export const processRefund = async (req, res) => {
+  try{
+    const { payment_id } = req.params;
+    const { amount, speed, notes, receipt } = req.body;
+
+    // Validate payment exists first
+    const payment = await razorpay.payments.fetch(payment_id);
+    if (!payment) {
+      return res.status(404).json({ 
+        success: false, 
+        error: "Payment not found" 
+      });
+    }
+
+    // If amount specified, validate it's not more than captured amount
+    if (amount) {
+      const amountPaise = Math.round(amount * 100);
+      if (amountPaise > payment.amount) {
+        return res.status(400).json({
+          success: false,
+          error: "Refund amount cannot exceed payment amount",
+          max_refundable: payment.amount / 100 // Convert back to rupees
+        });
+      }
+    }
+
+    const refund = await refundService.processRefund(payment_id, amount, {
+      speed,
+      notes: {
+        ...notes,
+        initiated_by: req.user?.id || 'system',
+        initiated_at: new Date().toISOString()
+      },
+      receipt
+    });
+
+    // If this is linked to a booking, update its status
+    if (payment.notes?.booking_id) {
+      const booking = await RentalBooking.findById(payment.notes.booking_id);
+      if (booking) {
+        const isFullRefund = !amount || (amount * 100) === payment.amount;
+        booking.deposit.status = isFullRefund ? 'refunded' : 'partially_refunded';
+        booking.deposit.refund_id = refund.id;
+        await booking.save();
+      }
+    }
+
+    res.json({
+      success: true,
+      refund: {
+        id: refund.id,
+        amount: refund.amount / 100, // Convert to rupees
+        status: refund.status,
+        speed_processed: refund.speed_processed,
+        created_at: new Date(refund.created_at * 1000)
+      }
+    });
+  } catch (err) {
+    console.error("Process refund error:", err);
+
+    // Handle specific Razorpay error codes
+    if (err.error?.code === "BAD_REQUEST_ERROR") {
+      return res.status(400).json({
+        success: false,
+        error: err.error.description || err.message
+      });
+    }
+
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+/**
+ * GET /refunds/:refund_id
+ * Get refund details by ID
+ */
+export const getRefund = async (req, res) => {
+  try {
+    const refund = await refundService.getRefundById(req.params.refund_id);
+    res.json({ success: true, refund });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+/**
+ * GET /payments/:payment_id/refunds
+ * List all refunds for a payment
+ */
+export const getPaymentRefunds = async (req, res) => {
+  try {
+    const refunds = await refundService.getRefundsForPayment(req.params.payment_id);
+    res.json({ success: true, refunds: refunds.items });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+

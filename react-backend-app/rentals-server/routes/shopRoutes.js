@@ -7,4 +7,9 @@ router.post("/", shopController.createShop);
 router.get("/", shopController.getShops);
 router.get("/:shopId", shopController.getShop);
 
+// Add, modify, delete instruments
+router.post("/:shopId/instruments", shopController.addInstrument);
+router.put("/:shopId/instruments/:instrumentId", shopController.updateInstrument);
+router.delete("/:shopId/instruments/:instrumentId", shopController.deleteInstrument);
+
 export default router;
