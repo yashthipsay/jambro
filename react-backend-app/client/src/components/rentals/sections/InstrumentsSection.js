@@ -4,7 +4,8 @@ import InstrumentCard from '../components/InstrumentCard';
 const InstrumentsSection = ({ 
   instruments, 
   cartItems, 
-  onBookInstrument 
+  onBookInstrument,
+  updateCart // Add this prop for vendor constraint
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
@@ -124,22 +125,26 @@ const InstrumentsSection = ({
           </div>
 
           {/* Instruments Grid */}
-          {filteredInstruments.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {filteredInstruments.map((instrument) => (
-                <InstrumentCard
-                  key={instrument.id}
-                  id={instrument.id}
-                  imageUrl={instrument.imageUrl}
-                  name={instrument.name}
-                  type={instrument.type}
-                  pricePerDay={instrument.pricePerDay}
-                  availabilityStatus={instrument.availabilityStatus}
-                  onBook={() => onBookInstrument(instrument.id)}
-                  isInCart={cartItems.some(item => item.id === instrument.id)}
-                />
-              ))}
-            </div>
+      {filteredInstruments.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {filteredInstruments.map((instrument) => (
+            <InstrumentCard
+              key={instrument.id}
+              id={instrument.id}
+              imageUrl={instrument.imageUrl}
+              name={instrument.name}
+              type={instrument.type}
+              pricePerDay={instrument.pricePerDay}
+              availabilityStatus={instrument.availabilityStatus}
+              onBook={() => onBookInstrument(instrument.id)}
+              isInCart={cartItems.some(item => item.id === instrument.id)}
+              // Add these props for vendor constraint
+              cartItems={cartItems}
+              updateCart={updateCart}
+              vendor={instrument.vendor} // Pass vendor info
+            />
+          ))}
+        </div>
           ) : (
             <div className="text-center py-12 sm:py-16 px-4">
               <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🎵</div>

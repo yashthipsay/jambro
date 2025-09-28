@@ -19,8 +19,23 @@ const RentalsContainer = () => {
     loading,
     handleBookInstrument,
     removeFromCart,
-    updateCartItem
+    updateCartItem,
+    // Expose this for vendor constraint
+    createRentalBooking
   } = useRentalsData();
+
+  // Helper function to update the entire cart (for vendor constraint)
+  const updateCart = (newCart) => {
+    // First remove all items from cart
+    cartItems.forEach(item => removeFromCart(item.id));
+    
+    // Then add all items from the new cart
+    newCart.forEach(item => {
+      // Since we're replacing the whole cart, we don't need vendor constraint here
+      // We can use the direct add function from useRentalsData
+      handleBookInstrument(item.id);
+    });
+  };
 
   const handleSetActiveSection = (section, instrument = null) => {
     setActiveSection(section);
@@ -65,6 +80,8 @@ const RentalsContainer = () => {
             instruments={instruments}
             cartItems={cartItems}
             onBookInstrument={handleBookInstrument}
+            // Add this prop for vendor constraint
+            updateCart={updateCart}
           />
         );
       case 'cart':
@@ -76,23 +93,11 @@ const RentalsContainer = () => {
             onSetActiveSection={handleSetActiveSection}
           />
         );
-      case 'booking':
-        return (
-          <RentalBookingForm
-            cartItems={cartItems}
-            onSetActiveSection={setActiveSection}
-            onBookingComplete={() => {
-              // Clear cart after successful booking
-              // You might need to add this function to useRentalsData
-              setActiveSection('my-rentals');
-            }}
-          />
-        );
       case 'my-rentals':
         return (
           <MyRentalsSection
             bookedInstruments={bookedInstruments}
-            onSetActiveSection={setActiveSection}
+            onSetActiveSection={handleSetActiveSection}
           />
         );
       case 'status-updates':

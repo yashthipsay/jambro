@@ -15,7 +15,7 @@ export const useRentalsData = () => {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Mock instruments data
+        // Mock instruments data with vendor information
         setInstruments([
           {
             id: 'guitar-1',
@@ -23,7 +23,12 @@ export const useRentalsData = () => {
             type: 'Acoustic Guitar',
             pricePerDay: 500,
             availabilityStatus: 'Available',
-            imageUrl: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop'
+            imageUrl: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop',
+            vendor: {
+              id: 'vendor-1',
+              name: 'Music World',
+              email: 'contact@musicworld.com'
+            }
           },
           {
             id: 'drum-1',
@@ -31,7 +36,12 @@ export const useRentalsData = () => {
             type: 'Electronic Drums',
             pricePerDay: 800,
             availabilityStatus: 'Available',
-            imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop'
+            imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop',
+            vendor: {
+              id: 'vendor-1',
+              name: 'Music World',
+              email: 'contact@musicworld.com'
+            }
           },
           {
             id: 'piano-1',
@@ -39,7 +49,12 @@ export const useRentalsData = () => {
             type: 'Digital Piano',
             pricePerDay: 1200,
             availabilityStatus: 'Available',
-            imageUrl: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400&h=300&fit=crop'
+            imageUrl: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400&h=300&fit=crop',
+            vendor: {
+              id: 'vendor-2',
+              name: 'Piano Studio',
+              email: 'info@pianostudio.com'
+            }
           },
           {
             id: 'bass-1',
@@ -47,7 +62,12 @@ export const useRentalsData = () => {
             type: 'Bass Guitar',
             pricePerDay: 600,
             availabilityStatus: 'Unavailable',
-            imageUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop'
+            imageUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop',
+            vendor: {
+              id: 'vendor-3',
+              name: 'Bass Center',
+              email: 'bass@center.com'
+            }
           }
         ]);
 
@@ -104,7 +124,7 @@ export const useRentalsData = () => {
     );
   };
 
-  // New function to create a rental booking
+  // Function to create a rental booking
   const createRentalBooking = async (bookingData) => {
     try {
       setLoading(true);
@@ -140,6 +160,7 @@ export const useRentalsData = () => {
       setBookedInstruments(prev => [...prev, newBooking]);
       
       return { success: true, booking: newBooking };
+      
     } catch (error) {
       console.error('Error creating rental booking:', error);
       return { success: false, error: error.message };
