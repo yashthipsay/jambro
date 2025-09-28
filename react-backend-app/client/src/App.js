@@ -18,7 +18,7 @@ import FinalReview from "./components/FinalReview";
 import BookingConfirmation from "./components/BookingConfirmation";
 import SubscriptionsPage from "./components/subscriptionComponents/SubscriptionsPage";
 import GroupSetup from "./components/subscriptionComponents/GroupSetup";
-import RentalsPage from "./components/rentals/RentalsPage";
+import RentalsContainer from "./components/rentals/RentalsContainer";
 import {
   Button,
   AppBar,
@@ -42,6 +42,8 @@ import {
   DialogTitle,
   Dialog,
   Tooltip,
+  BottomNavigation,
+  BottomNavigationAction,
 } from "@mui/material";
 import {
   History,
@@ -58,12 +60,18 @@ import {
   ArrowUpCircle,
   XCircle,
   Users,
+  Music,
+  Package,
+  Home,
+  Search,
+  BookOpen,
 } from "lucide-react";
 import PastBookings from "./components/PastBookings";
 import { useSubscription } from "./context/SubscriptionContext";
 import { SubscriptionProvider } from "./context/SubscriptionContext";
 import GroupSelectionModal from "./components/subscriptionComponents/GroupSelectionModal";
 import OneSignal from "react-onesignal";
+import { useLocation } from "react-router-dom";
 
 // Add this new styled component for the subscription card
 const SubscriptionCard = styled(Box)(({ theme }) => ({
@@ -100,13 +108,25 @@ function AppContent() {
     updateSubscription,
   } = useSubscription();
 
+  const location = useLocation();
+  const [bottomNavValue, setBottomNavValue] = useState(0);
+
   const menuItems = [
     { text: "Past Bookings", icon: <History />, path: "/bookings" },
+    { text: "Rentals", icon: <Music />, path: "/rentals" },
+    { text: "My Rentals", icon: <Package />, path: "/my-rentals" },
     // Temporarily commented out unused menu items
     // { text: "About Us", icon: <Info />, path: "/about" },
     // { text: "Contact", icon: <Mail />, path: "/contact" },
     // { text: "Support", icon: <Phone />, path: "/support" },
     // { text: "My Groups", path: "/my-groups", icon: <Users size={20} /> },
+  ];
+
+  const bottomNavItems = [
+    { label: "Home", icon: <Home />, path: "/" },
+    { label: "Bookings", icon: <History />, path: "/bookings" },
+    { label: "Rentals", icon: <Music />, path: "/rentals" },
+    { label: "Subscriptions", icon: <Star />, path: "/subscriptions" },
   ];
 
   const footerItems = [
@@ -271,6 +291,7 @@ function AppContent() {
       }
     };
 
+
     // Initialize OneSignal when user logs in
     if (isAuthenticated && user) {
       initializeOneSignal();
@@ -286,6 +307,23 @@ function AppContent() {
       */
     };
   }, [isAuthenticated, user]); // Removed navigate from dependencies since it's no longer used
+
+  // Update bottom nav value based on current path
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const currentIndex = bottomNavItems.findIndex(item => 
+      currentPath === item.path || currentPath.startsWith(item.path)
+    );
+    if (currentIndex !== -1) {
+      setBottomNavValue(currentIndex);
+    }
+  }, [location.pathname]);
+
+
+  const handleBottomNavChange = (event, newValue) => {
+    setBottomNavValue(newValue);
+    navigate(bottomNavItems[newValue].path);
+  };
 
   useEffect(() => {
     const registerUser = async () => {
@@ -711,20 +749,49 @@ function AppContent() {
         onConfirm={cancelSubscription}
         subscriptionDetails={subscription}
       />
-      <Routes>
-        <Route path="/" element={<JamRoomFinder />} />
-        <Route path="/jam-room/:id" element={<JamRoomDetails />} />
-        <Route path="/booking/:id" element={<Booking />} />
-        <Route path="/final-review" element={<FinalReview />} />
-        <Route path="/confirmation/:id" element={<BookingConfirmation />} />
-        <Route path="/bookings" element={<PastBookings />} />
+      {/* Main Content */}
+      <div className={`${isAuthenticated ? 'pb-16' : ''}`}>
+        <Routes>
+          <Route path="/" element={<JamRoomFinder />} />
+          <Route path="/jam-room/:id" element={<JamRoomDetails />} />
+          <Route path="/booking/:id" element={<Booking />} />
+          <Route path="/final-review" element={<FinalReview />} />
+          <Route path="/confirmation/:id" element={<BookingConfirmation />} />
+          <Route path="/bookings" element={<PastBookings />} />
 
-        {/* Subscription Routes */}
-        <Route path="/subscriptions" element={<SubscriptionsPage />} />
-        <Route path="/group-setup" element={<GroupSetup />} />
-        <Route path="/my-groups" element={<GroupSetup />} />
-        <Route path="/rentals" element={<RentalsPage />} />
-      </Routes>
+          {/* Subscription Routes */}
+          <Route path="/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/group-setup" element={<GroupSetup />} />
+          <Route path="/my-groups" element={<GroupSetup />} />
+          <Route path="/rentals" element={<RentalsContainer />} />
+        </Routes>
+      </div>
+
+      {/* Bottom Navigation - Only show when authenticated */}
+      {isAuthenticated && (
+        <BottomNavigation
+          value={bottomNavValue}
+          onChange={handleBottomNavChange}
+          className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg"
+          showLabels
+        >
+          {bottomNavItems.map((item, index) => (
+            <BottomNavigationAction
+              key={item.label}
+              label={item.label}
+              icon={item.icon}
+              className="text-gray-600 hover:text-indigo-600"
+              sx={{
+                '&.Mui-selected': {
+                  color: '#6366f1',
+                },
+                minWidth: 'auto',
+                fontSize: '0.75rem',
+              }}
+            />
+          ))}
+        </BottomNavigation>
+      )}
     </>
   );
 }

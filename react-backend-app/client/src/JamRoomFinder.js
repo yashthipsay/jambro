@@ -27,38 +27,14 @@ import { Guitar } from "lucide-react";
 
 // Event data - in a real app this would come from an API
 const events = [
-  // {
-  //   id: 1,
-  //   title: "Jazz Night at Hard Rock Cafe",
-  //   date: "March 15, 2024",
-  //   image: "https://i.ytimg.com/vi/hwcWIzlQiyw/maxresdefault.jpg",
-  //   category: "Jazz",
-  // },
-  // {
-  //   id: 2,
-  //   title: "Crescendo VIT Pune 2025",
-  //   date: "March 20, 2024",
-  //   image:
-  //     "https://viberate-upload.ams3.cdn.digitaloceanspaces.com/prod/entity/festival/crescendo-festival-HOUAE",
-  //   category: "Rock",
-  // },
-  // {
-  //   id: 3,
-  //   title: "Classical Symphony",
-  //   date: "March 25, 2024",
-  //   image:
-  //     "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=800&auto=format&fit=crop",
-  //   category: "Classical",
-  // },
   {
     id: 4,
-    title: "New Update Coming Soom",
+    title: "New Update Coming Soon",
     date: "Events and Coaching Services",
     image:
       "https://img.freepik.com/premium-vector/concert-art-painting-drawing-vector-isolated_1332469-1688.jpg?w=360",  
     category: "Upcoming Update",  
   }
-
 ];
 
 function EventCarousel() {
@@ -91,14 +67,11 @@ function EventCarousel() {
       }}
     >
       <div className="relative h-56 sm:h-64">
-        {" "}
-        {/* Increased height for better visibility */}
         <img
           src={events[currentSlide].image}
           alt={events[currentSlide].title}
           className="w-full h-full object-cover"
         />
-        {/* Enhanced gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
@@ -107,7 +80,6 @@ function EventCarousel() {
             pointerEvents: "none",
           }}
         />
-        {/* Navigation buttons */}
         <button
           onClick={prevSlide}
           className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
@@ -120,7 +92,6 @@ function EventCarousel() {
         >
           <ChevronRight />
         </button>
-        {/* Event info */}
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <div className="flex items-center space-x-2 mb-1">
             <Event sx={{ fontSize: 16 }} />
@@ -137,7 +108,6 @@ function EventCarousel() {
             </span>
           </div>
         </div>
-        {/* Dots indicator */}
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
           {events.map((_, index) => (
             <div
@@ -157,13 +127,12 @@ function JamRoomCard({ room, onClick, colors }) {
   const [currentImage, setCurrentImage] = useState(0);
   const { primaryColor, accentColor, secondaryColor, textColor } = colors;
 
-  // Add auto-slide functionality
   useEffect(() => {
     if (!room.images || room.images.length <= 1) return;
 
     const timer = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % room.images.length);
-    }, 3000); // Change image every 3 seconds
+    }, 3000);
 
     return () => clearInterval(timer);
   }, [room.images]);
@@ -195,7 +164,6 @@ function JamRoomCard({ room, onClick, colors }) {
       }}
     >
       <div className="relative">
-        {/* Image Carousel */}
         <div className="relative h-48 w-full">
           {room.images && room.images.length > 0 ? (
             <>
@@ -243,7 +211,6 @@ function JamRoomCard({ room, onClick, colors }) {
           )}
         </div>
 
-        {/* Content Overlay */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4">
           <div className="flex justify-between items-start">
             <Typography variant="h6" sx={{ fontWeight: 600, color: "white" }}>
@@ -349,60 +316,22 @@ function JamRoomFinder() {
     }
   }, [jamRoomsData, userLatitude, userLongitude]);
 
-  // Main service categories (superset)
-  const mainServices = [
-    {
-      id: "jamrooms_studios",
-      name: "JamRooms/Studios",
-      icon: <MusicNote sx={{ fontSize: 20 }} />,
-      active: true,
-    },
-    {
-      id: "pass",
-      name: "GigSaw Pass",
-      icon: <CardMembership sx={{ fontSize: 20 }} />,
-      active: false,
-    },
-    {
-      id: "rentals",
-      name: "Rentals",
-      icon: <LibraryMusic sx={{ fontSize: 20 }} />,
-      active: false,
-    },
-
-    // {
-    //   id: "coaching",
-    //   name: "Coaching",
-    //   icon: <Guitar sx={{ fontSize: 20 }} />,
-    //   active: false,
-    // },
-    // {
-    //   id: "events",
-    //   name: "Events",
-    //   icon: <Event sx={{ fontSize: 20 }} />,
-    //   active: false,
-    // },
-  ];
-
-  const [activeService, setActiveService] = useState("jamrooms_studios");
-
   // Categories for the horizontal scroll
   const categories = ["All", "Jamrooms", "Recording Studios", "Pass Eligible"];
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   // Light theme color palette with purple accents
-  const primaryColor = "#6434fc"; // Deep purple for primary actions
-  const secondaryColor = "#a085eb"; // Light purple for accents (as specified)
-  const accentColor = "#8059f7"; // Medium purple for highlights (as specified)
-  const backgroundColor = "#f8f6ff"; // Very light lavender background
-  const cardBackground = "#ffffff"; // White card background
-  const textColor = "#352c63"; // Dark purple text for readability
-  const lightTextColor = "#dcd5ff"; // Light lavender for text on dark backgrounds
+  const primaryColor = "#6434fc";
+  const secondaryColor = "#a085eb";
+  const accentColor = "#8059f7";
+  const backgroundColor = "#f8f6ff";
+  const cardBackground = "#ffffff";
+  const textColor = "#352c63";
+  const lightTextColor = "#dcd5ff";
 
   const handleFindJamRooms = async () => {
     setLoading(true);
     try {
-      // Get user location
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
@@ -424,7 +353,6 @@ function JamRoomFinder() {
   // Handler for category clicks
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
-    // You can add filtering logic here based on the selected category
 
     // Filter rooms based on category
     switch (category) {
@@ -456,42 +384,19 @@ function JamRoomFinder() {
       id: room.id,
       name: room.name,
       description: room.description,
-      type: room.type, // Add type for Studio check
+      type: room.type,
       location: room.location,
       slots: room.slots,
       distance: room.distance,
       feesPerSlot: room.feesPerSlot,
       userLatitude,
       userLongitude,
-      ownerDetails: room.ownerDetails, // Add this
+      ownerDetails: room.ownerDetails,
       images: room.images,
     };
     console.log("Selected room:", selectedRoom);
     localStorage.setItem("selectedJamRoom", JSON.stringify(selectedRoom));
     navigate(`/jam-room/${room.id}`);
-  };
-
-  // Handler for main service selection
-  const handleServiceClick = (serviceId) => {
-    setActiveService(serviceId);
-    // Navigate based on service type
-    if (serviceId === "pass") {
-      // Navigate to subscriptions page for GigSaw Pass
-      navigate("/subscriptions");
-    } else if (serviceId === "jamrooms_studios") {
-      // Stay on the current page or navigate to home for JamRooms/Studios
-      // This is the default view, so we can either do nothing or explicitly navigate to "/"
-      // Setting it as active service is already handled above
-      setSelectedCategory("All"); // Reset the category filter
-    } else if (serviceId === "rentals") {
-      // Navigate to rentals page
-      navigate("/rentals");
-    } else {
-      // For other services (coaching, events),
-      // just update state for now and reset the category filter
-      // In the future you might want to navigate to specific pages for these services
-      // e.g., navigate(`/${serviceId}`);
-    }
   };
 
   return (
@@ -541,7 +446,7 @@ function JamRoomFinder() {
           </div>
         </div>
 
-        {/* Rest of the existing content */}
+        {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
           {/* Event Carousel - Takes up 2 columns */}
           <div className="lg:col-span-2">
@@ -585,8 +490,6 @@ function JamRoomFinder() {
               <div className="space-y-4">
                 {/* Horizontal scrollable categories */}
                 <div className="flex space-x-3 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-6">
-                  {" "}
-                  {/* Increased space-x from 2 to 3, and px from 4 to 6 */}
                   {categories.map((category) => (
                     <button
                       key={category}
@@ -671,79 +574,6 @@ function JamRoomFinder() {
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-purple-100 shadow-lg">
-        <div className="flex items-center justify-between px-2 py-2 relative">
-          {mainServices.map((service, index) => {
-            const isCenter = index === Math.floor(mainServices.length / 2);
-            return (
-              <button
-                key={service.id}
-                onClick={() => handleServiceClick(service.id)}
-                className={`
-                  flex flex-col items-center justify-center w-full
-                  transition-all duration-200 text-xs relative
-                  ${isCenter ? "-mt-6" : ""}
-                  ${
-                    activeService === service.id
-                      ? `text-indigo-600 font-medium bg-purple-200 rounded-lg py-1`
-                      : `text-gray-600`
-                  }
-                `}
-              >
-                <div
-                  className={`
-                    flex items-center justify-center
-                    ${
-                      isCenter
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-600 p-3 rounded-full shadow-lg transform -translate-y-2"
-                        : "mb-1"
-                    }
-                  `}
-                >
-                  <span
-                    className={`${
-                      isCenter ? "text-white text-2xl" : "text-xl"
-                    }`}
-                  >
-                    {service.icon}
-                  </span>
-                </div>
-                <span className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[70px] text-center">
-                  {service.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Desktop Navigation - Side Panel */}
-      <div className="hidden md:block fixed right-0 top-1/2 transform -translate-y-1/2 bg-white/95 backdrop-blur-sm rounded-l-xl shadow-lg border border-purple-100 z-50">
-        <div className="flex flex-col py-4 px-2">
-          {mainServices.map((service) => (
-            <button
-              key={service.id}
-              onClick={() => handleServiceClick(service.id)}
-              className={`
-                flex items-center space-x-2 px-4 py-3 rounded-lg text-sm
-                transition-all duration-200 mb-1 last:mb-0
-                ${
-                  activeService === service.id
-                    ? `bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium`
-                    : `text-gray-700 hover:bg-purple-50`
-                }
-              `}
-            >
-              <span className="flex items-center justify-center">
-                {service.icon}
-              </span>
-              <span>{service.name}</span>
-            </button>
-          ))}
         </div>
       </div>
     </div>
