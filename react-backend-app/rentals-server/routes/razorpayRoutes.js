@@ -7,11 +7,14 @@ import {
   createOrder, 
   verifyPayment,
   getTransfers,
-  updateBankDetails
+  updateBankDetails,
+  processRefund,
+  getRefund,
+  getPaymentRefunds
 } from "../controllers/razorpayController.js";
-import Razorpay from "razorpay";
 
 const router = express.Router();
+
 // Linked Account Management (Admin)
 router.post("/admin/link-account", linkAccount);
 router.patch("/admin/linked-accounts/:account_id", updateLinkedAccount);

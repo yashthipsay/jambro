@@ -5,6 +5,7 @@ import cors from 'cors';
 import bookingRoutes from './routes/bookingRoutes.js';
 import borzoRoutes from './routes/borzoRoutes.js';
 import razorpayRoutes from './routes/razorpayRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
 import connectDB from './db/mongoDriver.js';
 import { connectRabbit } from './services/rabbitmq.js';
@@ -22,6 +23,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/borzo', borzoRoutes);
 app.use('/api/razorpay', razorpayRoutes);
 app.use('/api/shops', shopRoutes);
+app.use('/api/cart', cartRoutes);
 const server = http.createServer(app);
 const io = initSocket(server); // Initialize socket.io
 
@@ -30,7 +32,7 @@ async function start() {
   await connectRabbit();
   startShipmentStatusMonitor(); 
   startScheduledShipmentWorker();
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 5001;
   server.listen(port, () => console.log('[server] listening on', port));
 }
 
