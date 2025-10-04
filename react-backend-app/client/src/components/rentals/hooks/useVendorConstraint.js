@@ -45,27 +45,21 @@ export const useVendorConstraint = (cartItems = [], updateCart = null) => {
 
   // Check if a new item can be added without vendor conflicts
   const canAdd = useCallback((newItem) => {
-    if (!newItem) return false;
-    
-    // If cart is empty, any item can be added
-    if (cartItems.length === 0) return true;
-    
-    // Get vendor info from the new item
-    const newVendor = newItem.vendor || 
-                     newItem.jamRoom || 
-                     newItem.ownerDetails ||
-                     newItem.instrument?.vendor;
-    
-    if (!currentVendor || !newVendor) return false;
-    
-    // Check if vendors match using different ID field patterns from your codebase
-    return (
-      currentVendor.id === newVendor.id || 
-      currentVendor._id === newVendor._id ||
-      currentVendor.jamRoomId === newVendor.jamRoomId ||
-      currentVendor.email === newVendor.email
-    );
-  }, [cartItems, currentVendor]);
+      if (!newItem) return false;
+      
+      // If cart is empty, any item can be added
+      if (cartItems.length === 0) return true;
+  
+      const newVendor = newItem.vendor || newItem.jamRoom || newItem.ownerDetails;
+      if (!newVendor) return false;
+  
+      // Compare vendor display names instead of IDs/emails
+      return cartItems.every(item => {
+          const itemVendor = item.vendor || item.jamRoom || item.ownerDetails;
+          if (!itemVendor) return false;
+          return getVendorName(itemVendor) === getVendorName(newVendor);
+      });
+  }, [cartItems, getVendorName]);
 
   // Find items that conflict with a potential new vendor
   const getConflictingItems = useCallback((newVendor) => {
@@ -143,66 +137,51 @@ export const useVendorConstraint = (cartItems = [], updateCart = null) => {
   }, [updateCart, conflictingItems.length, getVendorName]);
 
   // Enhanced add item with vendor constraint checking and toast notifications
-  const addWithConstraintCheck = useCallback((newItem, addItemCallback = null) => {
-    try {
-      if (!newItem) {
-        toast.error('Invalid item selected');
-        return false;
-      }
-
-      // If cart is empty, add directly
-      if (cartItems.length === 0) {
-        if (addItemCallback) {
-          addItemCallback(newItem);
-        } else if (updateCart) {
-          updateCart([...cartItems, newItem]);
-        }
-        
-        const vendorName = getVendorName(newItem.vendor || newItem.jamRoom || newItem.ownerDetails);
-        toast.success(`Added to cart from ${vendorName}`);
-        return true;
-      }
-
-      // Check for vendor conflict
-      if (!canAdd(newItem)) {
-        const newVendor = newItem.vendor || 
-                         newItem.jamRoom || 
-                         newItem.ownerDetails ||
-                         newItem.instrument?.vendor;
-        const newVendorName = getVendorName(newVendor);
-        
-        // Set pending item for conflict resolution
-        setPendingItem(newItem);
-        setShowConflictModal(true);
-        
-        // Show warning toast
-        toast.error(
-          `Cannot mix items from different vendors! Cart has items from ${currentVendorName}. Clear cart to add from ${newVendorName}?`,
-          {
-            duration: 6000,
-            position: 'bottom-center',
-          }
-        );
-        
-        return false;
-      }
-
-      // Add item if no conflict
-      if (addItemCallback) {
-        addItemCallback(newItem);
-      } else if (updateCart) {
-        updateCart([...cartItems, newItem]);
-      }
-      
-      toast.success('Added to cart');
-      return true;
-      
-    } catch (error) {
-      console.error('Error adding item with constraint check:', error);
-      toast.error('Failed to add item to cart');
+const addWithConstraintCheck = useCallback((newItem, addItemCallback = null) => {
+  try {
+    if (!newItem) {
+      toast.error('Invalid item selected');
       return false;
     }
-  }, [cartItems, canAdd, currentVendorName, getVendorName, updateCart]);
+
+    // If cart is empty, add directly
+    if (cartItems.length === 0) {
+      // …existing “add & success” logic…
+    }
+
+    // —————— UPDATE THIS CONFLICT BRANCH ——————
+    if (!canAdd(newItem)) {
+      console.log("Entered conflict branch in addWithConstraintCheck");
+      const newVendor = newItem.vendor || newItem.jamRoom || newItem.ownerDetails;
+      const newVendorName = getVendorName(newVendor);
+
+      setPendingItem(newItem);
+      setShowConflictModal(true);
+
+      // use an error toast so you see it instead of the green “Added to cart”
+      toast.error(
+        `Cannot add item from ${newVendorName}. Clear your cart or cancel.`,
+        { duration: 4000, position: 'bottom-center' }
+      );
+
+      return false;
+    }
+    // ——————————————————————————————————————————
+
+    // Add item if no conflict
+    if (addItemCallback) {
+      addItemCallback(newItem);
+    } else if (updateCart) {
+      updateCart([...cartItems, newItem]);
+    }
+    toast.success('Added to cart');
+    return true;
+  } catch (error) {
+    console.error('Error adding item with constraint check:', error);
+    toast.error('Failed to add item to cart');
+    return false;
+  }
+}, [cartItems, canAdd, getVendorName, updateCart]);
 
   // Set pending item for conflict resolution
   const setPendingConflict = useCallback((item) => {

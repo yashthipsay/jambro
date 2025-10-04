@@ -4,15 +4,15 @@ import InstrumentCard from '../components/InstrumentCard';
 const InstrumentsSection = ({ 
   instruments, 
   cartItems, 
-  onBookInstrument,
-  updateCart // Add this prop for vendor constraint
+  addToCart,
+  updateCart
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [sortBy, setSortBy] = useState('name');
   const [showFilters, setShowFilters] = useState(false);
 
-  const instrumentTypes = ['All', 'Electric Guitar', 'Accessory', 'Electronic Drums', 'Digital Piano', 'Acoustic Guitar', 'Bass Guitar'];
+  const instrumentTypes = ['All', 'Acoustic Guitar', 'Electric Guitar', 'Electronic Drums', 'Digital Piano', 'Bass Guitar', 'Synthesizer'];
 
   const filteredInstruments = instruments
     .filter(instrument => {
@@ -38,18 +38,18 @@ const InstrumentsSection = ({
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-3 sm:mb-4 leading-tight">
               Instrument Rentals
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-gray-700 px-2 sm:px-4">
-              Rent high-quality instruments for your music sessions. From guitars to drums, we have everything you need.
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Discover premium musical instruments for rent. Perfect for events, practice sessions, or trying before you buy.
             </p>
           </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="px-4 py-4 sm:py-6 md:py-8 pb-32 md:pb-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="px-4 pb-6 sm:pb-8">
+        <div className="max-w-4xl mx-auto">
           {/* Search Bar */}
-          <div className="mb-4">
+          <div className="relative mb-4 sm:mb-6">
             <div className="relative">
               <input
                 type="text"
@@ -70,47 +70,41 @@ const InstrumentsSection = ({
           <div className="mb-4 sm:mb-6">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 bg-white/80 backdrop-blur-sm border border-indigo-200 rounded-xl text-gray-700 text-sm font-medium hover:bg-indigo-50 transition-colors shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg font-medium text-sm hover:bg-indigo-200 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707v4.586l-4-2v-2.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
-              Filters & Sort
-              <svg className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              Filters
             </button>
           </div>
 
-          {/* Filter Panel */}
+          {/* Filters */}
           {showFilters && (
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-200 p-4 mb-6 space-y-4 shadow-sm">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-indigo-700">Filter by Type</label>
+            <div className="mb-6 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-indigo-200 shadow-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-indigo-700 mb-2">Instrument Type</label>
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
                     className="w-full px-3 py-2.5 bg-white border border-indigo-200 rounded-lg text-gray-800 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 text-sm"
                   >
                     {instrumentTypes.map(type => (
-                      <option key={type} value={type} className="bg-white">
-                        {type}
-                      </option>
+                      <option key={type} value={type}>{type}</option>
                     ))}
                   </select>
                 </div>
-
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium text-indigo-700">Sort By</label>
+                <div>
+                  <label className="block text-sm font-medium text-indigo-700 mb-2">Sort By</label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="w-full px-3 py-2.5 bg-white border border-indigo-200 rounded-lg text-gray-800 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 text-sm"
                   >
-                    <option value="name" className="bg-white">Name</option>
-                    <option value="price" className="bg-white">Price</option>
-                    <option value="type" className="bg-white">Type</option>
+                    <option value="name">Name</option>
+                    <option value="price">Price</option>
+                    <option value="type">Type</option>
                   </select>
                 </div>
               </div>
@@ -125,31 +119,39 @@ const InstrumentsSection = ({
           </div>
 
           {/* Instruments Grid */}
-      {filteredInstruments.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {filteredInstruments.map((instrument) => (
-            <InstrumentCard
-              key={instrument.id}
-              id={instrument.id}
-              imageUrl={instrument.imageUrl}
-              name={instrument.name}
-              type={instrument.type}
-              pricePerDay={instrument.pricePerDay}
-              availabilityStatus={instrument.availabilityStatus}
-              onBook={() => onBookInstrument(instrument.id)}
-              isInCart={cartItems.some(item => item.id === instrument.id)}
-              // Add these props for vendor constraint
-              cartItems={cartItems}
-              updateCart={updateCart}
-              vendor={instrument.vendor} // Pass vendor info
-            />
-          ))}
-        </div>
+          {filteredInstruments.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {filteredInstruments.map((instrument) => (
+                <InstrumentCard
+                  key={instrument.id}
+                  instrumentId={instrument.id}
+                  imageUrl={instrument.imageUrl}
+                  name={instrument.name}
+                  type={instrument.type}
+                  pricePerDay={instrument.pricePerDay}
+                  availabilityStatus={instrument.availabilityStatus}
+                  isInCart={cartItems.some(item => item.id === instrument.id)}
+                  cartItems={cartItems}
+                  addToCart={addToCart}
+                  updateCart={updateCart}
+                  vendor={instrument.vendor}
+                />
+              ))}
+            </div>
           ) : (
             <div className="text-center py-12 sm:py-16 px-4">
               <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🎵</div>
               <h3 className="text-xl sm:text-2xl font-bold text-indigo-600 mb-2">No instruments found</h3>
-              <p className="text-gray-600 text-sm sm:text-base">Try adjusting your search or filter criteria</p>
+              <p className="text-gray-600 mb-4 sm:mb-6">Try adjusting your search or filter criteria</p>
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterType('All');
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300"
+              >
+                Clear Filters
+              </button>
             </div>
           )}
         </div>

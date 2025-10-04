@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { X, Calendar, Package, CreditCard } from "lucide-react";
+import { useCartCalculations } from '../hooks/useCartCalculations';
 
 /**
  * RentalBookingForm - Multi-step booking form for instrument rentals
@@ -15,12 +16,12 @@ import { X, Calendar, Package, CreditCard } from "lucide-react";
  * - isOpen?: boolean
  */
 export default function RentalBookingForm({ 
-  instrument, 
-  initialValues = {}, 
-  onCalculate, 
-  onConfirm, 
+  instrument,
+  cartItems = [],
+  initialValues = {},
+  onConfirm,
   onClose,
-  isOpen = false 
+  isOpen = false
 }) {
   // Color palette matching your system
   const paletteStyle = {
@@ -59,6 +60,18 @@ export default function RentalBookingForm({
     return 1;
   }, [values.startDate, values.endDate]);
 
+  const {
+    calculatePrices,
+    loading: calculationLoading,
+    error: calculationError
+  } = useCartCalculations(
+    instrument?.items || [instrument].filter(Boolean),
+    {
+      startDate: values.startDate,
+      endDate: values.endDate
+    }
+  );
+
   // Update duration in values when calculated
   useMemo(() => {
     setValues(prev => ({ ...prev, duration }));
@@ -87,43 +100,23 @@ export default function RentalBookingForm({
   }
 
   async function handleCalculate() {
-    if (!onCalculate) {
-      // Default calculation if no handler provided
-      const baseRental = (instrument?.pricePerDay || 500) * duration;
-      const deliveryFee = 100; // Default delivery fee
-      const total = baseRental + deliveryFee;
+    try {
+      setBusy(true);
+      const prices = await calculatePrices(values.address);
       
       setValues(prev => ({
         ...prev,
-        deliveryFee,
-        rentalAmount: baseRental,
-        total
+        deliveryFee: prices.deliveryFee,
+        rentalAmount: prices.subtotal,
+        deposit: prices.deposit,
+        total: prices.total,
+        breakdown: prices.breakdown
       }));
-      return;
-    }
-
-    try {
-      setBusy(true);
-      const res = await onCalculate({ 
-        ...values, 
-        instrumentId: instrument?.id,
-        duration 
-      });
-      
-      if (res && typeof res === "object") {
-        const { deliveryFee, rentalAmount, total } = res;
-        setValues(prev => ({
-          ...prev,
-          deliveryFee,
-          rentalAmount,
-          total,
-        }));
-      }
     } finally {
       setBusy(false);
     }
   }
-
+  
   async function handleConfirm() {
     if (!onConfirm) return;
     setBusy(true);
